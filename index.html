@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1220" />
+    <meta name="description" content="Bantay Baha: interactive 3D flood-monitoring simulator of a Philippine barangay." />
+    <title>Bantay Baha — Flood Monitoring Simulator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="labels"></div>
+
+      <section id="hud" class="glass" aria-live="polite">
+        <header>
+          <span class="brand">🌊 Bantay Baha</span>
+          <span id="badge" class="badge s-NORMAL">NORMAL</span>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="water" role="tab">Water</button>
+          <button class="tab" data-tab="telemetry" role="tab"><span class="live-dot"></span>ESP32 telemetry</button>
+        </div>
+        <div class="tab-pane" data-pane="water">
+          <div class="metrics">
+            <div><label>Water level</label><b id="m-level">--</b><small>cm</small></div>
+            <div><label>Rise rate</label><b id="m-rate">--</b><small>cm / 10 min</small></div>
+            <div><label>Sensor distance</label><b id="m-dist">--</b><small>cm</small></div>
+          </div>
+          <canvas id="chart"></canvas>
+          <div id="m-source" class="source"></div>
+        </div>
+        <div class="tab-pane" data-pane="telemetry" hidden>
+          <div class="tele-head"><span id="t-node">bb-01</span><span id="t-mode" class="chip">SIMULATED</span></div>
+          <div class="tele-grid">
+            <div><label>Uptime</label><b id="t-uptime">--</b></div>
+            <div><label>Wi-Fi RSSI</label><b id="t-rssi">--</b><span class="bars" id="t-bars"><i></i><i></i><i></i><i></i></span></div>
+            <div><label>Battery</label><b id="t-batt">--</b><span class="meter"><span id="t-batt-bar"></span></span></div>
+            <div><label>Solar in / net</label><b id="t-solar">--</b></div>
+            <div><label>Enclosure temp</label><b id="t-temp">--</b></div>
+            <div><label>Free heap</label><b id="t-heap">--</b></div>
+            <div><label>Echo time</label><b id="t-echo">--</b></div>
+            <div><label>Distance</label><b id="t-dist">--</b></div>
+            <div><label>Packets sent</label><b id="t-seq">--</b></div>
+          </div>
+          <label class="log-title">MQTT publish → <span id="t-topic"></span></label>
+          <ol id="t-log" class="mqtt-log"></ol>
+        </div>
+      </section>
+
+      <section id="alert" class="alert glass s-NORMAL" aria-live="assertive">
+        <div class="alert-head"><span id="alert-icon">📢</span><span id="alert-title">Status update</span><span id="alert-src"></span></div>
+        <p id="alert-text">Waiting for the first sensor reading…</p>
+      </section>
+
+      <div id="evac-banner" hidden>⚠ EVACUATE — proceed to the Barangay Hall evacuation center</div>
+
+      <aside id="panel" class="open">
+        <button id="panel-toggle" class="glass" aria-label="Toggle controls">⚙</button>
+        <div class="panel-body glass">
+          <h2>Controls</h2>
+          <fieldset>
+            <legend>Simulation</legend>
+            <div class="row"><span>Water source</span><span id="src-chip" class="chip">Rain model</span></div>
+            <label class="slider">Rainfall <output id="o-rain">0 mm/hr</output><input id="i-rain" type="range" min="0" max="100" step="1" value="0" /></label>
+            <label class="slider">Water level <output id="o-level">0.90 m</output><input id="i-level" type="range" min="0.3" max="5.5" step="0.01" value="0.9" /></label>
+          </fieldset>
+          <fieldset>
+            <legend>Auto-Storm</legend>
+            <div class="row"><button id="b-storm" class="primary">▶ Play storm</button><button id="b-reset">↺ Reset</button></div>
+            <div class="progress"><div id="storm-bar"></div></div>
+            <div class="row small"><span id="storm-time">T+0 min / 90 min</span></div>
+            <label class="slider">Speed <output id="o-speed">1x</output><input id="i-speed" type="range" min="1" max="10" step="1" value="1" /></label>
+          </fieldset>
+          <fieldset>
+            <legend>Display &amp; alerts</legend>
+            <div class="toggles">
+              <label><input type="checkbox" data-toggle="debris" /> Debris</label>
+              <label><input type="checkbox" data-toggle="rain" /> Rain</label>
+              <label><input type="checkbox" data-toggle="xray" /> X-ray</label>
+              <label><input type="checkbox" data-toggle="lola" /> Lola mode</label>
+              <label><input type="checkbox" data-toggle="sound" /> Sound</label>
+            </div>
+            <label class="select">Language
+              <select id="i-lang">
+                <option value="en">English</option>
+                <option value="tl">Tagalog</option>
+                <option value="ceb">Cebuano</option>
+                <option value="war">Waray</option>
+              </select>
+            </label>
+          </fieldset>
+          <details>
+            <summary>Live ESP32 input</summary>
+            <label class="select">Protocol
+              <select id="i-ws-mode">
+                <option value="ws">WebSocket (JSON)</option>
+                <option value="mqtt">MQTT over WebSocket</option>
+              </select>
+            </label>
+            <label class="text">URL <input id="i-ws-url" type="text" value="ws://localhost:8081" spellcheck="false" /></label>
+            <label class="text">MQTT topic <input id="i-ws-topic" type="text" value="bantaybaha/sensor/01" spellcheck="false" /></label>
+            <div class="row"><button id="b-remote">Connect</button><span id="ws-status" class="status">Not connected</span></div>
+          </details>
+          <details>
+            <summary>Ollama (local LLM alerts)</summary>
+            <label class="check"><input id="i-ollama" type="checkbox" /> Generate advisories with Ollama</label>
+            <label class="text">URL <input id="i-ollama-url" type="text" spellcheck="false" /></label>
+            <label class="text">Model <input id="i-ollama-model" type="text" spellcheck="false" /></label>
+            <p class="hint">Falls back to built-in templates if unreachable.</p>
+          </details>
+        </div>
+      </aside>
+
+      <nav id="cams" class="glass" aria-label="Camera presets">
+        <button data-cam="overview">Overview</button>
+        <button data-cam="sensor">Sensor close-up</button>
+        <button data-cam="street">Street level</button>
+        <button data-cam="bridge">Bridge</button>
+        <button data-cam="cinematic">🎬 Cinematic</button>
+      </nav>
+
+      <section id="inspector" class="glass" hidden aria-live="polite">
+        <button id="insp-close" aria-label="Close">×</button>
+        <div class="insp-head">
+          <span id="insp-icon"></span>
+          <div><small id="insp-kind"></small><h3 id="insp-title"></h3></div>
+        </div>
+        <p id="insp-about"></p>
+        <dl id="insp-specs"></dl>
+        <div id="insp-live-wrap"><h4><span class="live-dot"></span>Live</h4><dl id="insp-live"></dl></div>
+        <div id="insp-actions"></div>
+        <div class="insp-parts"><small>All parts</small><div id="insp-chips"></div></div>
+      </section>
+
+      <div id="toast"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
