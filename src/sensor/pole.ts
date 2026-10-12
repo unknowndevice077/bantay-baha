@@ -147,6 +147,7 @@ export class SmartPole {
     );
     G.add(this.beam, this.hitRing);
     tag('beam', this.beam);
+    this.beam.userData.noAO = this.hitRing.userData.noAO = true;
 
     this.buildEnclosure(g, baseZ);
     this.buildTop(topY, baseZ, steel);

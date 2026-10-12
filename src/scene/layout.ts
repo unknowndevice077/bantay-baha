@@ -145,5 +145,12 @@ export const HALL_PLAN: HousePlan = {
 const [courtMin, courtMax] = footprintRange(COURT.x, COURT.z, COURT.w, COURT.d);
 export const COURT_PAD = { top: courtMax + 0.1, bottom: courtMin - 0.2 };
 
-/** Where evacuees gather, just in front of the barangay hall. */
-export const ASSEMBLY = { x: HALL.x, z: HALL.z - HALL.d / 2 - 4 };
+/** Entrance stairs climbing from the lane up onto the hall's raised pad. */
+const padFront = HALL.z - (HALL.d + 4) / 2;
+export const HALL_STAIRS = { x: HALL.x, width: 4, z0: padFront - 2.4, z1: padFront };
+/** The hall's front door (local +z of the hall faces world −z). */
+export const HALL_DOOR = { x: HALL.x, z: HALL.z - HALL.d / 2 };
+/** Floor area inside the hall where evacuees wait. */
+export const HALL_INSIDE = { x: HALL.x, z: HALL.z + 0.4, halfW: HALL.w / 2 - 1.4, halfD: HALL.d / 2 - 1.6 };
+/** Where evacuees queue at the foot of the stairs before going in. */
+export const ASSEMBLY = { x: HALL.x, z: HALL_STAIRS.z0 - 1 };

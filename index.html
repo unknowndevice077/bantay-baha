@@ -73,6 +73,17 @@
             <label class="slider">Speed <output id="o-speed">1x</output><input id="i-speed" type="range" min="1" max="10" step="1" value="1" /></label>
           </fieldset>
           <fieldset>
+            <legend>Day / night</legend>
+            <label class="slider">Time of day <output id="o-time">14:24</output><input id="i-time" type="range" min="0" max="1" step="0.001" value="0.6" /></label>
+            <div class="row presets">
+              <button data-time="0.27">🌅 Dawn</button>
+              <button data-time="0.5">☀️ Noon</button>
+              <button data-time="0.76">🌇 Dusk</button>
+              <button data-time="0.95">🌙 Night</button>
+            </div>
+            <label class="check"><input id="i-time-lock" type="checkbox" /> Lock time (stop the cycle)</label>
+          </fieldset>
+          <fieldset>
             <legend>Display &amp; alerts</legend>
             <div class="toggles">
               <label><input type="checkbox" data-toggle="debris" /> Debris</label>
@@ -80,6 +91,7 @@
               <label><input type="checkbox" data-toggle="xray" /> X-ray</label>
               <label><input type="checkbox" data-toggle="lola" /> Lola mode</label>
               <label><input type="checkbox" data-toggle="sound" /> Sound</label>
+              <label title="Ambient occlusion + bloom"><input type="checkbox" data-toggle="hq" /> High quality</label>
             </div>
             <label class="select">Language
               <select id="i-lang">
@@ -118,6 +130,7 @@
         <button data-cam="street">Street level</button>
         <button data-cam="bridge">Bridge</button>
         <button data-cam="cinematic">🎬 Cinematic</button>
+        <span class="keys-hint">Drag: look · WASD: move · Q/E: down/up · Shift: fast · Wheel: forward</span>
       </nav>
 
       <section id="inspector" class="glass" hidden aria-live="polite">

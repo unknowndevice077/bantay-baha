@@ -66,6 +66,7 @@ export class Rain {
       new THREE.ShaderMaterial({ uniforms: this.u, vertexShader, fragmentShader, transparent: true, depthWrite: false }),
     );
     this.mesh.frustumCulled = false;
+    this.mesh.userData.noAO = true;
   }
 
   /** @param rain mm/hr @param light 0..1 scene brightness */

@@ -6,7 +6,7 @@ export const STATUSES: Status[] = ['NORMAL', 'ADVISORY', 'WARNING', 'EVACUATE'];
 export type Lang = 'en' | 'tl' | 'ceb' | 'war';
 /** What drives the water level: the rainfall/runoff model, the manual slider, or a live ESP32. */
 export type Source = 'rain' | 'manual' | 'remote';
-export type ToggleKey = 'debris' | 'rain' | 'xray' | 'lola' | 'sound';
+export type ToggleKey = 'debris' | 'rain' | 'xray' | 'lola' | 'sound' | 'hq';
 
 export interface Reading {
   /** Simulation time (s). */
@@ -57,8 +57,13 @@ export const state = {
   simTime: 0,
   status: 'NORMAL' as Status,
   reading: null as Reading | null,
-  toggles: { debris: true, rain: true, xray: false, lola: false, sound: false } as Record<ToggleKey, boolean>,
+  /** `hq` = ambient occlusion + bloom; off by default on phones. */
+  toggles: { debris: true, rain: true, xray: false, lola: false, sound: false, hq: window.innerWidth >= 768 } as Record<ToggleKey, boolean>,
   lang: 'en' as Lang,
+  /** 0..1 fraction of the day (0.5 = noon). Starts mid-afternoon so the demo reaches sunset early. */
+  timeOfDay: 0.6,
+  /** When true the day/night cycle stops at the chosen time. */
+  timeLocked: false,
 };
 
 export function setToggle(key: ToggleKey, value: boolean): void {

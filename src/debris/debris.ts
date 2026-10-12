@@ -54,7 +54,7 @@ function current(x: number, z: number, level: number, rain: number, out: THREE.V
 export class DebrisField {
   readonly group = new THREE.Group();
   private readonly kinds: Kind[];
-  private readonly material = new THREE.MeshLambertMaterial({ vertexColors: true });
+  private readonly material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75 });
   private bodies: Body[] = [];
   private cooldown = 0;
   private readonly cur = new THREE.Vector2();

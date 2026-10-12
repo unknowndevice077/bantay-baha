@@ -51,6 +51,9 @@ uniform float uFlash;
 uniform vec3 uSunDir;
 uniform vec3 uSunColor;
 uniform vec3 uSky;
+uniform vec3 uZenith;
+uniform float uChop;
+uniform float uRain;
 uniform vec3 uClearDeep;
 uniform vec3 uClearShallow;
 uniform vec3 uMudDeep;
@@ -79,10 +82,31 @@ void main() {
   vec2 flow = vWorld.xz * vec2(0.18, 0.7) - vec2(uTime * (0.6 + uMud), 0.0);
   base *= 0.85 + 0.35 * vnoise(flow) * vnoise(flow * 2.3 + 3.1);
 
+  // Fine wind ripples: two scrolling noise layers turned into normal perturbation.
   vec3 N = normalize(vNormalW);
+  float e = 0.06;
+  vec2 r1 = vWorld.xz * 1.3 + vec2(uTime * 0.9, uTime * 0.25);
+  vec2 r2 = vWorld.xz * 3.4 - vec2(uTime * 0.6, -uTime * 0.8);
+  float h0 = vnoise(r1) + 0.5 * vnoise(r2);
+  float hx = vnoise(r1 + vec2(e, 0.0)) + 0.5 * vnoise(r2 + vec2(e, 0.0));
+  float hz = vnoise(r1 + vec2(0.0, e)) + 0.5 * vnoise(r2 + vec2(0.0, e));
+  N = normalize(N + vec3(h0 - hx, 0.0, h0 - hz) / e * 0.05 * (0.6 + uChop * 0.4));
+
+  // Raindrop rings: one expanding ring per cell, phase-shifted at random.
+  if (uRain > 0.01) {
+    vec2 cell = floor(vWorld.xz * 1.4);
+    vec2 local = fract(vWorld.xz * 1.4) - 0.5 - (vec2(hash(cell), hash(cell + 7.1)) - 0.5) * 0.5;
+    float age = fract(uTime * 1.3 + hash(cell + 3.3));
+    float d = length(local);
+    float ring = (1.0 - smoothstep(0.0, 0.05, abs(d - age * 0.45))) * (1.0 - age);
+    N = normalize(N + vec3(local.x, 0.0, local.y) / max(d, 1e-3) * ring * uRain * 0.6);
+  }
+
   vec3 V = normalize(cameraPosition - vWorld);
-  float fres = pow(1.0 - max(dot(N, V), 0.0), 4.0);
-  vec3 col = mix(base * uLight, uSky, fres * 0.55);
+  float fres = 0.04 + 0.96 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+  vec3 R = reflect(-V, N);
+  vec3 skyRefl = mix(uSky, uZenith, smoothstep(0.0, 0.6, R.y));
+  vec3 col = mix(base * uLight, skyRefl, clamp(fres * (1.0 - uMud * 0.35), 0.0, 1.0));
   vec3 H = normalize(uSunDir + V);
   col += uSunColor * pow(max(dot(N, H), 0.0), 140.0) * (1.0 - uMud * 0.5);
 
@@ -104,6 +128,7 @@ export interface WaterLighting {
   sunDir: THREE.Vector3;
   sunColor: THREE.Color;
   horizon: THREE.Color;
+  zenith: THREE.Color;
   light: number;
   flash: number;
 }
@@ -129,6 +154,8 @@ export class Water {
       uSunDir: { value: new THREE.Vector3(0, 1, 0) },
       uSunColor: { value: new THREE.Color() },
       uSky: { value: new THREE.Color() },
+      uZenith: { value: new THREE.Color() },
+      uRain: { value: 0 },
       uClearDeep: { value: new THREE.Color(0x0e3b45) },
       uClearShallow: { value: new THREE.Color(0x3d7f7a) },
       uMudDeep: { value: new THREE.Color(0x4a3720) },
@@ -139,10 +166,16 @@ export class Water {
     const mat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader, fragmentShader, transparent: true, depthWrite: false, fog: true });
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.frustumCulled = false;
+    this.mesh.userData.noAO = true;
   }
 
-  /** @param mud 0 = clear creek, 1 = full muddy flood. @param chop wave amplitude multiplier. */
-  update(dt: number, levelY: number, mud: number, chop: number, l: WaterLighting): void {
+  /**
+   * @param mud 0 = clear creek, 1 = full muddy flood. @param chop wave amplitude multiplier.
+   * @param rain 0..1 raindrop-ring strength.
+   */
+  update(dt: number, levelY: number, mud: number, chop: number, rain: number, l: WaterLighting): void {
+    this.u.uRain.value = rain;
+    (this.u.uZenith.value as THREE.Color).copy(l.zenith);
     this.time += dt;
     this.chop = chop;
     const u = this.u;

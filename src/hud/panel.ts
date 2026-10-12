@@ -20,6 +20,7 @@ export class Panel {
   private readonly rain = $<HTMLInputElement>('i-rain');
   private readonly level = $<HTMLInputElement>('i-level');
   private readonly stormBtn = $<HTMLButtonElement>('b-storm');
+  private readonly time = $<HTMLInputElement>('i-time');
   private dragging: HTMLInputElement | null = null;
 
   constructor(private readonly deps: PanelDeps) {
@@ -78,8 +79,22 @@ export class Panel {
       b.addEventListener('click', () => deps.rig.goTo(b.dataset.cam as Preset | 'cinematic')),
     );
 
+    this.initTime();
     this.initRemote();
     this.initOllama();
+  }
+
+  /** Time-of-day slider, quick presets and the cycle lock. */
+  private initTime(): void {
+    this.time.addEventListener('pointerdown', () => (this.dragging = this.time));
+    this.time.addEventListener('change', () => (this.dragging = null));
+    this.time.addEventListener('input', () => (state.timeOfDay = Number(this.time.value)));
+    document.querySelectorAll<HTMLButtonElement>('[data-time]').forEach((b) =>
+      b.addEventListener('click', () => (state.timeOfDay = Number(b.dataset.time))),
+    );
+    const lock = $<HTMLInputElement>('i-time-lock');
+    lock.checked = state.timeLocked;
+    lock.addEventListener('change', () => (state.timeLocked = lock.checked));
   }
 
   private initRemote(): void {
@@ -121,6 +136,9 @@ export class Panel {
     $('o-rain').textContent = `${Math.round(state.rainfall)} mm/hr`;
     $('o-level').textContent = `${state.level.toFixed(2)} m`;
     $('o-speed').textContent = `${state.speed}x`;
+    if (this.dragging !== this.time) this.time.value = state.timeOfDay.toFixed(3);
+    const minutes = Math.floor(state.timeOfDay * 24 * 60);
+    $('o-time').textContent = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${state.timeLocked ? ' 🔒' : ''}`;
     $('src-chip').textContent = SOURCE_CHIP[state.source];
     this.stormBtn.textContent = state.stormPlaying ? '⏸ Pause storm' : state.stormTime > 0 && state.stormTime < STORM_DURATION ? '▶ Resume storm' : '▶ Play storm';
     $('storm-bar').style.width = `${(state.stormTime / STORM_DURATION) * 100}%`;

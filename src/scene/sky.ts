@@ -1,6 +1,6 @@
 /** Day/night cycle, storm darkening, fog, sun/moon light, sky dome and lightning. */
 import * as THREE from 'three';
-import { bus } from '../state';
+import { bus, state } from '../state';
 import { smoothstep } from '../util';
 import { groundHeight } from './terrain';
 
@@ -48,9 +48,38 @@ void main() {
 
 const BOLT_POINTS = 18;
 
+/**
+ * Pre-filtered outdoor environment (blue sky above, warm bright horizon, earthy
+ * ground) for PBR reflections and image-based ambient light. Its strength is
+ * modulated per frame with daylight via scene.environmentIntensity.
+ */
+function skyEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
+  const envScene = new THREE.Scene();
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(10, 32, 16),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      vertexShader: domeVertex,
+      fragmentShader: /* glsl */ `
+        varying vec3 vDir;
+        void main() {
+          float y = normalize(vDir).y;
+          vec3 sky = mix(vec3(0.75, 0.82, 0.9), vec3(0.32, 0.5, 0.8), smoothstep(0.0, 0.6, y));
+          vec3 ground = mix(vec3(0.42, 0.4, 0.33), vec3(0.2, 0.24, 0.14), smoothstep(0.0, -0.4, y));
+          gl_FragColor = vec4(y > 0.0 ? sky : ground, 1.0);
+        }`,
+    }),
+  );
+  envScene.add(sphere);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const tex = pmrem.fromScene(envScene, 0.04).texture;
+  pmrem.dispose();
+  sphere.geometry.dispose();
+  sphere.material.dispose();
+  return tex;
+}
+
 export class Sky {
-  /** 0..1, 0.5 = noon. Starts mid-afternoon so the demo crosses sunset early. */
-  time = 0.6;
   /** 0 = full day, 1 = full night. */
   night = 0;
   flash = 0;
@@ -59,7 +88,10 @@ export class Sky {
   readonly sunDir = new THREE.Vector3(0, 1, 0);
   readonly sunColor = new THREE.Color();
   readonly horizon = new THREE.Color();
-  private readonly top = new THREE.Color();
+  /** Zenith colour (water reflects it when looking at steep angles). */
+  readonly zenith = new THREE.Color();
+  /** 0..1 storm darkness (drives street-light photocells too). */
+  storm = 0;
   private readonly tmp = new THREE.Color();
   private readonly lightDir = new THREE.Vector3();
   private readonly sun = new THREE.DirectionalLight(0xffffff, 2.5);
@@ -70,8 +102,13 @@ export class Sky {
   private boltLife = 0;
   private strikeIn = 4;
 
-  constructor(scene: THREE.Scene, shadowMapSize: number) {
+  constructor(
+    private readonly scene: THREE.Scene,
+    renderer: THREE.WebGLRenderer,
+    shadowMapSize: number,
+  ) {
     scene.fog = this.fog;
+    scene.environment = skyEnvironment(renderer);
     const s = this.sun;
     s.castShadow = true;
     s.shadow.mapSize.set(shadowMapSize, shadowMapSize);
@@ -84,7 +121,7 @@ export class Sky {
       new THREE.SphereGeometry(500, 32, 16),
       new THREE.ShaderMaterial({
         uniforms: {
-          uTop: { value: this.top },
+          uTop: { value: this.zenith },
           uHorizon: { value: this.horizon },
           uDiscDir: { value: this.lightDir },
           uDiscColor: { value: new THREE.Color() },
@@ -98,6 +135,7 @@ export class Sky {
     );
     this.dome.renderOrder = -1;
     this.dome.frustumCulled = false;
+    this.dome.userData.noAO = true;
 
     const boltGeo = new THREE.BufferGeometry();
     boltGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(BOLT_POINTS * 3), 3));
@@ -108,19 +146,20 @@ export class Sky {
   }
 
   update(dt: number, rain: number, camera: THREE.Camera): void {
-    this.time = (this.time + dt / DAY_LENGTH) % 1;
-    const ang = this.time * Math.PI * 2;
+    if (!state.timeLocked) state.timeOfDay = (state.timeOfDay + dt / DAY_LENGTH) % 1;
+    const ang = state.timeOfDay * Math.PI * 2;
     this.sunDir.set(Math.sin(ang) * 0.9, -Math.cos(ang), 0.35).normalize();
     const elev = this.sunDir.y;
     const day = smoothstep(-0.12, 0.25, elev);
     const dusk = 1 - smoothstep(0, 0.35, Math.abs(elev));
     const storm = smoothstep(10, 80, rain);
+    this.storm = storm;
     this.night = 1 - day;
 
     const shade = 0.2 + 0.8 * day;
-    this.top.lerpColors(P.nightTop, P.dayTop, day).lerp(P.duskTop, dusk * 0.5);
+    this.zenith.lerpColors(P.nightTop, P.dayTop, day).lerp(P.duskTop, dusk * 0.5);
     this.horizon.lerpColors(P.nightHor, P.dayHor, day).lerp(P.duskHor, dusk * 0.6 * (1 - storm));
-    this.top.lerp(this.tmp.copy(P.stormTop).multiplyScalar(shade), storm * 0.85);
+    this.zenith.lerp(this.tmp.copy(P.stormTop).multiplyScalar(shade), storm * 0.85);
     this.horizon.lerp(this.tmp.copy(P.stormHor).multiplyScalar(shade), storm * 0.85);
 
     // Lightning: more frequent the harder it rains.
@@ -136,7 +175,7 @@ export class Sky {
     } else {
       this.flash *= Math.exp(-dt * 7);
     }
-    this.top.lerp(P.flash, this.flash * 0.5);
+    this.zenith.lerp(P.flash, this.flash * 0.5);
     this.horizon.lerp(P.flash, this.flash * 0.4);
 
     // One directional light plays the sun by day and the moon by night.
@@ -150,8 +189,10 @@ export class Sky {
       this.sun.intensity = 0.3 * smoothstep(0, 0.25, -elev) * (1 - storm * 0.6);
     }
     this.sun.position.copy(this.lightDir).multiplyScalar(150);
-    this.hemi.color.copy(this.top).lerp(this.horizon, 0.5);
-    this.hemi.intensity = 0.6 + day * (1 - storm * 0.35) + this.flash * 2.5;
+    this.hemi.color.copy(this.zenith).lerp(this.horizon, 0.5);
+    // Image-based light from the sky environment does most of the ambient work; the hemisphere fills in.
+    this.hemi.intensity = 0.35 + 0.45 * day * (1 - storm * 0.35) + this.flash * 2.5;
+    this.scene.environmentIntensity = 0.12 + 0.75 * day * (1 - storm * 0.5) + this.flash * 0.8;
     this.light = 0.3 + 0.7 * day * (1 - storm * 0.45) + this.flash * 0.4;
     this.sunColor.copy(this.sun.color).multiplyScalar(this.sun.intensity / 2.6);
 

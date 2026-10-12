@@ -13,22 +13,30 @@ export function gableRoof(): THREE.BufferGeometry {
      0.5, 0, 0.5,   0.5, 0, -0.5,  0.5, 1, 0,
     -0.5, 0, -0.5, -0.5, 0, 0.5,  -0.5, 1, 0,
   ];
+  // u runs along the ridge, v from eave (0) up to the ridge (1) so corrugations/thatch run downhill.
+  const uv: number[] = [];
+  for (let i = 0; i < v.length; i += 3) uv.push(v[i] + 0.5, v[i + 1]);
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.computeVertexNormals();
   return g;
 }
 
-/** A palm-type leaf lying along +X from the origin; `droop` bends the tip down, `lift` arcs it up first. */
+/**
+ * A leaf card lying along +X from the origin; `droop` bends the tip down, `lift` arcs it up first.
+ * UV u runs base→tip and v across the leaf, matching the alpha-cut leaf textures.
+ */
 export function leaf(length: number, width: number, droop: number, lift: number, color: THREE.ColorRepresentation): THREE.BufferGeometry {
-  const g = new THREE.PlaneGeometry(length, width, 8, 2);
+  const g = new THREE.PlaneGeometry(length, width, 10, 4);
   g.translate(length / 2, 0, 0);
   g.rotateX(-Math.PI / 2);
   const p = g.getAttribute('position');
   for (let i = 0; i < p.count; i++) {
     const t = p.getX(i) / length;
-    const z = p.getZ(i) * (1 - 0.7 * t);
-    p.setXYZ(i, p.getX(i), lift * t - droop * t * t + Math.abs(z) * 0.35, z);
+    const z = p.getZ(i) * (1 - 0.5 * t);
+    // Droop along the length and a V-fold across the midrib.
+    p.setXYZ(i, p.getX(i), lift * t - droop * t * t - Math.abs(z) * 0.3, z);
   }
   g.computeVertexNormals();
   return colorize(g, color);
@@ -40,15 +48,18 @@ export function palmCrown(): THREE.BufferGeometry {
   const n = 11;
   for (let i = 0; i < n; i++) {
     const shade = new THREE.Color(0x3f6b22).lerp(new THREE.Color(0x9c9a3c), rnd() * 0.35);
-    const l = leaf(3.6 + rnd() * 0.8, 0.9, 1.4 + rnd() * 0.8, 0.6, shade);
+    const l = leaf(3.8 + rnd() * 0.8, 1.6, 1.4 + rnd() * 0.8, 0.6, shade);
     l.rotateY((i / n) * Math.PI * 2 + rnd() * 0.25);
     parts.push(l);
   }
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
-    const nut = new THREE.SphereGeometry(0.16, 7, 5);
+    const nut = new THREE.SphereGeometry(0.16, 10, 8);
     nut.translate(Math.cos(a) * 0.22, -0.25, Math.sin(a) * 0.22);
-    parts.push(colorize(nut, 0x6b4a1f));
+    // Sample the opaque midrib of the leaf texture so the alpha cut never removes the nuts.
+    const uv = nut.getAttribute('uv');
+    for (let k = 0; k < uv.count; k++) uv.setXY(k, 0.3, 0.5);
+    parts.push(colorize(nut, 0x8a6a32));
   }
   return merge(parts);
 }
@@ -59,7 +70,7 @@ export function bananaCrown(): THREE.BufferGeometry {
   const n = 7;
   for (let i = 0; i < n; i++) {
     const shade = new THREE.Color(0x5c9a2e).lerp(new THREE.Color(0x8fae3c), rnd() * 0.4);
-    const l = leaf(2.6, 0.95, 1.6, 1.9, shade);
+    const l = leaf(2.6, 1.0, 1.6, 1.9, shade);
     l.rotateY((i / n) * Math.PI * 2 + rnd() * 0.4);
     parts.push(l);
   }

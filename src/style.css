@@ -280,6 +280,12 @@ legend {
   font-size: 12px;
 }
 
+.row.presets button {
+  flex: 1;
+  padding: 5px 2px;
+  font-size: 11px;
+}
+
 .chip {
   font-size: 11px;
   padding: 2px 8px;
@@ -423,6 +429,20 @@ summary {
 
 #cams button {
   white-space: nowrap;
+}
+
+.keys-hint {
+  align-self: center;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 0 6px;
+}
+
+@media (max-width: 900px) {
+  .keys-hint {
+    display: none;
+  }
 }
 
 .xlabel {
@@ -641,6 +661,13 @@ summary {
 
 #inspector[hidden] {
   display: none;
+}
+
+/* When the controls are reopened, slide the card left so both stay usable. */
+@media (min-width: 769px) {
+  #panel.open ~ #inspector {
+    right: 360px;
+  }
 }
 
 #insp-close {

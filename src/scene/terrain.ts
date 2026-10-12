@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { BED_Y, CANAL, WORLD_SIZE, riverZ } from '../config';
 import { lerp, smoothstep } from '../util';
+import { groundSurface } from './textures';
 
 const HEIGHT_RES = 256;
 
@@ -68,7 +69,11 @@ export function createTerrain(): { mesh: THREE.Mesh; heightTexture: THREE.DataTe
   }
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const detail = groundSurface();
+  const mesh = new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({ vertexColors: true, map: detail.map, normalMap: detail.normalMap, roughness: 0.95 }),
+  );
   mesh.receiveShadow = true;
 
   // Half-float heightfield (filterable in WebGL2) so the water shader knows local depth for foam + edges.

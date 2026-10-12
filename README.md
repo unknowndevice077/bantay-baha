@@ -35,10 +35,12 @@ Then open http://localhost:8080.
 - **Terrain:** riverbed, sloped banks, a concrete drainage canal, the main road, dirt lanes, and an arched bridge on two piers.
 - **Barangay:** 23 homes (concrete, nipa on stilts, 2-storey) with warm lit windows at night. Also coconut and banana trees, bamboo fences, a basketball court, the barangay hall (evacuation center), and utility poles with sagging power lines.
 - **Smart pole:** an ultrasonic transducer on an arm over the water with a visible translucent beam cone. It also carries the ESP32 enclosure, a solar panel, an antenna, a status LED and a warning beacon.
-- **Sky:** day/night cycle (5 min), storm sky and fog, GPU rain, and lightning with thunder.
+- **Sky:** day/night cycle (5 min, or set and lock any time of day from the panel), storm sky and fog, GPU rain, and lightning with thunder.
+- **Street lights:** lamps on the utility poles over the main road and on posts along the lanes, the evacuation route, the bridge and the hall. Photocells switch them on at dusk and under heavy storm cloud; each lamp casts a pool of light on the ground.
+- **Look:** physically based materials lit by a sky environment map. Procedural textures (no image files) give plaster walls, corrugated-iron and thatch roofs, bark, concrete and soil detail. Palm and banana leaves are alpha-cut cards, and 16k instanced grass clumps sway in the wind. The water has fine ripples, raindrop rings and sky reflections. **High quality** mode adds ambient occlusion and bloom.
 - **Water:** a custom shader with waves, foam where it meets banks and walls, and a colour shift from clear to muddy brown as it rises. The flood spreads over the banks, road and house floors as the level crosses terrain heights.
 - **Debris:** logs, bottles, coconut fronds, tires, sacks, a monobloc chair and an occasional drifting bangka. They ride the waves, drift with the current, strand in shallows, and snag and pile up at the bridge until the water overtops the deck. More rain means more debris.
-- **Residents:** they mill around their homes. As soon as WARNING is raised they **run** along the road and lanes to the barangay hall (preemptive evacuation), and walk home after a calm period.
+- **Residents:** they mill around their homes. As soon as WARNING is raised they **run** along the road and lanes (north-bank households cross the bridge) to the barangay hall, climb the entrance stairs and go inside (preemptive evacuation). They walk home after a calm period.
 - **Click-to-inspect hardware:** click the box on the sensor pole to open it, then click any part (ESP32, ultrasonic driver, battery pack, wiring, transducer, beam, solar panel, antenna, status LED, beacon, mast, gateway, dashboard) or its label. A card introduces the part with its specs and live readings, and a wire box outlines it.
 - **Live ESP32 telemetry:** the HUD's *ESP32 telemetry* tab shows uptime, Wi-Fi RSSI, battery voltage and charge, solar input and net power, enclosure temperature, free heap, raw echo time, distance, packet count, and a scrolling log of the JSON payloads published over MQTT. The values are simulated from the scene (sun, rain, water); a live ESP32 overrides them.
 
@@ -53,12 +55,26 @@ Then open http://localhost:8080.
 | Auto-Storm ▶/⏸ | Plays a 90-minute typhoon rain band (rainfall rises, peaks and fades) |
 | Speed | 1x–10x simulation speed (1x = 10 simulated seconds per real second) |
 | Reset | Back to a calm creek |
-| Debris / Rain / X-ray / Lola mode / Sound | Toggles |
+| Debris / Rain / X-ray / Lola mode / Sound / High quality | Toggles (High quality = ambient occlusion + bloom, off by default on phones) |
 | Language | English, Tagalog, Cebuano, Waray |
 | Live ESP32 input | WebSocket or MQTT-over-WebSocket feed (see below) |
 | Ollama | Use a local LLM to write advisories |
 
-**Camera:** drag to orbit, right-drag to pan, scroll to zoom. The preset buttons are Overview, Sensor close-up, Street level, Bridge and 🎬 Cinematic fly-through. Any drag cancels a preset or fly-through.
+**Camera (first person):**
+
+| Input | Action |
+| --- | --- |
+| Left-drag | Look around (turns your view, not the map) |
+| W / A / S / D | Move forward / left / back / right |
+| Q / E | Down / up |
+| Shift | Move 3× faster |
+| Wheel | Move forward / back along the view |
+| Right-drag | Pan |
+| Touch | One finger looks, pinch moves |
+
+Movement speeds up with altitude, and the camera is kept above the ground and over the map. The preset buttons are Overview, Sensor close-up, Street level, Bridge and 🎬 Cinematic fly-through; any manual input cancels them.
+
+**Day / night:** drag *Time of day*, use the Dawn / Noon / Dusk / Night buttons, and tick *Lock time* to stop the cycle.
 
 **Easter eggs:**
 - *Lola mode* delivers every advisory as a scolding grandmother, with a siren burst and a shake. Turn on Sound to hear it.
@@ -109,7 +125,8 @@ src/
   sim.ts             sim clock, Auto-Storm timeline, rainfall→level model
   konami.ts          ↑↑↓↓←→←→BA listener
   util.ts            math, PRNG, geometry/texture helpers
-  scene/             terrain, layout, village, infrastructure, geo, sky, rain, residents, cameraRig
+  scene/             terrain, layout, village, infrastructure, geo, textures, grass, streetlights,
+                     sky, rain, residents, cameraRig, postfx
   water/             water surface shader + CPU wave twin
   debris/            floating debris physics, rubber duck armada
   sensor/            smart pole, monitor (ESP32 logic), esp32 telemetry model, MQTT packet flow,
@@ -121,6 +138,9 @@ src/
 Performance notes:
 - Houses, windows, fences, trees and power poles are `InstancedMesh`.
 - Rain is fully GPU-instanced (up to 14k streaks, zero per-frame CPU).
+- Grass is one instanced mesh with wind sway in the vertex shader.
+- Street lights use a fixed pool of 8 real point lights that follow the lamps nearest the camera; the others are emissive heads and light pools.
+- High quality mode (GTAO + bloom) costs extra GPU time; turn it off on weaker laptops.
 - Terrain depth for the water comes from a half-float height texture.
 - Pixel ratio and shadow-map size drop on small screens.
 

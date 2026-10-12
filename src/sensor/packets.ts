@@ -35,17 +35,17 @@ export class PacketFlow {
   private readonly screen: THREE.CanvasTexture;
 
   constructor(from: THREE.Vector3, private readonly history: Reading[]) {
-    const lambert = (color: number) => new THREE.MeshLambertMaterial({ color });
+    const mat = (color: number) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.2 });
 
     // Gateway on the hall roof ridge.
     const gateway = new THREE.Vector3(HALL.x + 4, HALL_PLAN.floorY + HALL_PLAN.h + HALL_PLAN.roofH + 0.2, HALL.z);
-    const gw = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.25), lambert(0xf3f4f6));
+    const gw = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.25), mat(0xf3f4f6));
     gw.position.copy(gateway);
     const led = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 6), this.gatewayLed);
     led.position.set(0.15, 0.08, -0.13);
     gw.add(led);
     for (const x of [-0.18, 0.18]) {
-      const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.9, 6), lambert(0x222222));
+      const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.9, 6), mat(0x222222));
       ant.position.set(x, 0.6, 0);
       gw.add(ant);
     }
@@ -60,11 +60,11 @@ export class PacketFlow {
     dash.position.set(DASHBOARD.x, gy, DASHBOARD.z);
     dash.rotation.y = Math.PI;
     for (const x of [-1.9, 1.9]) {
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 3.4, 8), lambert(0x4b5563));
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 3.4, 8), mat(0x4b5563));
       post.position.set(x, 1.7, -0.1);
       dash.add(post);
     }
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(4.6, 2.8, 0.2), lambert(0x111827));
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(4.6, 2.8, 0.2), mat(0x111827));
     frame.position.set(0, 3.4, 0);
     frame.castShadow = true;
     this.screen = canvasTexture(512, 292, () => undefined);
@@ -97,6 +97,7 @@ export class PacketFlow {
         new THREE.SpriteMaterial({ map: glow, color: 0x7dd3fc, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }),
       );
       sprite.visible = false;
+      sprite.userData.noAO = true;
       this.packets.push({ sprite, t: -1, reading: null });
       this.group.add(sprite);
     }

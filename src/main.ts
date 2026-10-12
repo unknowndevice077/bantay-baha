@@ -12,11 +12,14 @@ import { Panel } from './hud/panel';
 import { TelemetryView } from './hud/telemetry';
 import { listenKonami } from './konami';
 import { CameraRig } from './scene/cameraRig';
+import { Grass } from './scene/grass';
 import { BRIDGE, createInfrastructure } from './scene/infrastructure';
 import { HALL_PLAN } from './scene/layout';
+import { PostFX } from './scene/postfx';
 import { Rain } from './scene/rain';
 import { Residents } from './scene/residents';
 import { Sky } from './scene/sky';
+import { StreetLights } from './scene/streetlights';
 import { baseHeight, createTerrain } from './scene/terrain';
 import { createVillage } from './scene/village';
 import { Esp32Node } from './sensor/esp32';
@@ -47,11 +50,14 @@ labelRenderer.setSize(window.innerWidth, window.innerHeight);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1500);
+const postfx = new PostFX(renderer, scene, camera);
 
 // --- World -------------------------------------------------------------------
 const terrain = createTerrain();
 const village = createVillage();
-const sky = new Sky(scene, mobile ? 1024 : 2048);
+const sky = new Sky(scene, renderer, mobile ? 1024 : 2048);
+const grass = new Grass();
+const streetLights = new StreetLights();
 const water = new Water(terrain.heightTexture);
 const rain = new Rain();
 const pole = new SmartPole();
@@ -61,7 +67,7 @@ const packets = new PacketFlow(pole.antennaTip, monitor.history);
 const debris = new DebrisField();
 const ducks = new DuckArmada();
 const residents = new Residents();
-scene.add(terrain.mesh, createInfrastructure(), village.group, water.mesh, rain.mesh, pole.group, packets.group, debris.group, ducks.group, residents.group);
+scene.add(terrain.mesh, createInfrastructure(), village.group, grass.mesh, streetLights.group, water.mesh, rain.mesh, pole.group, packets.group, debris.group, ducks.group, residents.group);
 
 // --- Camera ------------------------------------------------------------------
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
@@ -103,6 +109,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   labelRenderer.setSize(window.innerWidth, window.innerHeight);
+  postfx.setSize(window.innerWidth, window.innerHeight);
 });
 
 // --- Frame loop --------------------------------------------------------------
@@ -120,7 +127,10 @@ renderer.setAnimationLoop(() => {
   sky.update(dt, state.rainfall, camera);
   village.update(sky.night);
   const mud = clamp(smoothstep(1.2, 3.2, state.level) * 0.8 + rainNorm * 0.4, 0, 1);
-  water.update(dt, levelY, mud, 0.8 + rainNorm * 1.6, sky);
+  water.update(dt, levelY, mud, 0.8 + rainNorm * 1.6, state.toggles.rain ? rainNorm : 0, sky);
+  grass.update(dt, state.rainfall);
+  // Photocells switch the lamps on at dusk and under heavy storm cloud.
+  streetLights.update(dt, Math.max(sky.night, sky.storm * 0.75), camera);
   rain.update(dt, state.rainfall, state.toggles.rain, camera, sky.light);
   debris.update(dt, state.level, levelY, state.rainfall, state.toggles.debris, water.time, water.chop);
   ducks.update(dt, levelY, water.time, water.chop);
@@ -143,6 +153,7 @@ renderer.setAnimationLoop(() => {
   panel.update();
   rig.update(dt);
 
-  renderer.render(scene, camera);
+  if (state.toggles.hq) postfx.render(sky.night);
+  else renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 });

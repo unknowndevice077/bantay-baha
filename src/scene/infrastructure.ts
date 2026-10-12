@@ -4,6 +4,7 @@ import { BED_Y, BRIDGE_X, CANAL, EVAC_LANE_X, ROAD_Z, riverZ } from '../config';
 import { canvasTexture, clamp, colorize, merge } from '../util';
 import { ASSEMBLY } from './layout';
 import { baseHeight, canalFloor } from './terrain';
+import { asphaltNormal, concreteSurface, groundSurface } from './textures';
 
 const RZ = riverZ(BRIDGE_X);
 
@@ -112,10 +113,16 @@ function bridge(): THREE.Mesh {
     pier.translate(BRIDGE.x, BED_Y - 0.2 + h / 2, pz);
     parts.push(colorize(pier, 0x85827a));
   }
-  const mesh = new THREE.Mesh(merge(parts), new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const mesh = new THREE.Mesh(merge(parts), concreteMaterial());
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   return mesh;
+}
+
+/** Vertex-coloured concrete with procedural grain. */
+function concreteMaterial(): THREE.MeshStandardMaterial {
+  const c = concreteSurface();
+  return new THREE.MeshStandardMaterial({ vertexColors: true, map: c.map, normalMap: c.normalMap, roughness: 0.9 });
 }
 
 function canalWalls(): THREE.Mesh {
@@ -135,7 +142,7 @@ function canalWalls(): THREE.Mesh {
     slab.translate(CANAL.x, floor, zm);
     parts.push(colorize(slab, 0x7f7c75));
   }
-  const mesh = new THREE.Mesh(merge(parts), new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const mesh = new THREE.Mesh(merge(parts), concreteMaterial());
   mesh.receiveShadow = true;
   return mesh;
 }
@@ -144,10 +151,11 @@ function canalWalls(): THREE.Mesh {
 function powerLines(): THREE.Group {
   const xs = [-84, -68, -52, -36, -16, 6, 26, 44, 62, 80];
   const z = ROAD_Z + 3.4;
-  const poleGeo = new THREE.CylinderGeometry(0.11, 0.16, 8, 7);
+  const poleGeo = new THREE.CylinderGeometry(0.11, 0.16, 8, 12);
   poleGeo.translate(0, 4, 0);
-  const poles = new THREE.InstancedMesh(poleGeo, new THREE.MeshLambertMaterial({ color: 0x8a8378 }), xs.length);
-  const arms = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, 0.12, 1.9), new THREE.MeshLambertMaterial({ color: 0x5b4632 }), xs.length);
+  const c = concreteSurface();
+  const poles = new THREE.InstancedMesh(poleGeo, new THREE.MeshStandardMaterial({ color: 0x8a8378, map: c.map, normalMap: c.normalMap, roughness: 0.9 }), xs.length);
+  const arms = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, 0.12, 1.9), new THREE.MeshStandardMaterial({ color: 0x5b4632, roughness: 0.85 }), xs.length);
   const m = new THREE.Matrix4();
   const tops = xs.map((x, i) => {
     const y = baseHeight(x, z);
@@ -181,8 +189,9 @@ function powerLines(): THREE.Group {
 
 export function createInfrastructure(): THREE.Group {
   const g = new THREE.Group();
-  const asphalt = new THREE.MeshLambertMaterial({ map: roadTexture() });
-  const dirt = new THREE.MeshLambertMaterial({ color: 0x8b7356 });
+  const asphalt = new THREE.MeshStandardMaterial({ map: roadTexture(), normalMap: asphaltNormal(), roughness: 0.82 });
+  const ground = groundSurface();
+  const dirt = new THREE.MeshStandardMaterial({ color: 0x9a8262, map: ground.map, normalMap: ground.normalMap, roughness: 1 });
   const deckRoad: HeightFn = (_x, z) => deckTop(z);
 
   g.add(
@@ -191,7 +200,7 @@ export function createInfrastructure(): THREE.Group {
     strip(line(BRIDGE.x, RZ - BRIDGE.half, BRIDGE.x, -100, 2), 6, baseHeight, 0.08, asphalt),
     strip(line(-98, 34, 98, 34, 2), 2.6, baseHeight, 0.05, dirt),
     strip(line(-98, 50, 98, 50, 2), 2.6, baseHeight, 0.05, dirt),
-    strip(line(EVAC_LANE_X, ROAD_Z + 3, EVAC_LANE_X, ASSEMBLY.z + 1, 2), 2.6, baseHeight, 0.05, dirt),
+    strip(line(EVAC_LANE_X, ROAD_Z + 3, EVAC_LANE_X, ASSEMBLY.z + 0.8, 2), 2.6, baseHeight, 0.05, dirt),
     bridge(),
     canalWalls(),
     powerLines(),
