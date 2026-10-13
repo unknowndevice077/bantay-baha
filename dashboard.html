@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1b1c1e" />
+    <meta name="description" content="Bantay Baha barangay flood operations dashboard: live water level, alerts, siren and evacuation tracking." />
+    <title>Bantay Baha Operations</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="title">
+        <h1>Bantay Baha</h1>
+        <span>Barangay flood operations</span>
+        <nav class="nav" aria-label="Other views">
+          <a href="./" target="bantay-baha-sim">3D simulator</a>
+          <a href="play.html" target="_blank">Story game</a>
+        </nav>
+      </div>
+      <div class="source">
+        <select id="d-source" aria-label="Data source">
+          <option value="sim">Simulator feed (this browser)</option>
+          <option value="device">Live device (WebSocket / MQTT)</option>
+        </select>
+        <span id="d-conn" class="conn">Waiting</span>
+        <span id="d-clock" class="clock"></span>
+      </div>
+    </header>
+
+    <section id="d-device" class="card device-settings" hidden>
+      <h2>Live device connection</h2>
+      <div class="form-row">
+        <label>Protocol
+          <select id="d-proto">
+            <option value="mqtt">MQTT over WebSocket</option>
+            <option value="ws">WebSocket (JSON)</option>
+          </select>
+        </label>
+        <label>Broker / server URL <input id="d-url" type="text" value="ws://localhost:9001" spellcheck="false" /></label>
+        <label>Topic <input id="d-topic" type="text" value="bantaybaha/sensor/01" spellcheck="false" /></label>
+        <button id="d-connect" class="primary">Connect</button>
+      </div>
+    </section>
+
+    <div id="d-alarm" class="alarm" hidden>
+      <span><b id="d-alarm-text">Status escalated</b> · acknowledge to silence the alarm</span>
+      <button id="d-ack">Acknowledge</button>
+    </div>
+
+    <main class="grid">
+      <section id="d-empty" class="card empty" hidden>
+        <h2>Waiting for data</h2>
+        <p id="d-empty-text"></p>
+        <a id="d-empty-go" class="button primary" href="./" target="bantay-baha-sim">Open the 3D simulator</a>
+      </section>
+      <section class="card hero" id="d-hero">
+        <div class="hero-strip">
+          <span id="d-status" class="hero-status">No data</span>
+          <span id="d-updated">No data yet</span>
+        </div>
+        <div class="hero-body">
+          <div class="hero-level">
+            <div class="big"><span id="d-level">--</span><small>cm</small></div>
+            <div class="caption">Water above gauge zero</div>
+          </div>
+          <dl class="hero-facts">
+            <dt>Trend</dt>
+            <dd id="d-trend">--</dd>
+            <dt>Outlook</dt>
+            <dd id="d-eta">--</dd>
+            <dt id="d-fc-label" hidden>Forecast</dt>
+            <dd id="d-forecast" hidden></dd>
+            <dt>Sensor</dt>
+            <dd id="d-extra">--</dd>
+          </dl>
+        </div>
+        <div class="scale" id="d-scale" aria-hidden="true"></div>
+      </section>
+
+      <section class="card actions">
+        <h2>Captain's controls</h2>
+        <button id="d-siren" class="siren">Sound siren</button>
+        <p class="note" id="d-siren-note"></p>
+        <div class="field">
+          <div class="field-head">
+            <label for="d-msg">Advisory</label>
+            <select id="d-lang" aria-label="Advisory language">
+              <option value="en">English</option>
+              <option value="tl">Tagalog</option>
+              <option value="ceb">Cebuano</option>
+              <option value="war">Waray</option>
+            </select>
+          </div>
+          <textarea id="d-msg" rows="5"></textarea>
+          <button id="d-auto" class="text-btn">Reset to the automatic text</button>
+        </div>
+        <div class="row">
+          <button id="d-broadcast" class="primary">Broadcast to PA and screens</button>
+          <button id="d-copy">Copy for SMS</button>
+        </div>
+        <button id="d-notify" class="text-btn">Turn on desktop notifications</button>
+      </section>
+
+      <section class="card chart-card">
+        <div class="card-head">
+          <h2>Water level</h2>
+          <div class="ranges" id="d-ranges">
+            <button data-range="600000" class="active">10 min</button>
+            <button data-range="3600000">1 h</button>
+            <button data-range="21600000">6 h</button>
+            <button data-range="86400000">24 h</button>
+          </div>
+        </div>
+        <canvas id="d-chart"></canvas>
+      </section>
+
+      <section class="card evac">
+        <h2>Evacuation center</h2>
+        <p class="note" id="d-evac-auto"></p>
+        <div class="counter">
+          <span>Families</span>
+          <button data-count="families" data-delta="-1" aria-label="One family fewer">−</button>
+          <b id="d-families">0</b>
+          <button data-count="families" data-delta="1" aria-label="One family more">+</button>
+        </div>
+        <div class="counter">
+          <span>Persons</span>
+          <button data-count="persons" data-delta="-1" aria-label="One person fewer">−</button>
+          <b id="d-persons">0</b>
+          <button data-count="persons" data-delta="1" aria-label="One person more">+</button>
+        </div>
+        <label class="inline">Capacity <input id="d-capacity" type="number" min="1" value="150" /> persons</label>
+        <div class="bar"><span id="d-capbar"></span></div>
+        <p class="note" id="d-captext"></p>
+      </section>
+
+      <section class="card log">
+        <div class="card-head">
+          <h2>Event log</h2>
+          <div class="row">
+            <button id="d-export" class="text-btn">Export readings (CSV)</button>
+            <button id="d-clear" class="text-btn">Clear</button>
+          </div>
+        </div>
+        <ol id="d-log"></ol>
+      </section>
+
+      <section class="card health">
+        <h2>Sensor node <span id="d-node"></span></h2>
+        <div class="health-grid" id="d-health"></div>
+        <ul class="warnings" id="d-warnings"></ul>
+      </section>
+
+      <section class="card hotlines">
+        <h2>Hotlines</h2>
+        <ul>
+          <li><b>911</b> National emergency hotline</li>
+          <li><b>143</b> Philippine Red Cross</li>
+        </ul>
+        <p class="note">Add the city or municipal DRRMO and the barangay tanod numbers here before deployment.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/dashboard/main.ts"></script>
+  </body>
+</html>

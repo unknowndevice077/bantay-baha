@@ -2,7 +2,7 @@
 import type { AlertMessage } from '../alerts/alertService';
 import { LANG_NAMES } from '../alerts/templates';
 import { type Reading, type Status, bus, state } from '../state';
-import { drawChart } from './chart';
+import { type ChartForecast, drawChart } from './chart';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 
@@ -25,6 +25,10 @@ export class Hud {
   private readonly banner = $('evac-banner');
   private chartDirty = true;
   private chartTimer = 0;
+  /** Bantay Baha+: supplies a longer history and the forecast path when forecasting is on. */
+  forecast: (() => { history: { t: number; level: number }[]; path: ChartForecast } | null) | null = null;
+  /** A captain's broadcast holds the alert box until this time (ms). */
+  private broadcastUntil = 0;
 
   constructor(private readonly history: Reading[]) {
     bus.on('reading', (r) => this.onReading(r));
@@ -41,19 +45,30 @@ export class Hud {
     this.banner.className = r.status === 'WARNING' ? 'preemptive' : '';
     this.banner.textContent =
       r.status === 'WARNING'
-        ? '⚠ PREEMPTIVE EVACUATION — residents head to the Barangay Hall'
-        : '⚠ EVACUATE — proceed to the Barangay Hall evacuation center';
+        ? 'Preemptive evacuation · residents to the barangay hall'
+        : 'Evacuate · proceed to the barangay hall evacuation center';
     this.source.textContent = `Source: ${SOURCE_TEXT[state.source]} · sensor 7.00 m above gauge datum`;
     this.chartDirty = true;
   }
 
   showAlert(m: AlertMessage): void {
-    this.alert.className = `alert s-${m.status}${m.lola ? ' lola' : ''}`;
-    $('alert-icon').textContent = m.lola ? '👵' : m.status === 'EVACUATE' ? '🚨' : '📢';
+    if (performance.now() < this.broadcastUntil) return;
+    this.alert.className = `alert surface s-${m.status}${m.lola ? ' lola' : ''}`;
     $('alert-title').textContent = m.lola ? `Lola says (${LANG_NAMES[m.lang]})` : `${ALERT_TITLE[m.status]} · ${LANG_NAMES[m.lang]}`;
-    const src = { template: 'template', ollama: 'via Ollama', 'ollama-pending': 'asking Ollama…', 'template-fallback': 'Ollama unreachable → template' };
+    const src = { template: 'template', ollama: 'via Ollama', 'ollama-pending': 'asking Ollama', 'template-fallback': 'Ollama unreachable, template used' };
     $('alert-src').textContent = src[m.source];
     $('alert-text').textContent = m.text;
+  }
+
+  /** A message from the barangay captain's dashboard takes over the alert box for 30 s. */
+  broadcast(text: string): void {
+    this.broadcastUntil = performance.now() + 30000;
+    this.alert.className = 'alert surface s-WARNING broadcast';
+    $('alert-title').textContent = 'Message from the barangay captain';
+    $('alert-src').textContent = 'via dashboard';
+    $('alert-text').textContent = text;
+    this.scold();
+    toast('New broadcast from the barangay dashboard');
   }
 
   /** Lola mode: give the alert box a scolding shake. */
@@ -66,7 +81,8 @@ export class Hud {
   update(dt: number): void {
     this.chartTimer -= dt;
     if (this.chartDirty && this.chartTimer <= 0) {
-      drawChart(this.chart, this.history, state.reading?.t ?? state.simTime);
+      const f = this.forecast?.();
+      drawChart(this.chart, f?.history ?? this.history, state.reading?.t ?? state.simTime, f?.path);
       this.chartDirty = false;
       this.chartTimer = 0.2;
     }

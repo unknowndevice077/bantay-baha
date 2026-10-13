@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111214" />
+    <meta name="description" content="Bantay Baha: one flood night as barangay captain. Read the sensor, warn the barangay, get everyone to the evacuation center." />
+    <title>Bantay Baha: One Night by the Creek</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="game">
+    <div id="app">
+      <div id="labels"></div>
+
+      <section id="objectives" class="panel" aria-live="polite">
+        <small id="obj-chapter"></small>
+        <h2 id="obj-title"></h2>
+        <ol id="obj-list"></ol>
+      </section>
+
+      <div id="corner">
+        <span id="clock-label">Phone</span>
+        <button id="b-phone" class="btn" title="Phone (P)"><span class="phone-glyph" aria-hidden="true"></span>Phone <kbd>P</kbd></button>
+        <button id="b-menu" class="btn" title="Menu (Esc)">Menu <kbd>Esc</kbd></button>
+      </div>
+
+      <aside id="banner" class="banner" hidden>
+        <header><span>Bantay Baha</span><span>now</span></header>
+        <b id="bn-title"></b>
+        <p id="bn-body"></p>
+      </aside>
+
+      <div id="subtitle" hidden><b id="sub-who"></b><span id="sub-text"></span></div>
+      <svg id="prompt-line" aria-hidden="true"><polyline fill="none" /><circle r="4" /></svg>
+      <div id="prompt" hidden><kbd class="key">E</kbd><div><small></small><b></b></div></div>
+      <div id="crosshair"></div>
+      <div id="keys">Move the mouse to look · WASD walk · Shift run · Space jump · <kbd>E</kbd> use · <kbd>P</kbd> phone · Enter skips dialogue</div>
+
+      <div id="phone" class="device" hidden>
+        <div class="handset">
+          <div class="handset-bar"><span id="ph-time">18:20</span><span class="handset-icons" aria-hidden="true"><i></i><i></i><i></i><b></b></span></div>
+          <div id="ph-screen" class="handset-screen">
+            <div id="ph-lock" class="lock" hidden>
+              <div id="ph-lock-time" class="lock-time">18:20</div>
+              <div class="lock-date">Tap a notification to open</div>
+              <ol id="ph-notes"></ol>
+            </div>
+          </div>
+          <button id="ph-close" class="handset-home">Put the phone away</button>
+        </div>
+      </div>
+
+      <div id="laptop" class="device" hidden>
+        <div class="laptop">
+          <div class="laptop-lid"><div id="lt-screen" class="laptop-screen"></div></div>
+          <div class="laptop-base"></div>
+          <button id="lt-close" class="btn">Step away from the laptop <kbd>Esc</kbd></button>
+        </div>
+      </div>
+
+      <div id="chapter"><small id="ch-kicker"></small><h1 id="ch-title"></h1></div>
+      <div id="fade"></div>
+
+      <section id="title">
+        <div class="title-card">
+          <p class="kicker">Bantay Baha</p>
+          <h1>One night by the creek</h1>
+          <p class="lede">
+            A typhoon is crossing the province. You are the barangay captain of San Roque, and the only early warning you have is a
+            water-level sensor on a pole above the creek, and the dashboard on your phone.
+          </p>
+          <p class="lede">Warn the barangay as the water rises, bring out the people who won't leave on their own, and be inside the evacuation center when the creek crests.</p>
+          <div class="title-form">
+            <label>Residents speak
+              <select id="t-lang">
+                <option value="en">English</option>
+                <option value="tl" selected>Tagalog</option>
+                <option value="ceb">Cebuano</option>
+                <option value="war">Waray</option>
+              </select>
+            </label>
+            <label class="check"><input id="t-sound" type="checkbox" checked /> Sound and voices</label>
+          </div>
+          <div class="title-actions">
+            <button id="t-start" class="btn primary" disabled>Loading the barangay</button>
+            <a class="btn" href="./">Open the simulator instead</a>
+          </div>
+          <p class="fine">About 12 minutes. Needs a keyboard: WASD to walk, E to use things, P for your phone.</p>
+        </div>
+      </section>
+
+      <section id="pause" hidden aria-label="Paused">
+        <div class="pause-card">
+          <small>Paused</small>
+          <h2>One night by the creek</h2>
+          <div class="pause-actions">
+            <button id="pm-resume" class="btn primary">Resume</button>
+            <a class="btn" href="dashboard.html?channel=bantay-baha-story" target="bantay-baha-story-dashboard">Open the dashboard (follows this game)</a>
+            <button id="pm-restart" class="btn">Restart the night</button>
+            <a class="btn" href="./">Back to the simulator</a>
+          </div>
+          <p class="fine">The flood, the clock and the residents wait while this is open. Leaving or restarting ends this night.</p>
+        </div>
+      </section>
+
+      <section id="report" hidden>
+        <div class="report-card">
+          <small>After-action report · Barangay San Roque</small>
+          <h1 id="rp-verdict"></h1>
+          <p id="rp-summary"></p>
+          <dl id="rp-rows"></dl>
+          <div class="title-actions">
+            <button id="rp-again" class="btn primary">Play again</button>
+            <a class="btn" href="dashboard.html" target="bantay-baha-dashboard">Open the real dashboard</a>
+            <a class="btn" href="./">Open the simulator</a>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/src/game/main.ts"></script>
+  </body>
+</html>

@@ -4,7 +4,7 @@
  * Presets ease the camera to a viewpoint and the cinematic preset flies a path;
  * any manual input cancels the automation.
  *
- * Keys: W/S forward/back, A/D strafe, Q/E down/up, Shift = fast.
+ * Keys: W/S forward/back, A/D strafe, Q/E or Space down/up, Shift = fast.
  */
 import * as THREE from 'three';
 import { clamp } from '../util';
@@ -17,7 +17,7 @@ export interface View {
 }
 
 const FLY_SECONDS = 32;
-const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'q', 'e']);
+const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'q', 'e', ' ']);
 const LOOK_SPEED = 0.0035; // radians per pixel
 const MAX_PITCH = 1.48;
 /** Free-camera limits (m): a little beyond the 200 m map, up to 120 m altitude. */
@@ -101,7 +101,7 @@ export class CameraRig {
     dom.addEventListener(
       'wheel',
       (e) => {
-        e.preventDefault();
+          e.preventDefault();
         this.stopAutomation();
         this.camera.getWorldDirection(this.move).multiplyScalar(-e.deltaY * 0.02 * this.speedScale());
         this.translate(this.move);
@@ -136,6 +136,10 @@ export class CameraRig {
       this.fast = e.shiftKey;
       const k = e.key.toLowerCase();
       if (typing(e) || e.ctrlKey || e.metaKey || e.altKey || !MOVE_KEYS.has(k)) return;
+      if (k === ' ') {
+        e.preventDefault(); // don't scroll or re-click the last focused button
+        (document.activeElement as HTMLElement | null)?.blur();
+      }
       this.keys.add(k);
       this.stopAutomation();
     });
@@ -173,6 +177,7 @@ export class CameraRig {
     p.y = clamp(p.y, groundHeight(p.x, p.z) + 0.6, BOUNDS.top);
   }
 
+  /** Adopt wherever the camera currently is pointing. */
   private syncAngles(): void {
     this.euler.setFromQuaternion(this.camera.quaternion, 'YXZ');
     this.yaw = this.euler.y;
@@ -206,7 +211,7 @@ export class CameraRig {
       .copy(this.fwd)
       .multiplyScalar(axis('w', 's'))
       .addScaledVector(this.right, axis('d', 'a'))
-      .addScaledVector(this.camera.up, axis('e', 'q'));
+      .addScaledVector(this.camera.up, (k.has('e') || k.has(' ') ? 1 : 0) - (k.has('q') ? 1 : 0));
     if (this.move.lengthSq() === 0) return;
     this.move.normalize().multiplyScalar(6 * this.speedScale() * (this.fast ? 3 : 1) * dt);
     this.translate(this.move);

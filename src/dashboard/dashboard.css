@@ -1,0 +1,740 @@
+/* Operations dashboard: light grey page, navy header, white cards. Reads well on a phone in daylight and prints cleanly. */
+
+:root {
+  --paper: #eef2f5;
+  --card: #ffffff;
+  --rule: #d3dae1;
+  --text: #14202d;
+  --muted: #566576;
+  --dark: #0f2a4a;
+  color: var(--text);
+  font-size: 15px;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+h1,
+h2 {
+  margin: 0;
+}
+
+h2 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.note {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.note:empty {
+  display: none;
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid #b5c0cb;
+  border-radius: 2px;
+  padding: 8px 12px;
+}
+
+button {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button:hover:not(:disabled) {
+  background: #e8eef3;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: #fff;
+}
+
+button.primary:hover:not(:disabled) {
+  background: #071627;
+}
+
+.text-btn {
+  padding: 3px 9px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.text-btn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ---- Header ---------------------------------------------------------------- */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 20px;
+  background: var(--dark);
+  color: #e9eef3;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.title {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.title h1 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.title span {
+  color: #8a97a5;
+  font-size: 13px;
+}
+
+.source {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.source select {
+  background: #24303c;
+  color: #e9eef3;
+  border-color: #3a5573;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.conn {
+  font-size: 13px;
+}
+
+.conn::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  background: #8a97a5;
+}
+
+.conn.ok::before {
+  background: var(--NORMAL);
+}
+
+.conn.warn::before {
+  background: var(--WARNING);
+}
+
+.clock {
+  font: 13px var(--mono);
+  color: #b7c2cc;
+}
+
+/* ---- Layout ---------------------------------------------------------------- */
+.grid {
+  display: grid;
+  gap: 16px;
+  padding: 16px 20px 28px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 14px 16px 16px;
+  min-width: 0;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 12px;
+}
+
+.card-head h2 {
+  border: 0;
+  margin: 0;
+}
+
+.hero,
+.chart-card,
+.log {
+  grid-column: span 2;
+}
+
+.device-settings {
+  margin: 16px 20px 0;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.form-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  flex: 1 1 180px;
+}
+
+/* ---- Alarm ---------------------------------------------------------------- */
+.alarm {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--EVACUATE);
+  color: #fff;
+}
+
+.alarm[hidden] {
+  display: none;
+}
+
+.alarm button {
+  background: #fff;
+  border-color: #fff;
+  color: var(--EVACUATE);
+}
+
+/* ---- Status ---------------------------------------------------------------- */
+.hero {
+  --status: #8a97a5;
+  padding: 0;
+  overflow: hidden;
+}
+
+.hero-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--status);
+  color: var(--dark);
+  font-size: 13px;
+}
+
+.hero-status {
+  font: 600 22px/1.1 var(--font);
+  letter-spacing: 0.04em;
+}
+
+.hero.s-EVACUATE .hero-strip {
+  color: #fff;
+}
+
+.hero.stale .hero-strip {
+  background: #b7c2cc;
+}
+
+.hero-body {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding: 14px 16px 6px;
+}
+
+.big {
+  font: 500 76px/1 var(--mono);
+  letter-spacing: -0.02em;
+}
+
+.big small {
+  font: 400 20px var(--font);
+  color: var(--muted);
+  margin-left: 6px;
+  letter-spacing: 0;
+}
+
+.caption {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.hero-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  margin: 4px 0 0;
+  align-content: start;
+  flex: 1 1 260px;
+}
+
+.hero-facts dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 3px;
+}
+
+.hero-facts dd {
+  margin: 0;
+}
+
+#d-trend {
+  font-weight: 600;
+}
+
+.scale {
+  padding: 8px 16px 28px;
+}
+
+.scale-track {
+  position: relative;
+  height: 8px;
+  background: #e3e8ed;
+}
+
+.scale-track span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.scale-track i {
+  position: absolute;
+  top: -6px;
+  width: 3px;
+  height: 20px;
+  margin-left: -1px;
+  background: var(--dark);
+}
+
+.scale-ticks {
+  position: relative;
+}
+
+.scale-ticks small {
+  position: absolute;
+  top: 4px;
+  font: 11px var(--mono);
+  color: var(--muted);
+  white-space: nowrap;
+  border-left: 1px solid var(--rule);
+  padding-left: 4px;
+}
+
+/* ---- Captain's controls ---------------------------------------------------- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actions h2 {
+  margin-bottom: 0;
+}
+
+.siren {
+  font-size: 17px;
+  font-weight: 600;
+  padding: 14px;
+  background: var(--card);
+  border: 2px solid var(--EVACUATE);
+  color: var(--EVACUATE);
+}
+
+.siren:hover:not(:disabled) {
+  background: #fdeceb;
+}
+
+.siren.on,
+.siren.on:hover:not(:disabled) {
+  background: var(--EVACUATE);
+  color: #fff;
+}
+
+.actions .note {
+  margin-top: -6px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.field-head label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field-head select {
+  padding: 3px 6px;
+  font-size: 13px;
+}
+
+.field .text-btn {
+  align-self: flex-start;
+}
+
+.actions .row button {
+  flex: 1 1 auto;
+}
+
+.actions > .text-btn {
+  align-self: flex-start;
+}
+
+/* ---- Chart ---------------------------------------------------------------- */
+#d-chart {
+  width: 100%;
+  height: 300px;
+  display: block;
+}
+
+.ranges {
+  display: flex;
+}
+
+.ranges button {
+  padding: 3px 9px;
+  font-size: 12px;
+  border-radius: 0;
+  margin-left: -1px;
+}
+
+.ranges button.active {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: #fff;
+}
+
+/* ---- Evacuation ---------------------------------------------------------------- */
+.evac .note:first-of-type {
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.counter {
+  display: grid;
+  grid-template-columns: 1fr 40px 64px 40px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.counter b {
+  text-align: center;
+  font: 500 22px var(--mono);
+}
+
+.counter button {
+  font-size: 18px;
+  padding: 3px;
+}
+
+label.inline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+label.inline input {
+  width: 84px;
+  padding: 4px 8px;
+}
+
+.bar {
+  height: 8px;
+  background: #e3e8ed;
+  margin: 12px 0 0;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+}
+
+/* ---- Node health ---------------------------------------------------------------- */
+#d-node {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  padding: 7px 10px;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tile span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.tile b {
+  font: 500 14px var(--mono);
+}
+
+.tile.warn {
+  background: #fff1e5;
+}
+
+.tile.warn b {
+  color: #b35400;
+}
+
+.warnings {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.warnings li {
+  padding: 3px 0 3px 12px;
+  position: relative;
+}
+
+.warnings li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+}
+
+.warnings .bad::before {
+  background: var(--WARNING);
+}
+
+.warnings .good::before {
+  background: var(--NORMAL);
+}
+
+/* ---- Log + hotlines ---------------------------------------------------------------- */
+#d-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#d-log li {
+  display: flex;
+  gap: 14px;
+  padding: 6px 0 6px 10px;
+  border-left: 3px solid var(--rule);
+  border-bottom: 1px solid #e8edf1;
+  font-size: 13px;
+}
+
+#d-log time {
+  color: var(--muted);
+  white-space: nowrap;
+  font: 12px/1.6 var(--mono);
+}
+
+.hotlines ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+}
+
+.hotlines li {
+  padding: 6px 0;
+  border-bottom: 1px solid #e8edf1;
+}
+
+.hotlines b {
+  display: inline-block;
+  min-width: 52px;
+  font: 600 17px var(--mono);
+}
+
+/* ---- Responsive ---------------------------------------------------------------- */
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    font-size: 14px;
+  }
+  .top {
+    padding: 10px 14px;
+  }
+  .title span {
+    display: none;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 12px;
+  }
+  .hero,
+  .chart-card,
+  .log {
+    grid-column: auto;
+  }
+  .big {
+    font-size: 60px;
+  }
+  #d-chart {
+    height: 200px;
+  }
+}
+
+/* ---- Embedded in the story game (captain's phone, hall laptop) ------------------ */
+.embed .source select,
+.embed #d-notify,
+.embed .device-settings {
+  display: none;
+}
+
+.embed-phone .top {
+  padding: 8px 12px;
+}
+
+.embed-phone .hotlines,
+.embed-phone .clock {
+  display: none;
+}
+
+.embed-phone {
+  scrollbar-width: none;
+}
+
+/* ---- Navigation and empty state ---- */
+.nav {
+  display: flex;
+  gap: 14px;
+  margin-left: 10px;
+}
+
+.nav a {
+  color: #c9d3dd;
+  font-size: 13px;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.nav a:hover {
+  border-bottom-color: currentColor;
+}
+
+.embed .nav {
+  display: none;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  border-left: 4px solid var(--dark);
+}
+
+.empty[hidden] {
+  display: none;
+}
+
+.empty p {
+  margin: 0 0 12px;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.button {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 2px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.button.primary {
+  background: var(--dark);
+  color: #fff;
+}
+
+.button[hidden] {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .nav {
+    margin-left: 0;
+  }
+}

@@ -2,22 +2,27 @@
  * Residents idle around their homes; from WARNING on they run along the
  * road/lanes (north-bank households cross the bridge) to the barangay hall,
  * climb the entrance stairs, go in through the door and wait inside. After
- * the status has been calm for a while they walk home.
+ * the status has been calm for a while they walk home. In the story game they
+ * wait for the captain instead (siren, a knock on the door, or an escort) and
+ * can be talked to.
  */
 import * as THREE from 'three';
-import { EVAC_LANE_X, HALL, LANES_Z, ROAD_Z, riverZ } from '../config';
-import { type Status, bus } from '../state';
-import { clamp, colorize, dampAngle, merge } from '../util';
-import { BRIDGE, deckTop } from './infrastructure';
-import { ASSEMBLY, HALL_DOOR, HALL_INSIDE, HALL_PAD, HALL_STAIRS, HOUSES } from './layout';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { residentLine } from '../alerts/templates';
+import { EVAC_LANE_X, LANES_Z, ROAD_Z, riverZ } from '../config';
+import { type Status, bus, state } from '../state';
+import { dampAngle } from '../util';
+import { BRIDGE } from './infrastructure';
+import { ASSEMBLY, HALL_DOOR, HALL_INSIDE, HALL_STAIRS, HOUSES } from './layout';
+import { type Look, type Model, PersonRig } from './person';
 import { groundHeight } from './terrain';
+import { walkHeight } from './walkable';
 
-type Mode = 'home' | 'evac' | 'shelter' | 'return';
+type Mode = 'home' | 'evac' | 'shelter' | 'return' | 'follow';
 
 interface Person {
-  root: THREE.Group;
-  legs: THREE.Object3D[];
-  arms: THREE.Object3D[];
+  rig: PersonRig;
+  look: Look;
   home: THREE.Vector2;
   /** (x, z) ground position. */
   pos: THREE.Vector2;
@@ -26,32 +31,40 @@ interface Person {
   mode: Mode;
   wait: number;
   delay: number;
-  phase: number;
   heading: number;
   north: boolean;
+  bubble: CSS2DObject;
+  bubbleFor: number;
+  /** Walking/running speed multiplier (elderly residents are slower). */
+  pace: number;
+  /** Persistent name tag, created on demand. */
+  tag: CSS2DObject | null;
 }
 
-const SHIRTS = [0xd94848, 0x3a7bd5, 0xf2c14e, 0x4caf50, 0xf5f5f5, 0x9c27b0, 0xff8a3d];
-const SKIN = 0x9a6a46;
+const MODELS: Model[] = ['casual-man', 'woman-dress', 'beach-man', 'woman-casual', 'hoodie-man', 'farmer'];
+/** Filipino skin tones and black / dark-brown hair. */
+const SKINS = [0x8d5a3b, 0xa06b47, 0x7a4b2f, 0xb57d55, 0x94603e];
+const HAIRS = [0x15110f, 0x1f1712, 0x2b1d14];
+
+/** Deterministic look per household; every fifth resident is a child. */
+const residentLook = (i: number): Look => ({
+  model: MODELS[i % MODELS.length],
+  skin: SKINS[(i * 3) % SKINS.length],
+  hair: HAIRS[i % HAIRS.length],
+  scale: i % 5 === 4 ? 0.64 : 0.94 + ((i * 7) % 5) * 0.03,
+});
 /** Seconds of NORMAL/ADVISORY before evacuees head home. */
 const ALL_CLEAR_S = 15;
 /** m/s when fleeing to the evacuation center. */
 const RUN_SPEED = 3.8;
+/** An escorted resident keeps this far behind the captain and walks at most this fast (m, m/s). */
+const FOLLOW_GAP = 1.6;
+const FOLLOW_SPEED = 2.2;
+/** Close enough to the hall that an escorted resident goes in by themselves (m). */
+const HANDOFF = 8;
 
 const jitter = (r: number) => (Math.random() * 2 - 1) * r;
 const v2 = (x: number, z: number) => new THREE.Vector2(x, z);
-
-/** Height of whatever the person stands on: bridge deck, hall stairs/pad, or ground. */
-function walkHeight(x: number, z: number): number {
-  if (Math.abs(x - BRIDGE.x) < BRIDGE.width / 2 && Math.abs(z - BRIDGE.zc) < BRIDGE.half) return deckTop(z);
-  const padHalf = (HALL.w + 4) / 2;
-  if (Math.abs(x - HALL_STAIRS.x) < padHalf && z >= HALL_STAIRS.z1) return HALL_PAD.top;
-  if (Math.abs(x - HALL_STAIRS.x) < HALL_STAIRS.width / 2 && z > HALL_STAIRS.z0) {
-    const t = clamp((z - HALL_STAIRS.z0) / (HALL_STAIRS.z1 - HALL_STAIRS.z0), 0, 1);
-    return groundHeight(x, z) + (HALL_PAD.top - groundHeight(x, z)) * t;
-  }
-  return groundHeight(x, z);
-}
 
 /** A random spot on the hall floor. */
 const insideSpot = () => v2(HALL_INSIDE.x + jitter(HALL_INSIDE.halfW), HALL_INSIDE.z + jitter(HALL_INSIDE.halfD));
@@ -60,55 +73,27 @@ export class Residents {
   readonly group = new THREE.Group();
   private readonly people: Person[] = [];
   private calm = 0;
+  /** When true, raising WARNING sends everyone to the hall by themselves. The story game turns this off. */
+  auto = true;
+  private leader: THREE.Vector3 | null = null;
+  /** Breadcrumbs of where the leader walked, so a follower goes round houses instead of through them. */
+  private readonly trail: THREE.Vector2[] = [];
 
   constructor() {
-    const legGeo = new THREE.CapsuleGeometry(0.075, 0.68, 4, 8);
-    legGeo.translate(0, -0.42, 0);
-    const armGeo = new THREE.CapsuleGeometry(0.055, 0.5, 4, 8);
-    armGeo.translate(0, -0.3, 0);
-    const pants = new THREE.MeshStandardMaterial({ color: 0x2f3640, roughness: 0.9 });
-    const bodies = SHIRTS.map((shirt) => {
-      const torso = colorize(new THREE.CapsuleGeometry(0.19, 0.36, 4, 12), shirt);
-      torso.scale(1, 1, 0.68);
-      torso.translate(0, 1.17, 0);
-      const neck = colorize(new THREE.CylinderGeometry(0.05, 0.06, 0.1, 8), SKIN);
-      neck.translate(0, 1.5, 0);
-      const head = colorize(new THREE.SphereGeometry(0.12, 16, 12), SKIN);
-      head.scale(0.92, 1.08, 1);
-      head.translate(0, 1.64, 0);
-      const hair = colorize(new THREE.SphereGeometry(0.128, 16, 8, 0, Math.PI * 2, 0, Math.PI / 1.8), 0x1a1410);
-      hair.translate(0, 1.67, -0.012);
-      return { geo: merge([torso, neck, head, hair]), mat: new THREE.MeshStandardMaterial({ color: shirt, roughness: 0.85 }) };
-    });
-    const bodyMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
-
     HOUSES.forEach((h, i) => {
       const door = new THREE.Vector3(0, 0, h.d / 2 + 1.6).applyAxisAngle(new THREE.Vector3(0, 1, 0), h.rot);
       const home = v2(h.x + door.x, h.z + door.z);
-      const look = bodies[i % bodies.length];
-      const root = new THREE.Group();
-      root.rotation.order = 'YXZ'; // so the running lean tilts along the heading
-      const body = new THREE.Mesh(look.geo, bodyMat);
-      body.castShadow = true;
-      root.add(body);
-      const legs = [-0.09, 0.09].map((x) => {
-        const leg = new THREE.Mesh(legGeo, pants);
-        leg.position.set(x, 0.86, 0);
-        leg.castShadow = true;
-        root.add(leg);
-        return leg;
-      });
-      const arms = [-0.25, 0.25].map((x) => {
-        const arm = new THREE.Mesh(armGeo, look.mat);
-        arm.position.set(x, 1.4, 0);
-        root.add(arm);
-        return arm;
-      });
-      this.group.add(root);
+      const rig = new PersonRig(residentLook(i));
+      const el = document.createElement('div');
+      el.className = 'bubble';
+      const bubble = new CSS2DObject(el);
+      bubble.position.set(0, 2.15, 0);
+      bubble.visible = false;
+      rig.root.add(bubble);
+      this.group.add(rig.root);
       this.people.push({
-        root,
-        legs,
-        arms,
+        rig,
+        look: residentLook(i),
         home,
         pos: home.clone(),
         route: [],
@@ -116,15 +101,18 @@ export class Residents {
         mode: 'home',
         wait: Math.random() * 4,
         delay: 0,
-        phase: Math.random() * 6,
         heading: Math.random() * Math.PI * 2,
         north: h.z < riverZ(h.x),
+        bubble,
+        bubbleFor: 0,
+        pace: 1,
+        tag: null,
       });
     });
 
     // Preemptive evacuation: everyone runs for the hall as soon as WARNING is raised.
     bus.on('status', ({ to }) => {
-      if (to === 'WARNING' || to === 'EVACUATE') this.evacuate();
+      if (this.auto && (to === 'WARNING' || to === 'EVACUATE')) this.evacuate();
     });
     bus.on('reset', () => {
       for (const p of this.people) {
@@ -135,9 +123,131 @@ export class Residents {
     });
   }
 
-  private evacuate(): void {
-    for (const p of this.people) {
-      if (p.mode === 'evac' || p.mode === 'shelter') continue;
+  get count(): number {
+    return this.people.length;
+  }
+
+  position(index: number): THREE.Vector3 {
+    const p = this.people[index];
+    return new THREE.Vector3(p.pos.x, walkHeight(p.pos.x, p.pos.y), p.pos.y);
+  }
+
+  sheltered(index: number): boolean {
+    return this.people[index].mode === 'shelter';
+  }
+
+  /** On the way to, or already in, the evacuation center. */
+  leaving(index: number): boolean {
+    const m = this.people[index].mode;
+    return m === 'evac' || m === 'shelter' || m === 'follow';
+  }
+
+  /** Swap a resident's body for a different look (keeps their speech bubble and name tag). */
+  restyle(index: number, look: Look): void {
+    const p = this.people[index];
+    const rig = new PersonRig(look);
+    p.look = look;
+    for (const child of [...p.rig.root.children]) if (child instanceof CSS2DObject) rig.root.add(child);
+    this.group.remove(p.rig.root);
+    this.group.add(rig.root);
+    p.rig = rig;
+  }
+
+  /** Move a resident to (x, z) and have them stand there (the story's wandering child). */
+  placeAt(index: number, x: number, z: number): void {
+    const p = this.people[index];
+    p.pos.set(x, z);
+    p.home.set(x, z);
+    p.route = [];
+    p.mode = 'home';
+    p.wait = 1e9;
+  }
+
+  setPace(index: number, pace: number): void {
+    this.people[index].pace = pace;
+  }
+
+  /** A name tag above the resident's head (null removes it). */
+  setTag(index: number, text: string | null): void {
+    const p = this.people[index];
+    if (!p.tag) {
+      const el = document.createElement('div');
+      el.className = 'name-tag';
+      p.tag = new CSS2DObject(el);
+      p.tag.position.set(0, 2.05, 0);
+      p.rig.root.add(p.tag);
+    }
+    p.tag.element.textContent = text ?? '';
+    p.tag.visible = !!text;
+  }
+
+  /** Speech bubble with a given line. */
+  say(index: number, text: string, seconds = 5): void {
+    const p = this.people[index];
+    p.bubble.element.textContent = text;
+    p.bubble.visible = true;
+    p.bubbleFor = seconds;
+  }
+
+  /** The resident walks behind `leader` until close to the hall, then goes inside. */
+  follow(index: number, leader: THREE.Vector3): void {
+    this.leader = leader;
+    this.trail.length = 0;
+    const p = this.people[index];
+    p.mode = 'follow';
+    p.route = [];
+    p.delay = 0;
+  }
+
+  /** How many residents are sheltering inside the evacuation center. */
+  evacStats(): { inside: number; total: number } {
+    return { inside: this.people.filter((p) => p.mode === 'shelter').length, total: this.people.length };
+  }
+
+  /** Nearest visible resident within `range` metres of (x, z), as an index, or -1. */
+  nearest(x: number, z: number, range: number, skip: (index: number) => boolean = () => false): number {
+    let best = -1;
+    let bestD = range;
+    this.people.forEach((p, i) => {
+      const d = Math.hypot(p.pos.x - x, p.pos.y - z);
+      if (d < bestD && p.rig.root.visible && !skip(i)) {
+        best = i;
+        bestD = d;
+      }
+    });
+    return best;
+  }
+
+  /** The resident says something fitting the current status and turns to (x, z). */
+  /** Returns the line, so the game can voice it. */
+  talk(index: number, x: number, z: number): string {
+    const p = this.people[index];
+    const line = residentLine(state.lang, state.status, p.mode === 'shelter');
+    this.say(index, line);
+    this.face(index, x, z);
+    return line;
+  }
+
+  /** Women's models get women's voices; children speak higher. */
+  voiceOf(index: number): { gender: 'male' | 'female'; child: boolean } {
+    const { look } = this.people[index];
+    return { gender: look.model.startsWith('woman') ? 'female' : 'male', child: (look.scale ?? 1) < 0.8 };
+  }
+
+  /** Stop for a few seconds and turn toward (x, z), unless on the move to the hall. */
+  face(index: number, x: number, z: number): void {
+    const p = this.people[index];
+    if (p.mode === 'home' || p.mode === 'shelter') {
+      p.route = [];
+      p.wait = 5;
+      p.heading = Math.atan2(x - p.pos.x, z - p.pos.y);
+    }
+  }
+
+  /** Send residents (all, or those passing `which`) to the evacuation center. */
+  evacuate(which: (index: number) => boolean = () => true): void {
+    for (const [i, p] of this.people.entries()) {
+      if (p.mode === 'evac' || p.mode === 'shelter' || p.mode === 'follow' || !which(i)) continue;
       p.evacRoute = this.routeFor(p);
       p.route = p.evacRoute.map((v) => v.clone());
       p.mode = 'evac';
@@ -168,20 +278,28 @@ export class Residents {
   update(dt: number, levelY: number, status: Status): void {
     this.calm = status === 'NORMAL' || status === 'ADVISORY' ? this.calm + dt : 0;
     for (const p of this.people) {
+      if (p.bubbleFor > 0) {
+        p.bubbleFor -= dt;
+        p.bubble.visible = p.bubbleFor > 0;
+      }
       if ((p.mode === 'evac' || p.mode === 'shelter') && this.calm > ALL_CLEAR_S) {
         // Leave through the door, retrace the route, then home.
         p.route = [...p.evacRoute.slice(0, -1).reverse(), p.home.clone()];
         p.mode = 'return';
       }
+      if (p.mode === 'follow') {
+        this.followLeader(p, dt, levelY);
+        continue;
+      }
       if (p.delay > 0) {
         p.delay -= dt;
-        this.pose(p, dt, 0, levelY);
+        this.place(p, dt, 0, levelY);
         continue;
       }
       const target = p.route[0];
       let speed = 0;
       if (target) {
-        speed = p.mode === 'evac' ? RUN_SPEED : p.mode === 'return' ? 1.3 : 0.9;
+        speed = (p.mode === 'evac' ? RUN_SPEED : p.mode === 'return' ? 1.3 : 0.9) * p.pace;
         if (levelY - groundHeight(p.pos.x, p.pos.y) > 0.2) speed *= 0.55; // wading
         const to = target.clone().sub(p.pos);
         const dist = to.length();
@@ -201,26 +319,39 @@ export class Residents {
           p.wait = 2 + Math.random() * 4;
         }
       }
-      this.pose(p, dt, speed, levelY);
+      this.place(p, dt, speed, levelY);
     }
   }
 
-  private pose(p: Person, dt: number, speed: number, levelY: number): void {
-    // Running = faster cadence, bigger stride, bent arms pumping, forward lean and a little bounce.
-    const running = speed > 2.5;
-    p.phase += dt * speed * (running ? 2.6 : 3.2);
-    const swing = speed > 0 ? Math.sin(p.phase) * Math.min(running ? 1.0 : 0.7, 0.3 + speed * 0.18) : 0;
-    p.legs[0].rotation.x = swing;
-    p.legs[1].rotation.x = -swing;
-    const armBend = running ? -0.6 : 0;
-    p.arms[0].rotation.x = armBend - swing * 0.8;
-    p.arms[1].rotation.x = armBend + swing * 0.8;
+  private followLeader(p: Person, dt: number, levelY: number): void {
+    const leader = this.leader!;
+    if (Math.hypot(p.pos.x - ASSEMBLY.x, p.pos.y - ASSEMBLY.z) < HANDOFF) {
+      // At the hall: up the stairs and inside on their own.
+      p.evacRoute = [v2(ASSEMBLY.x + jitter(0.6), ASSEMBLY.z), v2(HALL_STAIRS.x + jitter(0.8), HALL_STAIRS.z1 + 0.4), v2(HALL_DOOR.x, HALL_DOOR.z + 0.4), insideSpot()];
+      p.route = p.evacRoute.map((v) => v.clone());
+      p.mode = 'evac';
+      return;
+    }
+    const last = this.trail[this.trail.length - 1];
+    if (!last || Math.hypot(last.x - leader.x, last.y - leader.z) > 0.8) this.trail.push(v2(leader.x, leader.z));
+    while (this.trail.length > 1 && this.trail[0].distanceTo(p.pos) < 0.5) this.trail.shift();
+    const gap = Math.hypot(leader.x - p.pos.x, leader.z - p.pos.y);
+    const to = this.trail[0].clone().sub(p.pos);
+    const dist = to.length();
+    let speed = 0;
+    if (gap > FOLLOW_GAP && dist > 0.01) {
+      speed = Math.min(FOLLOW_SPEED, (gap - FOLLOW_GAP) * 3) * p.pace;
+      if (levelY - groundHeight(p.pos.x, p.pos.y) > 0.2) speed *= 0.6;
+      p.pos.addScaledVector(to, Math.min(dist, speed * dt) / dist);
+      p.heading = dampAngle(p.heading, Math.atan2(to.x, to.y), 8, dt);
+    }
+    this.place(p, dt, speed, levelY);
+  }
+
+  private place(p: Person, dt: number, speed: number, levelY: number): void {
     const floor = walkHeight(p.pos.x, p.pos.y);
-    const bounce = running ? Math.abs(Math.cos(p.phase)) * 0.08 : 0;
-    p.root.position.set(p.pos.x, floor + bounce, p.pos.y);
-    p.root.rotation.y = p.heading;
-    p.root.rotation.x = running ? 0.18 : 0;
+    p.rig.pose(dt, speed, p.pos.x, floor, p.pos.y, p.heading);
     // Hide people standing in deep water rather than drawing them submerged.
-    p.root.visible = levelY - floor < 1.4;
+    p.rig.root.visible = levelY - floor < 1.4;
   }
 }

@@ -21,10 +21,10 @@ export const RATE_ESCALATE_CM = 30;
 export const SIM_RATE = 10;
 
 export const STATUS_COLORS: Record<Status, number> = {
-  NORMAL: 0x22c55e,
-  ADVISORY: 0xfacc15,
-  WARNING: 0xf97316,
-  EVACUATE: 0xef4444,
+  NORMAL: 0x3f9a52,
+  ADVISORY: 0xe2b203,
+  WARNING: 0xe3740f,
+  EVACUATE: 0xd23a2f,
 };
 export const statusCss = (s: Status): string => `#${STATUS_COLORS[s].toString(16).padStart(6, '0')}`;
 
@@ -33,7 +33,7 @@ export const ROAD_Z = 20;
 export const LANES_Z = [ROAD_Z, 34, 50];
 export const EVAC_LANE_X = 0;
 export const HALL = { x: 0, z: 62, w: 14, d: 9, h: 4.2 };
-export const COURT = { x: 20, z: 62, w: 28, d: 15 };
+export const COURT = { x: 24, z: 62, w: 28, d: 15 };
 export const DASHBOARD = { x: -12, z: 54 };
 export const CANAL = { x: -22, halfW: 1.5, zEnd: 52, depth: 1.3 };
 export const BRIDGE_X = 20;

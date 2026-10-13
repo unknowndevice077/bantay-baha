@@ -22,8 +22,8 @@ const STORM: [number, number][] = [
 export const STORM_DURATION = STORM[STORM.length - 1][0] * 60;
 
 /** Linear-reservoir catchment: m/s of rise per mm/hr of rain, and recession rate (1/s). */
-const RAIN_GAIN = 4e-5;
-const DRAIN = 1 / 900;
+export const RAIN_GAIN = 4e-5;
+export const DRAIN = 1 / 900;
 
 export function stormRainfall(t: number): number {
   const m = t / 60;

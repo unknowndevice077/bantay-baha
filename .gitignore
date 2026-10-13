@@ -1,3 +1,9 @@
 node_modules
 dist
 *.log
+tools/forecast/data/
+__pycache__/
+tools/voices/.venv/
+tools/voices/refs/*.wav
+!tools/voices/refs/david.wav
+!tools/voices/refs/zira.wav

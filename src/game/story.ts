@@ -1,0 +1,597 @@
+/**
+ * Runs the night: drives the flood along the story timeline, runs the
+ * forecast model on the live sensor feed, moves the story from act to act as
+ * the sensor raises each alert level, hands out objectives, voices the cast,
+ * rescues the captain from the current, and writes the after-action report.
+ */
+import * as THREE from 'three';
+import { HALL, SENSOR_HEIGHT, THRESHOLDS } from '../config';
+import { type Forecast, Forecaster } from '../forecast/forecaster';
+import type { Sample } from '../forecast/model';
+import type { ForecastSummary } from '../net/protocol';
+import type { Interactable } from '../player/interactions';
+import type { Player } from '../player/player';
+import { createMats, createOpsDesk } from '../player/props';
+import { HALL_INSIDE, HALL_PLAN, HALL_STAIRS } from '../scene/layout';
+import { PersonRig } from '../scene/person';
+import { walkHeight } from '../scene/walkable';
+import { classifyStatus, riseRate } from '../sensor/status';
+import { type Reading, STATUSES, type Status, bus, state } from '../state';
+import type { World } from '../world';
+import { Beacon } from './beacon';
+import type { Devices } from './devices';
+import { BEN, HISTORY_S, HOLDOUTS, LINES, LOLA, type Line, STORY_END_S, STORY_START_HOUR, TOTO, storyAt } from './script';
+import { type ReportRow, Subtitles, chapterCard, fadeThrough, renderObjectives, showReport } from './ui';
+import type { Voice } from './voice';
+
+type ObjectiveId = 'forecast' | 'advisory' | 'gauge' | 'mats' | 'siren' | 'ben' | 'lola' | 'toto' | 'all' | 'return' | 'report';
+
+interface Objective {
+  id: ObjectiveId;
+  /** The act it belongs to; still open after that act ends = late. */
+  act: number;
+  text: () => string;
+  target: () => THREE.Vector3 | null;
+  label: string;
+  shown: boolean;
+  done: boolean;
+}
+
+const CHAPTERS: [string, string][] = [
+  ['Prologue', 'Signal No. 2'],
+  ['Part one', 'Advisory'],
+  ['Part two', 'Over the bank'],
+  ['Part three', 'Evacuate'],
+  ['Epilogue', 'The morning after'],
+];
+
+/** The captain's desk in the hall office (back-left corner, laptop facing the room). */
+const OFFICE = { x: HALL.x - 4.5, z: HALL.z + 3.3 };
+/** Rolled sleeping mats waiting in the back-right corner of the hall. */
+const MAT_STACK = { x: HALL.x + 5, z: HALL.z + 3.2 };
+/** Where Toto stands watching the canal, beside the main road. */
+const TOTO_SPOT = { x: -20.1, z: 25.6 };
+
+/** Swimming this long in fast water and the current takes you (s). */
+const SWEPT_AFTER = 6;
+
+const ground = (x: number, z: number) => new THREE.Vector3(x, walkHeight(x, z), z);
+const flat = (a: THREE.Vector3, b: THREE.Vector3) => Math.hypot(a.x - b.x, a.z - b.z);
+
+export class Story {
+  /** Real seconds since the night began. */
+  private t = 0;
+  running = false;
+  ended = false;
+  private act = 0;
+  private simStart = 0;
+  private readonly subs: Subtitles;
+  private readonly beacon = new Beacon();
+  private readonly desk = createOpsDesk(OFFICE.x, OFFICE.z);
+  private readonly mats = createMats(MAT_STACK.x, MAT_STACK.z, HALL_PLAN.floorY, HALL_INSIDE);
+  private readonly lito = new PersonRig({ model: 'casual-man', skin: 0x9a6544, hair: 0x1a1410, scale: 1.02 });
+  private readonly litoPos: THREE.Vector3;
+  private readonly forecaster = new Forecaster();
+  private readonly objectives: Objective[];
+  private readonly timers: { at: number; fn: () => void }[] = [];
+  /** Story-clock times (s since the night began) of each milestone. */
+  private readonly reached: Partial<Record<Status, number>> = {};
+  /** When the forecast first expected each level within the hour. */
+  private readonly forecastAt: Partial<Record<Status, number>> = {};
+  private advisoryAt: number | null = null;
+  private sirenAt: number | null = null;
+  private gaugeDiff: number | null = null;
+  private readonly leftAt: (number | null)[];
+  private escorting = false;
+  private totoSent = false;
+  private selfEvac = false;
+  private allInSaid = false;
+  private reporting = false;
+  private swim = 0;
+  private rescues = 0;
+  private peak = 0;
+  private lastObjectives = '';
+
+  constructor(
+    private readonly world: World,
+    private readonly player: Player,
+    private readonly devices: Devices,
+    private readonly voice: Voice,
+  ) {
+    this.subs = new Subtitles(voice);
+    const { residents } = world;
+    this.leftAt = Array.from({ length: residents.count }, () => null);
+    residents.auto = false;
+    residents.setPace(LOLA, 0.65);
+    residents.restyle(LOLA, { model: 'woman-dress', skin: 0x8a5a3c, hair: 0xc9c6c0, scale: 0.9 });
+    residents.restyle(BEN, { model: 'farmer', skin: 0x7a4b2f, hair: 0x1f1712 });
+    this.litoPos = ground(OFFICE.x + 1.5, OFFICE.z - 0.9);
+    this.lito.pose(0, 0, this.litoPos.x, this.litoPos.y, this.litoPos.z, Math.PI);
+    world.scene.add(this.beacon.group, this.desk.group, this.mats.group, this.lito.root);
+    // PAGASA's rainfall outlook for the next hours feeds the forecast (1 story minute = 6 real seconds).
+    this.forecaster.outlook = (minutes) => storyAt(this.t + minutes * 6).rain;
+
+    const hallInside = ground(HALL_INSIDE.x, HALL_INSIDE.z);
+    const o = (id: ObjectiveId, act: number, text: () => string, target: () => THREE.Vector3 | null = () => null, label = ''): Objective => ({ id, act, text, target, label, shown: false, done: false });
+    const deskSpot = ground(OFFICE.x, OFFICE.z - 1);
+    this.objectives = [
+      o('forecast', 1, () => 'Check the Bantay Baha forecast on the laptop', () => deskSpot, 'Laptop'),
+      o('advisory', 1, () => 'Send an early advisory from the dashboard'),
+      o('mats', 1, () => 'Lay out the sleeping mats in the evacuation center', () => ground(MAT_STACK.x, MAT_STACK.z - 1), 'Sleeping mats'),
+      o('gauge', 1, () => 'Check the sensor against the staff gauge at the creek', () => world.gauge.position, 'Staff gauge'),
+      o('siren', 2, () => 'Sound the siren', () => world.sirenButton.position.clone().setY(walkHeight(world.sirenButton.position.x, world.sirenButton.position.z - 0.6)), 'Siren switch'),
+      o('toto', 2, () => (this.totoSent ? 'Toto is running to the hall' : 'Find Toto, last seen watching the canal by the main road'), () => (this.totoSent ? null : residents.position(TOTO)), 'Toto'),
+      o('ben', 2, () => "Convince Mang Ben's family across the creek to leave", () => residents.position(BEN), 'Mang Ben'),
+      o('lola', 2, () => (this.escorting ? 'Lead Lola Cora to the hall. Stay close, she walks slowly' : 'Walk Lola Cora from her riverside house to the hall'), () => (this.escorting ? hallInside : residents.position(LOLA)), 'Lola Cora'),
+      o('all', 3, () => {
+        const { inside, total } = residents.evacStats();
+        return `Get everyone into the evacuation center (${inside}/${total})`;
+      }),
+      o('return', 3, () => 'Return to the evacuation center', () => hallInside, 'Evacuation center'),
+      o('report', 3, () => 'Report the headcount to the MDRRMO with Kagawad Lito', () => this.litoPos, 'Kagawad Lito'),
+    ];
+
+    bus.on('status', ({ to }) => this.onStatus(to));
+  }
+
+  /** The forecast for the dashboard feed (phone and laptop), if there is one yet. */
+  forecastSummary(): ForecastSummary | null {
+    const f = this.forecaster.latest;
+    return f ? { text: f.text, at30: f.path[1].level, at60: f.path[2].level } : null;
+  }
+
+  /** Things the captain can use with E. */
+  interactables(): Interactable[] {
+    const { world, player } = this;
+    const { residents } = world;
+    const nearestResident = (p: THREE.Vector3) => residents.nearest(p.x, p.z, 2.2, (j) => HOLDOUTS.includes(j));
+    return [
+      {
+        object: 'Laptop',
+        label: () => 'Open dashboard',
+        anchor: () => this.desk.position.clone().add(new THREE.Vector3(0, 0.95, 0.1)),
+        distance: (p) => flat(p, this.desk.position),
+        range: 1.8,
+        act: () => this.devices.show('laptop'),
+      },
+      {
+        object: 'Kagawad Lito',
+        label: () => (this.reporting ? null : this.obj('all').done && this.obj('return').done ? 'Report the headcount' : 'Talk'),
+        anchor: () => this.litoPos.clone().setY(this.litoPos.y + 1.6),
+        distance: (p) => flat(p, this.litoPos),
+        range: 2,
+        act: () => this.talkLito(),
+      },
+      {
+        object: 'Sleeping mats',
+        label: () => (this.obj('mats').done ? null : 'Lay them out'),
+        anchor: () => this.mats.position.clone().setY(this.mats.position.y + 0.6),
+        distance: (p) => flat(p, this.mats.position),
+        range: 2,
+        act: () => this.layMats(),
+      },
+      {
+        object: 'Staff gauge',
+        label: () => 'Read',
+        anchor: () => world.gauge.position.clone().setY(world.levelY + 0.4),
+        distance: (p) => flat(p, world.gauge.position),
+        range: 3.5,
+        act: () => this.readGauge(),
+      },
+      {
+        object: 'Siren switch',
+        label: () => (state.sirenManual ? 'Switch off' : 'Sound siren'),
+        anchor: () => world.sirenButton.position,
+        distance: (p) => flat(p, world.sirenButton.position),
+        range: 2.5,
+        act: () => (state.sirenManual = !state.sirenManual),
+      },
+      {
+        object: 'Mang Ben',
+        label: () => (residents.leaving(BEN) ? null : 'Talk'),
+        anchor: () => residents.position(BEN).setY(residents.position(BEN).y + 1.55),
+        distance: (p) => flat(p, residents.position(BEN)),
+        range: 2.5,
+        act: () => this.talkBen(),
+      },
+      {
+        object: 'Lola Cora',
+        label: () => (residents.leaving(LOLA) ? null : 'Talk'),
+        anchor: () => residents.position(LOLA).setY(residents.position(LOLA).y + 1.4),
+        distance: (p) => flat(p, residents.position(LOLA)),
+        range: 2.5,
+        act: () => this.talkLola(),
+      },
+      {
+        object: 'Toto',
+        label: () => (residents.leaving(TOTO) || this.act < 2 ? null : 'Talk'),
+        anchor: () => residents.position(TOTO).setY(residents.position(TOTO).y + 1.1),
+        distance: (p) => flat(p, residents.position(TOTO)),
+        range: 2.5,
+        act: () => this.talkToto(),
+      },
+      {
+        object: 'Resident',
+        label: () => 'Talk',
+        anchor: () => {
+          const at = residents.position(Math.max(0, nearestResident(player.pos)));
+          return at.setY(at.y + 1.5);
+        },
+        distance: (p) => {
+          const i = nearestResident(p);
+          return i < 0 ? Infinity : flat(p, residents.position(i));
+        },
+        range: 2.2,
+        act: () => {
+          const i = nearestResident(player.pos);
+          const line = residents.talk(i, player.pos.x, player.pos.z);
+          const { gender, child } = residents.voiceOf(i);
+          // Recorded in English for the three resident voices; other languages use browser speech.
+          const speaker = child ? 'resident-child' : `resident-${gender}`;
+          this.voice.speak(speaker, line, { gender, pitch: child ? 1.6 : gender === 'female' ? 1.1 : 0.9, rate: 1, variant: i }, state.lang, () => undefined);
+        },
+      },
+    ];
+  }
+
+  // ---- Setup -------------------------------------------------------------------
+
+  /** Dusk before the story starts: the scene the title screen sits on. */
+  stage(): void {
+    const { level, rain } = storyAt(0);
+    Object.assign(state, { source: 'manual', stormPlaying: false, speed: 1, timeLocked: true, level, targetLevel: level, rainfall: rain });
+    state.timeOfDay = STORY_START_HOUR / 24;
+  }
+
+  /**
+   * The afternoon's sensor readings (every 5 story seconds), with the rise rate and
+   * status the monitor would have computed. Fed to the monitor, the forecast and the
+   * dashboard so the steady rise is already on the record when the captain arrives.
+   */
+  history(): Reading[] {
+    const out: Reading[] = [];
+    let status: Status = 'NORMAL';
+    for (let t = -HISTORY_S; t < 0; t += 0.5) {
+      const { level } = storyAt(t);
+      const simT = state.simTime + t * 10;
+      const rate = riseRate(out, simT, level);
+      status = classifyStatus(level, rate, status);
+      out.push({ t: simT, distance: SENSOR_HEIGHT - level, level, rate, status });
+    }
+    return out;
+  }
+
+  begin(afternoon: Reading[]): void {
+    const { monitor } = this.world;
+    monitor.history.splice(0, monitor.history.length, ...afternoon.slice(-130));
+    this.forecaster.prime(afternoon.map((r): Sample => ({ t: r.t, level: r.level, rain: storyAt((r.t - state.simTime) / 10).rain })));
+    // At the desk with the laptop behind you, looking out over the hall toward the door.
+    this.player.enter(OFFICE.x, OFFICE.z - 1.1, Math.PI - 0.5);
+    this.running = true;
+    this.simStart = state.simTime;
+    this.enterAct(0);
+  }
+
+  // ---- Flow --------------------------------------------------------------------
+
+  private say(lines: Line[]): void {
+    this.subs.play(lines);
+  }
+
+  private after(seconds: number, fn: () => void): void {
+    this.timers.push({ at: this.t + seconds, fn });
+  }
+
+  private obj(id: ObjectiveId): Objective {
+    return this.objectives.find((x) => x.id === id)!;
+  }
+
+  private reveal(...ids: ObjectiveId[]): void {
+    for (const id of ids) this.obj(id).shown = true;
+  }
+
+  private complete(id: ObjectiveId): void {
+    const o = this.obj(id);
+    o.shown = true;
+    o.done = true;
+  }
+
+  /** Start act n. A status that jumps two levels still hands out the skipped act's objectives. */
+  private enterAct(n: number): void {
+    this.act = n;
+    const [kicker, title] = CHAPTERS[n];
+    chapterCard(kicker, title);
+    this.reveal('forecast');
+    if (n >= 1) this.reveal('advisory', 'mats', 'gauge');
+    if (n >= 2) this.reveal('siren', 'toto', 'ben', 'lola');
+    if (n >= 3) this.reveal('all', 'return', 'report');
+    if (n === 0) this.say(LINES.intro);
+    if (n === 1) this.say(LINES.advisory);
+    if (n === 2) {
+      this.say(this.sirenAt === null ? LINES.warning : LINES.warning.filter((l) => !l[1].startsWith('Sound the siren')));
+      this.world.residents.placeAt(TOTO, TOTO_SPOT.x, TOTO_SPOT.z);
+      this.after(14, () => this.say(LINES.totoMissing));
+    }
+    if (n === 3) {
+      this.say(LINES.evacuate);
+      // Lito moves to the registration table just inside the door.
+      const spot = ground(HALL_INSIDE.x + 2.2, HALL_INSIDE.z - HALL_INSIDE.halfD + 0.4);
+      this.litoPos.copy(spot);
+      this.lito.pose(0, 0, spot.x, spot.y, spot.z, Math.PI);
+    }
+  }
+
+  private onStatus(to: Status): void {
+    if (!this.running) return;
+    this.reached[to] ??= this.storyTime();
+    const r = state.reading;
+    const cm = ((r?.level ?? state.level) * 100).toFixed(0);
+    const rate = `${(r?.rate ?? 0) >= 0 ? '+' : ''}${(r?.rate ?? 0).toFixed(0)}`;
+    const body: Record<Status, string> = {
+      NORMAL: `Creek at ${cm} cm. Back in the normal range.`,
+      ADVISORY: `Creek at ${cm} cm, ${rate} cm per 10 min. Prepare for possible evacuation.`,
+      WARNING: `Creek at ${cm} cm, over the bank. Preemptive evacuation recommended.`,
+      EVACUATE: `Creek at ${cm} cm. The main road is flooding. Evacuate now.`,
+    };
+    this.devices.notify(to, `${to} · ${cm} cm`, body[to]);
+    const n = STATUSES.indexOf(to);
+    if (n > this.act && n <= 3) this.enterAct(n);
+  }
+
+  /** Called when the dashboard (phone or laptop) broadcasts an advisory. */
+  onBroadcast(text: string): void {
+    if (!this.running) return;
+    this.world.audio.sirenBurst(1.2);
+    this.say([['narrator', `Hall loudspeaker: "${text.length > 140 ? `${text.slice(0, 137)}...` : text}"`]]);
+    if (this.advisoryAt !== null) return;
+    this.advisoryAt = this.storyTime();
+    this.reveal('advisory', 'mats', 'gauge');
+    this.complete('advisory');
+    if (this.act < 2) this.say(LINES.advisorySent);
+  }
+
+  /** Phone or laptop dashboard opened: that's where the forecast is. */
+  onDeviceOpen(): void {
+    if (!this.running || this.obj('forecast').done) return;
+    const f = this.forecaster.latest;
+    if (!f) return this.say(LINES.forecastLate);
+    this.complete('forecast');
+    this.reveal('advisory');
+    this.say(LINES.forecastSeen(f.text));
+  }
+
+  private talkLito(): void {
+    if (this.obj('all').done && this.obj('return').done) {
+      // The night ends once Lito has finished the call (see update).
+      this.reporting = true;
+      this.say(LINES.report);
+      return;
+    }
+    this.say(LINES.litoHint);
+  }
+
+  private layMats(): void {
+    this.mats.layOut();
+    this.complete('mats');
+    this.say(LINES.matsDone);
+  }
+
+  private readGauge(): void {
+    // By eye you can resolve the 5 cm bars; compare with what the ESP32 reports.
+    const eye = Math.round((state.level * 100) / 5) * 5;
+    const sensor = Math.round((state.reading?.level ?? state.level) * 100);
+    this.gaugeDiff = Math.abs(eye - sensor);
+    this.say(LINES.gaugeOk(eye, sensor));
+    this.complete('gauge');
+  }
+
+  private talkBen(): void {
+    const { residents } = this.world;
+    residents.face(BEN, this.player.pos.x, this.player.pos.z);
+    if (this.act < 2) return this.say(LINES.benEarly);
+    if (this.obj('ben').done) return this.say(LINES.benPacking);
+    this.say(LINES.ben);
+    this.complete('ben');
+    this.after(10, () => residents.evacuate((i) => i === BEN));
+  }
+
+  private talkLola(): void {
+    const { residents } = this.world;
+    residents.face(LOLA, this.player.pos.x, this.player.pos.z);
+    if (this.act < 2) return this.say(LINES.lolaEarly);
+    this.say(LINES.lola);
+    this.escorting = true;
+    residents.follow(LOLA, this.player.pos);
+  }
+
+  private talkToto(): void {
+    const { residents } = this.world;
+    residents.face(TOTO, this.player.pos.x, this.player.pos.z);
+    this.say(LINES.toto);
+    this.totoSent = true;
+    this.after(7, () => residents.evacuate((i) => i === TOTO));
+  }
+
+  /** Story seconds since the night began (0 on the title screen). */
+  private storyTime(): number {
+    return this.running || this.ended ? state.simTime - this.simStart : 0;
+  }
+
+  /** hh:mm on the story clock. */
+  clock(): string {
+    return this.hhmm(this.storyTime());
+  }
+
+  private hhmm(storySeconds: number): string {
+    const s = STORY_START_HOUR * 3600 + storySeconds;
+    return `${String(Math.floor(s / 3600) % 24).padStart(2, '0')}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}`;
+  }
+
+  // ---- Frame -------------------------------------------------------------------
+
+  update(dt: number, time: number): void {
+    this.subs.update(dt);
+    if (!this.running) return;
+    this.t += dt;
+    const { residents } = this.world;
+    const { level, rain } = storyAt(this.t);
+    state.targetLevel = level;
+    state.rainfall = rain;
+    state.timeOfDay = ((STORY_START_HOUR * 3600 + this.storyTime()) / 86400) % 1;
+    this.devices.setClock(this.clock());
+    this.peak = Math.max(this.peak, state.level);
+
+    for (const timer of this.timers.filter((x) => x.at <= this.t)) {
+      this.timers.splice(this.timers.indexOf(timer), 1);
+      timer.fn();
+    }
+    this.watchForecast(this.forecaster.latest);
+
+    // Name tags only when close enough to recognise someone (CSS labels would show through walls).
+    const tag = (i: number, name: string) => residents.setTag(i, flat(this.player.pos, residents.position(i)) < 20 ? name : null);
+    tag(LOLA, 'Lola Cora');
+    tag(BEN, 'Mang Ben');
+    if (this.act >= 2) tag(TOTO, 'Toto');
+
+    // Kagawad Lito turns to face the captain when they come near.
+    if (flat(this.player.pos, this.litoPos) < 6) {
+      this.lito.pose(dt, 0, this.litoPos.x, this.litoPos.y, this.litoPos.z, Math.atan2(this.player.pos.x - this.litoPos.x, this.player.pos.z - this.litoPos.z));
+    }
+
+    // The siren, from the hall switch or either dashboard, sends everyone but the holdouts.
+    if (state.sirenManual && this.sirenAt === null) {
+      this.sirenAt = this.storyTime();
+      this.complete('siren');
+      residents.evacuate((i) => !HOLDOUTS.includes(i));
+      if (this.act >= 2) this.say(LINES.sirenOn);
+    }
+    // No siren well into the EVACUATE order: people go by themselves, late.
+    const evacAt = this.reached.EVACUATE;
+    if (!this.selfEvac && this.sirenAt === null && evacAt !== undefined && this.storyTime() - evacAt > 200) {
+      this.selfEvac = true;
+      residents.evacuate((i) => !HOLDOUTS.includes(i));
+      this.say(LINES.lateSelfEvac);
+    }
+
+    for (let i = 0; i < residents.count; i++) if (this.leftAt[i] === null && residents.leaving(i)) this.leftAt[i] = this.storyTime();
+    if (this.escorting && residents.sheltered(LOLA)) {
+      this.escorting = false;
+      this.complete('lola');
+      this.say(LINES.lolaSafe);
+    }
+    if (this.totoSent && !this.obj('toto').done && residents.sheltered(TOTO)) {
+      this.complete('toto');
+      this.say(LINES.totoSafe);
+    }
+    const { inside, total } = residents.evacStats();
+    if (inside === total) {
+      this.complete('all');
+      if (!this.allInSaid) {
+        this.allInSaid = true;
+        this.say(LINES.allIn);
+      }
+    }
+    const inHall = Math.abs(this.player.pos.x - HALL.x) < HALL.w / 2 - 0.3 && Math.abs(this.player.pos.z - HALL.z) < HALL.d / 2 - 0.3;
+    if (inHall && this.act >= 3) this.complete('return');
+
+    this.checkCurrent(dt);
+    this.renderObjectives();
+    const focus = this.objectives.find((o) => o.shown && !o.done && o.target() !== null);
+    this.beacon.update(focus?.target() ?? null, focus?.label ?? '', this.player.pos, time);
+
+    if (this.reporting && !this.subs.busy) {
+      this.complete('report');
+      this.finish();
+    } else if (this.t >= STORY_END_S && !this.reporting) this.finish();
+  }
+
+  /** The first time the forecast expects WARNING (then EVACUATE) within the hour: tell the captain. */
+  private watchForecast(f: Forecast | null): void {
+    if (!f) return;
+    for (const level of ['WARNING', 'EVACUATE'] as const) {
+      if (this.forecastAt[level] !== undefined || this.reached[level] !== undefined || !f.status.includes(level)) continue;
+      this.forecastAt[level] = this.storyTime();
+      const minutes = f.eta?.status === level ? Math.max(5, Math.round(f.eta.minutes / 5) * 5) : 60;
+      this.devices.notify(level, `Forecast · ${level} expected`, f.text);
+      if (level === 'WARNING' && this.obj('forecast').done) this.say(LINES.forecastWarns(minutes));
+    }
+  }
+
+  /** Swimming too long in fast floodwater: the tanods fish you out at the hall stairs. */
+  private checkCurrent(dt: number): void {
+    this.swim = this.player.swimming && state.level > THRESHOLDS.warning ? this.swim + dt : 0;
+    if (this.swim < SWEPT_AFTER) return;
+    this.swim = -10;
+    this.rescues++;
+    fadeThrough(() => {
+      this.player.enter(HALL_STAIRS.x + 2.5, HALL_STAIRS.z0 - 1.5, 0);
+      this.say(LINES.rescued);
+    });
+  }
+
+  private renderObjectives(): void {
+    const items = this.objectives.filter((o) => o.shown).map((o) => ({ text: o.text(), done: o.done, late: !o.done && this.act > o.act }));
+    const key = JSON.stringify(items) + this.act;
+    if (key === this.lastObjectives) return;
+    this.lastObjectives = key;
+    const [kicker, title] = CHAPTERS[this.act];
+    renderObjectives(kicker, title, items);
+  }
+
+  // ---- Ending ------------------------------------------------------------------
+
+  private finish(): void {
+    if (this.ended) return;
+    this.running = false;
+    this.ended = true;
+    const report = this.report();
+    fadeThrough(() => {
+      this.act = 4;
+      const [kicker, title] = CHAPTERS[4];
+      chapterCard(kicker, title, 5);
+      Object.assign(state, { rainfall: 0, targetLevel: 2.3, timeOfDay: 0.27, sirenManual: false });
+      this.beacon.update(null, '', this.player.pos, 0);
+      this.player.standAt(HALL_STAIRS.x - 1.5, HALL_STAIRS.z0 - 1, Math.PI);
+      this.devices.close();
+      document.body.classList.remove('playing');
+      setTimeout(() => showReport(report.verdict, report.summary, report.rows), 4500);
+    }, 1500);
+  }
+
+  private report(): { verdict: string; summary: string; rows: ReportRow[] } {
+    const { residents } = this.world;
+    const { inside, total } = residents.evacStats();
+    const evacAt = this.reached.EVACUATE ?? Infinity;
+    const warnAt = this.reached.WARNING ?? Infinity;
+    const early = this.leftAt.filter((at) => at !== null && at < evacAt).length;
+    const when = (s: number) => this.hhmm(s);
+    const lead = this.forecastAt.WARNING !== undefined && warnAt < Infinity ? Math.round((warnAt - this.forecastAt.WARNING) / 60) : null;
+    const lolaSafe = residents.sheltered(LOLA);
+    const benSafe = residents.sheltered(BEN);
+    const totoSafe = residents.sheltered(TOTO);
+    const rows: ReportRow[] = [
+      { label: 'Residents in the evacuation center', value: `${inside} of ${total}`, good: inside === total },
+      { label: 'Left before the EVACUATE order', value: `${early} of ${total}`, good: early >= total - 3 },
+      { label: 'Forecast warning of WARNING', value: lead === null ? 'Not reached' : `${lead} min ahead`, good: lead !== null && lead >= 10 },
+      { label: 'Advisory sent', value: this.advisoryAt === null ? 'Not sent' : `${when(this.advisoryAt)}${this.advisoryAt < warnAt ? ', before the WARNING' : ', after the WARNING'}`, good: this.advisoryAt !== null && this.advisoryAt < warnAt },
+      { label: 'Evacuation center prepared', value: this.obj('mats').done ? 'Mats laid out' : 'Families slept on the bare floor', good: this.obj('mats').done },
+      { label: 'Siren sounded', value: this.sirenAt === null ? 'Never' : `${when(this.sirenAt)}${this.sirenAt < evacAt ? ', before the EVACUATE order' : ', after the EVACUATE order'}`, good: this.sirenAt !== null && this.sirenAt < evacAt },
+      { label: 'Sensor checked against the gauge', value: this.gaugeDiff === null ? 'No' : `Yes, ${this.gaugeDiff} cm apart`, good: this.gaugeDiff !== null },
+      { label: 'Toto', value: totoSafe ? 'Back with Aling Nena' : 'Found by tanods at the canal after midnight', good: totoSafe },
+      { label: 'Lola Cora', value: lolaSafe ? 'Walked to the hall with you' : 'Spent the night in her attic; brought out by boat at dawn', good: lolaSafe },
+      { label: "Mang Ben's family", value: benSafe ? 'Evacuated' : 'Waited on their roof until morning', good: benSafe },
+      { label: 'Headcount reported to the MDRRMO', value: this.obj('report').done ? 'Yes' : 'No', good: this.obj('report').done },
+      { label: 'Times pulled from the water', value: String(this.rescues), good: this.rescues === 0 },
+      { label: 'Highest water at the sensor', value: `${Math.round(this.peak * 100)} cm`, good: true },
+    ];
+    const clean = rows.every((r) => r.good);
+    const stranded = total - inside;
+    if (clean) return { verdict: 'Everyone slept dry', summary: 'The forecast gave you a head start and you used all of it. The municipal DRRM office has asked how your barangay did it.', rows };
+    if (stranded === 0) return { verdict: 'Everyone safe', summary: 'Nobody was left behind, though parts of the night were closer than they needed to be. The forecast gave you time; next storm, use all of it.', rows };
+    return {
+      verdict: `${stranded} ${stranded === 1 ? 'resident' : 'residents'} stranded`,
+      summary: 'The sensor and the forecast gave their warnings in time. Not everyone heard them in time. Rescue boats reached the last houses at first light.',
+      rows,
+    };
+  }
+}

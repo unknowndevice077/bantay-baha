@@ -3,95 +3,100 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1220" />
+    <meta name="theme-color" content="#111214" />
     <meta name="description" content="Bantay Baha: interactive 3D flood-monitoring simulator of a Philippine barangay." />
-    <title>Bantay Baha — Flood Monitoring Simulator</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+    <title>Bantay Baha Simulator</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
     <div id="app">
       <div id="labels"></div>
 
-      <section id="hud" class="glass" aria-live="polite">
+      <section id="hud" class="surface" aria-live="polite">
         <header>
-          <span class="brand">🌊 Bantay Baha</span>
+          <div class="brand">
+            <b>Bantay Baha</b>
+            <span class="label">Creek sensor bb-01</span>
+          </div>
           <span id="badge" class="badge s-NORMAL">NORMAL</span>
         </header>
+        <div id="fu-fault" class="fu-fault" hidden></div>
         <div class="tabs" role="tablist">
-          <button class="tab active" data-tab="water" role="tab">Water</button>
-          <button class="tab" data-tab="telemetry" role="tab"><span class="live-dot"></span>ESP32 telemetry</button>
+          <button class="tab active" data-tab="water" role="tab">Water level</button>
+          <button class="tab" data-tab="telemetry" role="tab"><span class="live-dot"></span>Device</button>
         </div>
         <div class="tab-pane" data-pane="water">
           <div class="metrics">
-            <div><label>Water level</label><b id="m-level">--</b><small>cm</small></div>
-            <div><label>Rise rate</label><b id="m-rate">--</b><small>cm / 10 min</small></div>
-            <div><label>Sensor distance</label><b id="m-dist">--</b><small>cm</small></div>
+            <div><span class="label">Level</span><b id="m-level" class="num">--</b><small>cm</small></div>
+            <div><span class="label">Rise</span><b id="m-rate" class="num">--</b><small>cm / 10 min</small></div>
+            <div><span class="label">Distance</span><b id="m-dist" class="num">--</b><small>cm</small></div>
           </div>
+          <div id="fu-line" class="fu-line" hidden></div>
+          <div id="fc-badge" class="fc" hidden><b id="fc-eta"></b><span id="fc-detail"></span></div>
           <canvas id="chart"></canvas>
           <div id="m-source" class="source"></div>
         </div>
         <div class="tab-pane" data-pane="telemetry" hidden>
-          <div class="tele-head"><span id="t-node">bb-01</span><span id="t-mode" class="chip">SIMULATED</span></div>
+          <div class="tele-head"><span id="t-node" class="num">bb-01</span><span id="t-mode" class="chip">SIMULATED</span></div>
           <div class="tele-grid">
-            <div><label>Uptime</label><b id="t-uptime">--</b></div>
-            <div><label>Wi-Fi RSSI</label><b id="t-rssi">--</b><span class="bars" id="t-bars"><i></i><i></i><i></i><i></i></span></div>
-            <div><label>Battery</label><b id="t-batt">--</b><span class="meter"><span id="t-batt-bar"></span></span></div>
-            <div><label>Solar in / net</label><b id="t-solar">--</b></div>
-            <div><label>Enclosure temp</label><b id="t-temp">--</b></div>
-            <div><label>Free heap</label><b id="t-heap">--</b></div>
-            <div><label>Echo time</label><b id="t-echo">--</b></div>
-            <div><label>Distance</label><b id="t-dist">--</b></div>
-            <div><label>Packets sent</label><b id="t-seq">--</b></div>
+            <div><span class="label">Uptime</span><b id="t-uptime" class="num">--</b></div>
+            <div><span class="label">Wi-Fi</span><b id="t-rssi" class="num">--</b><span class="bars" id="t-bars"><i></i><i></i><i></i><i></i></span></div>
+            <div><span class="label">Battery</span><b id="t-batt" class="num">--</b><span class="meter"><span id="t-batt-bar"></span></span></div>
+            <div><span class="label">Solar in / net</span><b id="t-solar" class="num">--</b></div>
+            <div><span class="label">Enclosure</span><b id="t-temp" class="num">--</b></div>
+            <div><span class="label">Free heap</span><b id="t-heap" class="num">--</b></div>
+            <div><span class="label">Echo time</span><b id="t-echo" class="num">--</b></div>
+            <div><span class="label">Distance</span><b id="t-dist" class="num">--</b></div>
+            <div><span class="label">Packets</span><b id="t-seq" class="num">--</b></div>
           </div>
-          <label class="log-title">MQTT publish → <span id="t-topic"></span></label>
+          <div class="label log-title">MQTT publish to <span id="t-topic"></span></div>
           <ol id="t-log" class="mqtt-log"></ol>
         </div>
       </section>
 
-      <section id="alert" class="alert glass s-NORMAL" aria-live="assertive">
-        <div class="alert-head"><span id="alert-icon">📢</span><span id="alert-title">Status update</span><span id="alert-src"></span></div>
-        <p id="alert-text">Waiting for the first sensor reading…</p>
+      <section id="alert" class="alert surface s-NORMAL" aria-live="assertive">
+        <div class="alert-head label"><span id="alert-title">Status update</span><span id="alert-src"></span></div>
+        <p id="alert-text">Waiting for the first sensor reading.</p>
       </section>
 
-      <div id="evac-banner" hidden>⚠ EVACUATE — proceed to the Barangay Hall evacuation center</div>
+      <div id="evac-banner" hidden></div>
 
       <aside id="panel" class="open">
-        <button id="panel-toggle" class="glass" aria-label="Toggle controls">⚙</button>
-        <div class="panel-body glass">
-          <h2>Controls</h2>
-          <fieldset>
-            <legend>Simulation</legend>
+        <button id="panel-toggle" class="surface" aria-label="Toggle controls">Controls</button>
+        <div class="panel-body surface">
+          <section>
+            <h3 class="label">Simulation</h3>
             <div class="row"><span>Water source</span><span id="src-chip" class="chip">Rain model</span></div>
             <label class="slider">Rainfall <output id="o-rain">0 mm/hr</output><input id="i-rain" type="range" min="0" max="100" step="1" value="0" /></label>
             <label class="slider">Water level <output id="o-level">0.90 m</output><input id="i-level" type="range" min="0.3" max="5.5" step="0.01" value="0.9" /></label>
-          </fieldset>
-          <fieldset>
-            <legend>Auto-Storm</legend>
-            <div class="row"><button id="b-storm" class="primary">▶ Play storm</button><button id="b-reset">↺ Reset</button></div>
+          </section>
+          <section>
+            <h3 class="label">Auto-storm</h3>
+            <div class="row"><button id="b-storm" class="primary">Play storm</button><button id="b-reset">Reset</button></div>
             <div class="progress"><div id="storm-bar"></div></div>
-            <div class="row small"><span id="storm-time">T+0 min / 90 min</span></div>
+            <div class="row small"><span id="storm-time" class="num">T+0 min / 90 min</span></div>
             <label class="slider">Speed <output id="o-speed">1x</output><input id="i-speed" type="range" min="1" max="10" step="1" value="1" /></label>
-          </fieldset>
-          <fieldset>
-            <legend>Day / night</legend>
-            <label class="slider">Time of day <output id="o-time">14:24</output><input id="i-time" type="range" min="0" max="1" step="0.001" value="0.6" /></label>
+          </section>
+          <section>
+            <h3 class="label">Time of day</h3>
+            <label class="slider">Clock <output id="o-time">14:24</output><input id="i-time" type="range" min="0" max="1" step="0.001" value="0.6" /></label>
             <div class="row presets">
-              <button data-time="0.27">🌅 Dawn</button>
-              <button data-time="0.5">☀️ Noon</button>
-              <button data-time="0.76">🌇 Dusk</button>
-              <button data-time="0.95">🌙 Night</button>
+              <button data-time="0.27">Dawn</button>
+              <button data-time="0.5">Noon</button>
+              <button data-time="0.76">Dusk</button>
+              <button data-time="0.95">Night</button>
             </div>
-            <label class="check"><input id="i-time-lock" type="checkbox" /> Lock time (stop the cycle)</label>
-          </fieldset>
-          <fieldset>
-            <legend>Display &amp; alerts</legend>
+            <label class="check"><input id="i-time-lock" type="checkbox" /> Hold the time</label>
+          </section>
+          <section>
+            <h3 class="label">Display and alerts</h3>
             <div class="toggles">
               <label><input type="checkbox" data-toggle="debris" /> Debris</label>
               <label><input type="checkbox" data-toggle="rain" /> Rain</label>
               <label><input type="checkbox" data-toggle="xray" /> X-ray</label>
               <label><input type="checkbox" data-toggle="lola" /> Lola mode</label>
               <label><input type="checkbox" data-toggle="sound" /> Sound</label>
-              <label title="Ambient occlusion + bloom"><input type="checkbox" data-toggle="hq" /> High quality</label>
+              <label title="Ambient occlusion and bloom"><input type="checkbox" data-toggle="hq" /> High quality</label>
             </div>
             <label class="select">Language
               <select id="i-lang">
@@ -101,9 +106,21 @@
                 <option value="war">Waray</option>
               </select>
             </label>
-          </fieldset>
+          </section>
+          <section>
+            <h3 class="label">Bantay Baha+</h3>
+            <label class="check"><input type="checkbox" data-plus="forecast" /> Forecast 30 and 60 minutes ahead</label>
+            <p id="fc-note" class="hint"></p>
+            <label class="check"><input type="checkbox" data-plus="fusion" /> Sensor fusion: ultrasonic + gauge camera</label>
+            <div id="fu-cam-box" class="fu-cam" hidden>
+              <canvas id="fu-cam" width="36" height="150"></canvas>
+              <p id="fu-cam-text" class="hint"></p>
+            </div>
+            <label class="select">Failure to simulate <select id="fu-mode"></select></label>
+            <div class="row"><button id="fu-break">Simulate sensor failure</button></div>
+          </section>
           <details>
-            <summary>Live ESP32 input</summary>
+            <summary class="label">Live ESP32 input</summary>
             <label class="select">Protocol
               <select id="i-ws-mode">
                 <option value="ws">WebSocket (JSON)</option>
@@ -115,38 +132,79 @@
             <div class="row"><button id="b-remote">Connect</button><span id="ws-status" class="status">Not connected</span></div>
           </details>
           <details>
-            <summary>Ollama (local LLM alerts)</summary>
-            <label class="check"><input id="i-ollama" type="checkbox" /> Generate advisories with Ollama</label>
+            <summary class="label">Ollama advisories</summary>
+            <label class="check"><input id="i-ollama" type="checkbox" /> Write advisories with a local Ollama model</label>
             <label class="text">URL <input id="i-ollama-url" type="text" spellcheck="false" /></label>
             <label class="text">Model <input id="i-ollama-model" type="text" spellcheck="false" /></label>
-            <p class="hint">Falls back to built-in templates if unreachable.</p>
+            <p class="hint">Falls back to the built-in templates if Ollama can't be reached.</p>
           </details>
         </div>
       </aside>
 
-      <nav id="cams" class="glass" aria-label="Camera presets">
-        <button data-cam="overview">Overview</button>
-        <button data-cam="sensor">Sensor close-up</button>
-        <button data-cam="street">Street level</button>
-        <button data-cam="bridge">Bridge</button>
-        <button data-cam="cinematic">🎬 Cinematic</button>
-        <span class="keys-hint">Drag: look · WASD: move · Q/E: down/up · Shift: fast · Wheel: forward</span>
+      <nav id="cams" class="surface" aria-label="Camera presets">
+        <div class="seg">
+          <button data-cam="overview">Overview</button>
+          <button data-cam="sensor">Sensor</button>
+          <button data-cam="street">Street</button>
+          <button data-cam="bridge">Bridge</button>
+          <button data-cam="cinematic">Fly-through</button>
+        </div>
+        <a class="link" href="play.html">Play the story</a>
+        <a id="l-dashboard" class="link" href="dashboard.html" target="bantay-baha-dashboard">Dashboard</a>
+        <button id="b-guide">Guide</button>
+        <span class="keys-hint">Drag to look · WASD move · Q / E or Space down / up · Shift fast</span>
       </nav>
 
-      <section id="inspector" class="glass" hidden aria-live="polite">
-        <button id="insp-close" aria-label="Close">×</button>
+      <section id="inspector" class="surface" hidden aria-live="polite">
+        <button id="insp-close" aria-label="Close">Close</button>
         <div class="insp-head">
-          <span id="insp-icon"></span>
-          <div><small id="insp-kind"></small><h3 id="insp-title"></h3></div>
+          <small id="insp-kind" class="label"></small>
+          <h3 id="insp-title"></h3>
         </div>
         <p id="insp-about"></p>
         <dl id="insp-specs"></dl>
-        <div id="insp-live-wrap"><h4><span class="live-dot"></span>Live</h4><dl id="insp-live"></dl></div>
+        <div id="insp-live-wrap"><h4 class="label"><span class="live-dot"></span>Live</h4><dl id="insp-live"></dl></div>
         <div id="insp-actions"></div>
-        <div class="insp-parts"><small>All parts</small><div id="insp-chips"></div></div>
+        <div class="insp-parts"><small class="label">All parts</small><div id="insp-chips"></div></div>
       </section>
 
       <div id="toast"></div>
+      <div id="loading">Loading the barangay</div>
+
+      <section id="welcome" hidden aria-label="Welcome">
+        <div class="welcome-card">
+          <p class="kicker">Bantay Baha</p>
+          <h1>A flood early-warning system for a barangay by a creek</h1>
+          <p>
+            A solar ultrasonic sensor on a pole measures the creek. Everything you see follows that one reading: the water,
+            the alert level, the siren, the advisories, and residents walking to the evacuation center. Pick where to start.
+          </p>
+          <div class="choices">
+            <div class="choice">
+              <small>Here · 2 minutes</small>
+              <h2>Watch a storm</h2>
+              <p>Play a typhoon rain band at 5x speed. Watch the level and status on the left, the alerts at the bottom, and the residents evacuate.</p>
+              <button id="w-storm" class="go">Start the storm</button>
+            </div>
+            <div class="choice">
+              <small>Story game · about 12 minutes · keyboard</small>
+              <h2>Be the barangay captain</h2>
+              <p>One flood night in first person. Read the forecast, warn the barangay, bring out the people who won't leave, and be in the hall when the creek crests.</p>
+              <a class="go" href="play.html">Play the story</a>
+            </div>
+            <div class="choice">
+              <small>New tab · phone or laptop</small>
+              <h2>See the captain's dashboard</h2>
+              <p>The plain screen a barangay would actually use: status, trend, siren, advisories, headcount. It follows this simulator live while both tabs are open.</p>
+              <button id="w-dashboard" class="go">Open the dashboard</button>
+            </div>
+          </div>
+          <div class="welcome-foot">
+            <span>In 3D: drag to look, WASD to move, the Controls panel on the right. The Guide button at the bottom brings this back.</span>
+            <button id="w-close">Just look around</button>
+          </div>
+        </div>
+      </section>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

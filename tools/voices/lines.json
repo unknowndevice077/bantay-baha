@@ -1,0 +1,307 @@
+[
+ {
+  "speaker": "bulletin",
+  "text": "PAGASA has raised a red rainfall warning for the province. Torrential rain, more than thirty millimetres an hour, getting heavier over the next three hours. Serious flooding is expected in low-lying areas near rivers and creeks.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, you hear that? Red warning. And the creek sensor has been climbing all afternoon. Slow, but it never stops.",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "lito",
+  "text": "The laptop is on. Look at what the forecast is saying.",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "lito",
+  "text": "The forecast is still loading its history, Kap. Give it a moment and check again.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "lito",
+  "text": "Good, that is out. People will start packing their go-bags.",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "lito",
+  "text": "Two things, Kap. The mats for the evacuation center are still rolled up in the corner. And at the sari-sari store they say the sensor is broken.",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "lito",
+  "text": "Can you check it against the staff gauge down at the creek? People will believe their own eyes.",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "lito",
+  "text": "Salamat, Kap. I will set up the registration table by the door.",
+  "emotion": "warm"
+ },
+ {
+  "speaker": "jun",
+  "text": "Kap, this is Jun at the bridge! The creek is over the bank. Water is on the road by the bridge!",
+  "emotion": "alarmed"
+ },
+ {
+  "speaker": "radio",
+  "text": "Sound the siren, Kap! The switch is by the hall door, or use the dashboard.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "radio",
+  "text": "And remember: Mang Ben across the creek never leaves, and Lola Cora lives alone by the river at the west end.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "jun",
+  "text": "Kap, Aling Nena is here. Her boy Toto is missing! Someone saw him by the canal near the main road, watching the water.",
+  "emotion": "alarmed"
+ },
+ {
+  "speaker": "radio",
+  "text": "Siren is up! People are coming out with their bags.",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "ben",
+  "text": "Kap, there is no flood. I have lived here forty years. I will watch the water myself.",
+  "emotion": "stubborn"
+ },
+ {
+  "speaker": "ben",
+  "text": "Kap! I told you, the water never reaches this house!",
+  "emotion": "stubborn"
+ },
+ {
+  "speaker": "ben",
+  "text": "...Within the hour? Sige, sige. Get the kids, we are going. Salamat, Kap.",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "ben",
+  "text": "We are packing, Kap! Two minutes!",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lola",
+  "text": "Ay, Kap. Is it bad already? Come back for me if it gets worse, ha?",
+  "emotion": "tired"
+ },
+ {
+  "speaker": "lola",
+  "text": "Ay, Kap... the water is at my steps. My knees... I can't run anymore.",
+  "emotion": "scared"
+ },
+ {
+  "speaker": "lola",
+  "text": "You have a good heart, anak. Do not let go of me.",
+  "emotion": "scared"
+ },
+ {
+  "speaker": "lola",
+  "text": "Salamat, anak. God bless you. God bless you.",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "toto",
+  "text": "Kap! Look how high the water is! It is like a river now!",
+  "emotion": "excited"
+ },
+ {
+  "speaker": "toto",
+  "text": "Opo, Kap! Sorry po!",
+  "emotion": "scared"
+ },
+ {
+  "speaker": "nena",
+  "text": "Toto! Anak, where did you go?! Salamat, Kap. Salamat po.",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "jun",
+  "text": "Kap, the main road is going under! It is up to my knees here!",
+  "emotion": "alarmed"
+ },
+ {
+  "speaker": "radio",
+  "text": "Kap, get everyone inside and come back to the hall. We need the headcount for the MDRRMO.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "radio",
+  "text": "No siren yet, so people are leaving on their own. Some are wading. Hurry, Kap!",
+  "emotion": "alarmed"
+ },
+ {
+  "speaker": "radio",
+  "text": "Kap, the list matches. Everyone is inside. Come in and we will call it in.",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "lito",
+  "text": "Twenty-three residents, all accounted for. Calling the MDRRMO now.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "lito",
+  "text": "MDRRMO, this is Barangay San Roque. Everyone is in the evacuation center. Water at the sensor is over four metres and holding.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "lito",
+  "text": "Rest, Kap. You did good tonight.",
+  "emotion": "warm"
+ },
+ {
+  "speaker": "lito",
+  "text": "Check your phone, Kap. Everything the sensor sees is on the dashboard, with the forecast.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "lito",
+  "text": "That is the Bantay Baha forecast, Kap. It takes PAGASA's rain outlook and how fast the creek has been rising, and looks an hour ahead.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "lito",
+  "text": "The sirens have not even gone off yet. If we move now, we move before the water does. Send an early advisory.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 5 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 10 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 15 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 20 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 25 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 30 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 35 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 40 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 45 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 50 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 55 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "lito",
+  "text": "Kap, the forecast now expects the WARNING level in about 60 minutes.",
+  "emotion": "urgent"
+ },
+ {
+  "speaker": "resident-male",
+  "text": "Good day! The creek is calm today.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "resident-female",
+  "text": "Good day! The creek is calm today.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "resident-child",
+  "text": "Good day! The creek is calm today.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "resident-male",
+  "text": "We're safe inside the evacuation center. Salamat po!",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "resident-female",
+  "text": "We're safe inside the evacuation center. Salamat po!",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "resident-child",
+  "text": "We're safe inside the evacuation center. Salamat po!",
+  "emotion": "relieved"
+ },
+ {
+  "speaker": "resident-male",
+  "text": "The water is rising... I'm packing our go-bag just in case.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "resident-female",
+  "text": "The water is rising... I'm packing our go-bag just in case.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "resident-child",
+  "text": "The water is rising... I'm packing our go-bag just in case.",
+  "emotion": "calm"
+ },
+ {
+  "speaker": "resident-male",
+  "text": "We're heading to the Barangay Hall now!",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "resident-female",
+  "text": "We're heading to the Barangay Hall now!",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "resident-child",
+  "text": "We're heading to the Barangay Hall now!",
+  "emotion": "concerned"
+ },
+ {
+  "speaker": "resident-male",
+  "text": "Hurry, the road is flooding! Go to the hall!",
+  "emotion": "scared"
+ },
+ {
+  "speaker": "resident-female",
+  "text": "Hurry, the road is flooding! Go to the hall!",
+  "emotion": "scared"
+ },
+ {
+  "speaker": "resident-child",
+  "text": "Hurry, the road is flooding! Go to the hall!",
+  "emotion": "scared"
+ }
+]

@@ -138,9 +138,9 @@ export class Panel {
     $('o-speed').textContent = `${state.speed}x`;
     if (this.dragging !== this.time) this.time.value = state.timeOfDay.toFixed(3);
     const minutes = Math.floor(state.timeOfDay * 24 * 60);
-    $('o-time').textContent = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${state.timeLocked ? ' 🔒' : ''}`;
+    $('o-time').textContent = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${state.timeLocked ? ' held' : ''}`;
     $('src-chip').textContent = SOURCE_CHIP[state.source];
-    this.stormBtn.textContent = state.stormPlaying ? '⏸ Pause storm' : state.stormTime > 0 && state.stormTime < STORM_DURATION ? '▶ Resume storm' : '▶ Play storm';
+    this.stormBtn.textContent = state.stormPlaying ? 'Pause storm' : state.stormTime > 0 && state.stormTime < STORM_DURATION ? 'Resume storm' : 'Play storm';
     $('storm-bar').style.width = `${(state.stormTime / STORM_DURATION) * 100}%`;
     $('storm-time').textContent = `T+${Math.floor(state.stormTime / 60)} min / ${STORM_DURATION / 60} min`;
   }

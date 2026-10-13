@@ -1,0 +1,3 @@
+# Dev-only: training and evaluation of the water-level forecaster. The browser never needs Python.
+numpy>=1.26
+scikit-learn>=1.4

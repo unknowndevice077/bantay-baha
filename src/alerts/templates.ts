@@ -80,6 +80,42 @@ const LOLA: Record<Lang, Record<Status, string>> = {
   },
 };
 
+const RESIDENT: Record<Lang, Record<Status | 'SHELTERED', string>> = {
+  en: {
+    NORMAL: 'Good day! The creek is calm today.',
+    ADVISORY: "The water is rising... I'm packing our go-bag just in case.",
+    WARNING: "We're heading to the Barangay Hall now!",
+    EVACUATE: 'Hurry, the road is flooding! Go to the hall!',
+    SHELTERED: "We're safe inside the evacuation center. Salamat po!",
+  },
+  tl: {
+    NORMAL: 'Magandang araw! Kalmado ang sapa ngayon.',
+    ADVISORY: 'Tumataas ang tubig... inihahanda ko na ang go-bag namin.',
+    WARNING: 'Papunta na kami sa Barangay Hall!',
+    EVACUATE: 'Bilisan mo, binabaha na ang kalsada! Sa hall tayo!',
+    SHELTERED: 'Ligtas kami dito sa evacuation center. Salamat po!',
+  },
+  ceb: {
+    NORMAL: 'Maayong adlaw! Kalmado ang sapa karon.',
+    ADVISORY: 'Nagsaka ang tubig... giandam na nako among go-bag.',
+    WARNING: 'Padulong na mi sa Barangay Hall!',
+    EVACUATE: 'Dali, gibahaan na ang dalan! Adto ta sa hall!',
+    SHELTERED: 'Luwas mi diri sa evacuation center. Salamat!',
+  },
+  war: {
+    NORMAL: 'Maupay nga adlaw! Kalmado an sapa yana.',
+    ADVISORY: 'Nasaka an tubig... ginpreparar ko na an amon go-bag.',
+    WARNING: 'Makadto na kami ha Barangay Hall!',
+    EVACUATE: 'Dali, ginbabaha na an dalan! Kadto kita ha hall!',
+    SHELTERED: 'Luwas kami didi ha evacuation center. Salamat!',
+  },
+};
+
+/** What a resident says when the captain talks to them in the story game. */
+export function residentLine(lang: Lang, status: Status, sheltered: boolean): string {
+  return RESIDENT[lang][sheltered ? 'SHELTERED' : status];
+}
+
 export interface AlertVars {
   levelCm: number;
   rateCm: number;

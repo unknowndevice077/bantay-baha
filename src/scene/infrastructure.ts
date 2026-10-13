@@ -125,6 +125,20 @@ function concreteMaterial(): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({ vertexColors: true, map: c.map, normalMap: c.normalMap, roughness: 0.9 });
 }
 
+/** Where the road and lanes cross the drainage canal on concrete box culverts: centre z, half-width, surface lift. */
+export const CANAL_CROSSINGS = [
+  { z: ROAD_Z, halfW: 3, lift: 0.08 },
+  { z: 34, halfW: 1.3, lift: 0.05 },
+  { z: 50, halfW: 1.3, lift: 0.05 },
+];
+
+/** Walking surface over a culvert (the road continues level instead of dipping into the canal), else null. */
+export function culvertTop(x: number, z: number): number | null {
+  if (Math.abs(x - CANAL.x) > CANAL.halfW + 0.35) return null;
+  const c = CANAL_CROSSINGS.find((k) => Math.abs(z - k.z) <= k.halfW);
+  return c ? baseHeight(x, z) + c.lift : null;
+}
+
 function canalWalls(): THREE.Mesh {
   const parts: THREE.BufferGeometry[] = [];
   for (let z = riverZ(CANAL.x) + 10; z < CANAL.zEnd; z += 2) {
@@ -141,6 +155,22 @@ function canalWalls(): THREE.Mesh {
     const slab = new THREE.BoxGeometry(CANAL.halfW * 2, 0.1, len);
     slab.translate(CANAL.x, floor, zm);
     parts.push(colorize(slab, 0x7f7c75));
+  }
+  // Box culverts carrying the road and lanes over the canal, with a dark opening at each end.
+  for (const c of CANAL_CROSSINGS) {
+    if (c.z - c.halfW >= CANAL.zEnd) continue;
+    const floor = canalFloor(c.z);
+    const top = baseHeight(CANAL.x, c.z) + c.lift - 0.02;
+    const len = c.halfW * 2 + 0.4;
+    const body = new THREE.BoxGeometry(CANAL.halfW * 2 + 0.5, top - floor, len);
+    body.translate(CANAL.x, (top + floor) / 2, c.z);
+    parts.push(colorize(body, 0x8f8c84));
+    const mouthH = Math.min(1.1, (top - floor) * 0.75);
+    for (const end of [-1, 1]) {
+      const mouth = new THREE.BoxGeometry(CANAL.halfW * 1.6, mouthH, 0.04);
+      mouth.translate(CANAL.x, floor + 0.05 + mouthH / 2, c.z + end * (len / 2 + 0.01));
+      parts.push(colorize(mouth, 0x14161a));
+    }
   }
   const mesh = new THREE.Mesh(merge(parts), concreteMaterial());
   mesh.receiveShadow = true;

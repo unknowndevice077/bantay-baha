@@ -16,12 +16,12 @@ export type ComponentId =
   | 'beacon'
   | 'mast'
   | 'gateway'
-  | 'dashboard';
+  | 'dashboard'
+  | 'gauge';
 
 export interface ComponentInfo {
   title: string;
   kind: string;
-  icon: string;
   about: string;
   specs: [string, string][];
   /** Live values pulled from the node's telemetry. */
@@ -32,7 +32,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   enclosure: {
     title: 'IP65 weatherproof enclosure',
     kind: 'Housing',
-    icon: '📦',
     about:
       'Gasketed ABS junction box that keeps rain and humidity off the electronics. Cables enter through glands at the bottom so water cannot run inside. Click it to open or close the lid; then click any part inside.',
     specs: [
@@ -45,7 +44,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   esp32: {
     title: 'ESP32-WROOM-32 dev board',
     kind: 'Microcontroller',
-    icon: '🧠',
     about:
       'The brain of the node. Every cycle it fires the ultrasonic sensor, times the echo, takes a median of several pings to reject splashes and rain, converts distance to water level, and publishes JSON over Wi-Fi to the MQTT broker. Between readings it can deep-sleep to save the battery.',
     specs: [
@@ -64,7 +62,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   driver: {
     title: 'JSN-SR04T driver board',
     kind: 'Ultrasonic module',
-    icon: '📡',
     about:
       'Drives the waterproof transducer: on a 10 µs TRIG pulse it emits a 40 kHz burst, then raises ECHO for as long as the sound takes to return. Distance = speed of sound × echo time ÷ 2.',
     specs: [
@@ -81,7 +78,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   battery: {
     title: '2× 18650 Li-ion pack',
     kind: 'Energy storage',
-    icon: '🔋',
     about:
       'Two 3000 mAh cells in parallel keep the node running through the night and through days of typhoon cloud cover, recharged by the solar panel through a charge controller.',
     specs: [
@@ -98,7 +94,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   wiring: {
     title: 'Wiring harness',
     kind: 'Interconnect',
-    icon: '🔌',
     about:
       'Colour-coded leads: red = power (VIN/5 V), black = ground, yellow = TRIG, green = ECHO, and the orange shielded cable that runs up the mast and along the arm to the transducer.',
     specs: [
@@ -110,7 +105,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   transducer: {
     title: 'Waterproof ultrasonic transducer',
     kind: 'Sensor head',
-    icon: '🔊',
     about:
       'Sealed probe on the end of the arm, pointing straight down at the water. It is both the speaker and the microphone: it sends the ping and hears the echo bounce off the surface.',
     specs: [
@@ -126,7 +120,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   beam: {
     title: 'Ultrasonic beam',
     kind: 'Measurement',
-    icon: '〰️',
     about:
       'The translucent cone visualises the sound cone. Time-of-flight: d = v·t / 2, where v ≈ 331.3 + 0.606·T m/s. The firmware compensates for air temperature so hot afternoons do not read as lower water.',
     specs: [
@@ -141,7 +134,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   solar: {
     title: '5 W solar panel',
     kind: 'Power source',
-    icon: '☀️',
     about: 'Small monocrystalline panel tilted toward the southern sky. It recharges the 18650 pack by day; output collapses under thick storm clouds.',
     specs: [
       ['Rated', '6 V, 5 W peak'],
@@ -152,7 +144,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   antenna: {
     title: '2.4 GHz antenna',
     kind: 'Radio',
-    icon: '📶',
     about: 'External whip antenna on the enclosure so the Wi-Fi link reaches the gateway on the barangay hall roof. Heavy rain slightly weakens the signal.',
     specs: [
       ['Band', '2.4 GHz Wi-Fi'],
@@ -163,7 +154,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   led: {
     title: 'Status LED',
     kind: 'Indicator',
-    icon: '🚦',
     about: 'Lets responders read the node at a glance: green heartbeat = normal, yellow = advisory, orange = warning, fast red = evacuate.',
     specs: [['Blink', 'Faster as the risk level rises']],
     live: (t) => [['Showing', t.status]],
@@ -171,7 +161,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   beacon: {
     title: 'Warning beacon',
     kind: 'Local alarm',
-    icon: '🚨',
     about: 'Flashing light on the mast top (and a twin on the barangay hall). Amber at WARNING, fast red at EVACUATE, so people on the riverbank see the alarm even without a phone.',
     specs: [['Triggers', 'WARNING and EVACUATE']],
     live: (t) => [['State', t.status === 'WARNING' || t.status === 'EVACUATE' ? 'FLASHING' : 'off']],
@@ -179,7 +168,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   mast: {
     title: 'Galvanized steel mast & arm',
     kind: 'Structure',
-    icon: '🏗️',
     about: 'Concrete-footed pole on the bank with a cantilever arm so the transducer hangs over open water, clear of the bank slope and floating debris.',
     specs: [
       ['Arm reach', '≈ 5.5 m over the creek'],
@@ -189,7 +177,6 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   gateway: {
     title: 'Gateway · MQTT broker',
     kind: 'Network',
-    icon: '🛰️',
     about: 'Wi-Fi access point plus a small computer (e.g. Raspberry Pi running Mosquitto) on the barangay hall roof. The node publishes here; dashboards and alert services subscribe.',
     specs: [
       ['Topic', MQTT_TOPIC],
@@ -197,10 +184,20 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
     ],
     live: (t) => [['Messages received', `${t.seq}`]],
   },
+  gauge: {
+    title: 'Staff gauge',
+    kind: 'Manual reference',
+    about:
+      'Painted measuring board in the creek, zeroed at the same datum as the sensor. Tanods read it by eye to verify the ultrasonic reading and as a fallback if the node is offline. Each bar is 5 cm; colours alternate every metre.',
+    specs: [
+      ['Range', '0–6 m above the gauge datum'],
+      ['Graduation', '"E" pattern, 5 cm bars, numbered every metre'],
+    ],
+    live: (t) => [['Reads', `${t.levelCm.toFixed(0)} cm`]],
+  },
   dashboard: {
     title: 'Barangay dashboard',
     kind: 'Display',
-    icon: '🖥️',
     about: 'Outdoor screen at the evacuation center subscribed to the sensor topic. It shows the current level, status and the last 10 minutes so the BDRRMC can act early.',
     specs: [['Refresh', 'On every MQTT message']],
     live: (t) => [

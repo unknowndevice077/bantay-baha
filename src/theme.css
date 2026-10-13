@@ -1,0 +1,102 @@
+/* Shared type and colour for all three pages. Plex is bundled, so the dashboard works without internet. */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+:root {
+  --font: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  /* Alert levels, matched to the PAGASA yellow / orange / red warning colours. */
+  --NORMAL: #3f9a52;
+  --ADVISORY: #e2b203;
+  --WARNING: #e3740f;
+  --EVACUATE: #d23a2f;
+
+  /* Dark surfaces drawn over the 3D view. */
+  --ink-0: #0b0f14;
+  --ink-1: #131920;
+  --ink-2: #1b232c;
+  --ink-3: #253039;
+  --ink-line: #2f3a46;
+  --ink-text: #e9eef3;
+  --ink-muted: #8794a2;
+  --signal: #ffc83d;
+
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.label {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.5em;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font: 500 11px/1.5 var(--mono);
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* ---- Labels drawn into the 3D view (both the simulator and the game) ---- */
+.xlabel {
+  background: var(--ink-1);
+  border: 1px solid var(--ink-line);
+  border-left: 2px solid var(--signal);
+  color: var(--ink-text);
+  font: 500 11px/1.3 var(--font);
+  padding: 3px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.xlabel.clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.xlabel.clickable:hover {
+  background: var(--ink-3);
+}
+
+.bubble {
+  max-width: 220px;
+  padding: 6px 9px;
+  border-radius: 3px;
+  background: #ffffff;
+  color: #0f2238;
+  font-size: 12px;
+  line-height: 1.35;
+  transform: translateY(-50%);
+}
+
+.name-tag {
+  padding: 1px 6px;
+  background: rgba(11, 15, 20, 0.8);
+  color: var(--ink-text);
+  font: 500 11px/1.5 var(--font);
+  letter-spacing: 0.02em;
+  border-radius: 2px;
+  white-space: nowrap;
+}

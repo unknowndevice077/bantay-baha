@@ -71,7 +71,7 @@ export class Inspector {
       const chip = document.createElement('button');
       chip.className = 'chip-btn';
       chip.dataset.id = id;
-      chip.textContent = `${COMPONENTS[id].icon} ${COMPONENTS[id].kind}`;
+      chip.textContent = COMPONENTS[id].kind;
       chip.addEventListener('click', () => this.select(id));
       chips.append(chip);
     }
@@ -102,14 +102,13 @@ export class Inspector {
     card.hidden = !id;
     this.outline.visible = !!id;
     if (!id) return;
-    $('panel').classList.remove('open'); // the card takes the controls' spot; ⚙ brings them back
+    $('panel').classList.remove('open'); // the card takes the controls' spot; the panel button brings them back
 
     if (!state.toggles.xray && (id === 'enclosure' || INSIDE.includes(id))) {
       setToggle('xray', true);
       this.rig.goTo('sensor');
     }
     const info = COMPONENTS[id];
-    $('insp-icon').textContent = info.icon;
     $('insp-kind').textContent = info.kind;
     $('insp-title').textContent = info.title;
     $('insp-about').textContent = info.about;

@@ -60,10 +60,12 @@ export const state = {
   /** `hq` = ambient occlusion + bloom; off by default on phones. */
   toggles: { debris: true, rain: true, xray: false, lola: false, sound: false, hq: window.innerWidth >= 768 } as Record<ToggleKey, boolean>,
   lang: 'en' as Lang,
-  /** 0..1 fraction of the day (0.5 = noon). Starts mid-afternoon so the demo reaches sunset early. */
+  /** 0..1 fraction of the day (0.5 = noon). Starts mid-afternoon so a demo reaches sunset early. */
   timeOfDay: 0.6,
   /** When true the day/night cycle stops at the chosen time. */
   timeLocked: false,
+  /** Siren switched on by hand (hall button or the operations dashboard), regardless of status. */
+  sirenManual: false,
 };
 
 export function setToggle(key: ToggleKey, value: boolean): void {

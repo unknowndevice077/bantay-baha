@@ -1,75 +1,28 @@
-/** Bantay Baha — bootstraps the renderer, builds the barangay and runs the frame loop. */
+/** Bantay Baha simulator: the 3D barangay with a free camera, live HUD and control panel. */
+import './theme.css';
 import './style.css';
 import * as THREE from 'three';
-import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { AlertService } from './alerts/alertService';
-import { AudioEngine } from './alerts/audio';
-import { HALL, ROAD_Z, levelToY } from './config';
-import { DebrisField } from './debris/debris';
-import { DuckArmada } from './debris/ducks';
+import { ROAD_Z } from './config';
 import { Hud, toast } from './hud/hud';
 import { Panel } from './hud/panel';
 import { TelemetryView } from './hud/telemetry';
+import { initWelcome } from './hud/welcome';
 import { listenKonami } from './konami';
+import { SimBridge } from './net/simBridge';
+import { installPlus } from './plus';
 import { CameraRig } from './scene/cameraRig';
-import { Grass } from './scene/grass';
-import { BRIDGE, createInfrastructure } from './scene/infrastructure';
-import { HALL_PLAN } from './scene/layout';
-import { PostFX } from './scene/postfx';
-import { Rain } from './scene/rain';
-import { Residents } from './scene/residents';
-import { Sky } from './scene/sky';
-import { StreetLights } from './scene/streetlights';
-import { baseHeight, createTerrain } from './scene/terrain';
-import { createVillage } from './scene/village';
-import { Esp32Node } from './sensor/esp32';
+import { BRIDGE } from './scene/infrastructure';
+import { loadPeople } from './scene/person';
+import { baseHeight } from './scene/terrain';
 import { Inspector } from './sensor/inspector';
-import { Monitor } from './sensor/monitor';
-import { PacketFlow } from './sensor/packets';
-import { SmartPole } from './sensor/pole';
 import { RemoteSensor } from './sensor/remote';
-import { updateSim } from './sim';
-import { bus, state } from './state';
-import { clamp, smoothstep } from './util';
-import { Water } from './water/water';
+import { World } from './world';
 
-const mobile = window.innerWidth < 768;
-const app = document.getElementById('app')!;
+await loadPeople();
+const world = new World(document.getElementById('app')!, document.getElementById('labels') as HTMLDivElement);
+const { camera, renderer, pole, audio, esp32 } = world;
 
-const renderer = new THREE.WebGLRenderer({ antialias: !mobile, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.25 : 1.75));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
-app.prepend(renderer.domElement);
-
-const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labels') as HTMLDivElement });
-labelRenderer.setSize(window.innerWidth, window.innerHeight);
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1500);
-const postfx = new PostFX(renderer, scene, camera);
-
-// --- World -------------------------------------------------------------------
-const terrain = createTerrain();
-const village = createVillage();
-const sky = new Sky(scene, renderer, mobile ? 1024 : 2048);
-const grass = new Grass();
-const streetLights = new StreetLights();
-const water = new Water(terrain.heightTexture);
-const rain = new Rain();
-const pole = new SmartPole();
-pole.addBeacon(new THREE.Vector3(HALL.x - 4, HALL_PLAN.floorY + HALL_PLAN.h + HALL_PLAN.roofH + 0.05, HALL.z));
-const monitor = new Monitor();
-const packets = new PacketFlow(pole.antennaTip, monitor.history);
-const debris = new DebrisField();
-const ducks = new DuckArmada();
-const residents = new Residents();
-scene.add(terrain.mesh, createInfrastructure(), village.group, grass.mesh, streetLights.group, water.mesh, rain.mesh, pole.group, packets.group, debris.group, ducks.group, residents.group);
-
-// --- Camera ------------------------------------------------------------------
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const sensorTarget = pole.enclosureCenter.clone().add(v(0, 0.1, 0));
 const rig = new CameraRig(camera, renderer.domElement, {
@@ -79,9 +32,7 @@ const rig = new CameraRig(camera, renderer.domElement, {
   bridge: { pos: v(6, 4.5, BRIDGE.zc - 13), target: v(16.5, -0.5, BRIDGE.zc) },
 });
 
-// --- Systems -----------------------------------------------------------------
-const audio = new AudioEngine();
-const hud = new Hud(monitor.history);
+const hud = new Hud(world.monitor.history);
 const alerts = new AlertService(
   (m) => hud.showAlert(m),
   () => {
@@ -91,69 +42,30 @@ const alerts = new AlertService(
 );
 const remote = new RemoteSensor((text, ok) => Panel.remoteStatus(text, ok));
 const panel = new Panel({ audio, alerts, remote, rig });
-const esp32 = new Esp32Node();
 const telemetry = new TelemetryView(esp32);
-const inspector = new Inspector(camera, renderer.domElement, [pole.group, packets.group], scene, esp32, rig);
-bus.on('reading', (r) => esp32.sense(r));
-toast('Tip: click the box on the sensor pole to open it and explore the parts.');
+const inspector = new Inspector(camera, renderer.domElement, [pole.group, world.packets.group, world.gauge.group], world.scene, esp32, rig);
+const bridge = new SimBridge(esp32, {
+  evacStats: () => world.residents.evacStats(),
+  broadcast: (text) => {
+    hud.broadcast(text);
+    audio.sirenBurst(1.5);
+  },
+});
+world.onPacket = (r) => bridge.publish(r);
+const plusUpdate = installPlus({ hud, world });
 
-bus.on('lightning', ({ distance }) => audio.thunder(distance / 340));
+initWelcome(rig);
 listenKonami(() => {
-  ducks.launch();
+  world.ducks.launch();
   for (let i = 0; i < 6; i++) audio.quack(i * 0.22);
-  toast('🦆 Rubber Duck Armada deployed! Quack quack.');
+  toast('Rubber duck armada deployed.');
 });
 
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  labelRenderer.setSize(window.innerWidth, window.innerHeight);
-  postfx.setSize(window.innerWidth, window.innerHeight);
-});
-
-// --- Frame loop --------------------------------------------------------------
-const clock = new THREE.Clock();
-let packetTimer = 0;
-renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.05);
-  const t = clock.elapsedTime;
-
-  const dtSim = updateSim(dt);
-  monitor.update(dtSim);
-  const levelY = levelToY(state.level);
-  const rainNorm = state.rainfall / 100;
-
-  sky.update(dt, state.rainfall, camera);
-  village.update(sky.night);
-  const mud = clamp(smoothstep(1.2, 3.2, state.level) * 0.8 + rainNorm * 0.4, 0, 1);
-  water.update(dt, levelY, mud, 0.8 + rainNorm * 1.6, state.toggles.rain ? rainNorm : 0, sky);
-  grass.update(dt, state.rainfall);
-  // Photocells switch the lamps on at dusk and under heavy storm cloud.
-  streetLights.update(dt, Math.max(sky.night, sky.storm * 0.75), camera);
-  rain.update(dt, state.rainfall, state.toggles.rain, camera, sky.light);
-  debris.update(dt, state.level, levelY, state.rainfall, state.toggles.debris, water.time, water.chop);
-  ducks.update(dt, levelY, water.time, water.chop);
-  residents.update(dt, levelY, state.status);
-  pole.update(dt, t, levelY, state.status, state.toggles.xray);
-
-  packetTimer -= dt;
-  if (state.reading && packetTimer <= 0) {
-    esp32.publish(state.reading);
-    packets.emit(state.reading);
-    packetTimer = 1;
-  }
-  packets.update(dt, state.toggles.xray);
-  esp32.update(dt, dtSim, 1 - sky.night);
+world.start((dt) => {
   telemetry.update(dt);
   inspector.update(dt);
-
-  audio.update(state.rainfall, state.status === 'EVACUATE');
   hud.update(dt);
   panel.update();
   rig.update(dt);
-
-  if (state.toggles.hq) postfx.render(sky.night);
-  else renderer.render(scene, camera);
-  labelRenderer.render(scene, camera);
+  plusUpdate(dt);
 });

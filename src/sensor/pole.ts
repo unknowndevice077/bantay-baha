@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { POLE_X, SENSOR_Y, STATUS_COLORS, riverZ } from '../config';
-import type { Status } from '../state';
+import { type Status, state } from '../state';
 import type { ComponentId } from './components';
 import { canvasTexture, damp, smoothstep } from '../util';
 import { groundHeight } from '../scene/terrain';
@@ -338,7 +338,7 @@ export class SmartPole {
     this.ledLight.intensity = on ? 1.5 : 0;
 
     // Beacon: amber at WARNING, red and faster at EVACUATE.
-    const active = status === 'WARNING' || status === 'EVACUATE';
+    const active = status === 'WARNING' || status === 'EVACUATE' || state.sirenManual;
     const flash = active && Math.sin(time * Math.PI * 2 * (status === 'EVACUATE' ? 3 : 1.5)) > 0 ? 1 : 0;
     const beaconColor = status === 'EVACUATE' ? 0xff2020 : 0xff8800;
     this.beaconMat.emissive.set(beaconColor);

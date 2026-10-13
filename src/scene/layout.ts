@@ -154,3 +154,100 @@ export const HALL_DOOR = { x: HALL.x, z: HALL.z - HALL.d / 2 };
 export const HALL_INSIDE = { x: HALL.x, z: HALL.z + 0.4, halfW: HALL.w / 2 - 1.4, halfD: HALL.d / 2 - 1.6 };
 /** Where evacuees queue at the foot of the stairs before going in. */
 export const ASSEMBLY = { x: HALL.x, z: HALL_STAIRS.z0 - 1 };
+
+// ---- House interiors -----------------------------------------------------------
+// Every building is a hollow shell with an open doorway in its front (local +z) wall.
+// These helpers are shared by the renderer (village.ts), collisions (player.ts) and
+// walking heights (walkable.ts), so what you see is what you bump into.
+
+export const WALL_T = 0.22;
+
+export const doorHalf = (p: HousePlan): number => (p.type === 'hall' ? 1.1 : 0.5);
+
+/** Height of the floor you walk on inside (concrete houses sit on a 15 cm plinth). */
+export const roomFloor = (p: HousePlan): number => (p.type === 'concrete' || p.type === 'twoStorey' ? p.floorY + 0.15 : p.floorY);
+
+/** Ceiling height inside (two-storey houses show only their ground floor). */
+export const roomCeiling = (p: HousePlan): number => p.floorY + (p.type === 'twoStorey' ? 2.8 : p.h);
+
+/** Plan-local (x, z) → world (x, z). Rotation is only ever 0 or π. */
+export function toWorld(p: HousePlan, lx: number, lz: number): [number, number] {
+  const c = Math.cos(p.rot);
+  const s = Math.sin(p.rot);
+  return [p.x + lx * c + lz * s, p.z - lx * s + lz * c];
+}
+
+/** World (x, z) → plan-local (x, z). */
+export function toLocal(p: HousePlan, x: number, z: number): [number, number] {
+  const c = Math.cos(p.rot);
+  const s = Math.sin(p.rot);
+  const dx = x - p.x;
+  const dz = z - p.z;
+  return [dx * c - dz * s, dx * s + dz * c];
+}
+
+/** Front steps: nipa houses have bamboo stairs up to the raised porch, concrete ones a short threshold ramp. */
+export function frontSteps(p: HousePlan): { start: number; length: number; halfW: number } {
+  return p.type === 'nipa' ? { start: p.d / 2 + 0.9, length: 2.4, halfW: 0.55 } : { start: p.d / 2, length: 0.9, halfW: doorHalf(p) + 0.1 };
+}
+
+export interface LocalBox {
+  /** Centre (plan-local) and size; y is height above the room floor. */
+  lx: number;
+  lz: number;
+  w: number;
+  d: number;
+}
+
+/** Wall footprints with the doorway left open, in plan-local coordinates. */
+export function wallBoxes(p: HousePlan): LocalBox[] {
+  const t = WALL_T;
+  const door = doorHalf(p);
+  const side = p.w / 2 - door;
+  return [
+    { lx: 0, lz: -p.d / 2 + t / 2, w: p.w, d: t },
+    { lx: -(p.w / 2 - t / 2), lz: 0, w: t, d: p.d },
+    { lx: p.w / 2 - t / 2, lz: 0, w: t, d: p.d },
+    { lx: -(door + side / 2), lz: p.d / 2 - t / 2, w: side, d: t },
+    { lx: door + side / 2, lz: p.d / 2 - t / 2, w: side, d: t },
+  ];
+}
+
+export type FurnitureKind = 'bed' | 'table' | 'chair' | 'cabinet' | 'tv';
+
+export interface Furniture extends LocalBox {
+  kind: FurnitureKind;
+  h: number;
+  /** Yaw in plan space (chairs face the table). */
+  ry: number;
+}
+
+const SIZE: Record<FurnitureKind, [number, number, number]> = {
+  bed: [1.9, 0.55, 1.05],
+  table: [1.0, 0.75, 0.7],
+  chair: [0.46, 0.85, 0.46],
+  cabinet: [0.9, 1.8, 0.45],
+  tv: [0.95, 1.0, 0.42],
+};
+
+/** A Filipino family room: bed in a back corner, cabinet, TV, a table with two monobloc chairs. Homes only. */
+export function furniture(p: HousePlan): Furniture[] {
+  if (p.type === 'hall') return [];
+  const hw = p.w / 2 - WALL_T;
+  const hd = p.d / 2 - WALL_T;
+  const item = (kind: FurnitureKind, lx: number, lz: number, ry = 0): Furniture => {
+    const [w, h, d] = SIZE[kind];
+    const turned = Math.abs(Math.sin(ry)) > 0.5;
+    return { kind, lx, lz, w: turned ? d : w, d: turned ? w : d, h, ry };
+  };
+  const tableX = hw - 1.0;
+  const tableZ = 0.2;
+  return [
+    item('bed', -hw + 0.98, -hd + 0.56),
+    item('cabinet', hw - 0.48, -hd + 0.26),
+    item('tv', -hw + 0.24, hd - 1.2, Math.PI / 2),
+    item('table', tableX, tableZ),
+    item('chair', tableX - 0.35, tableZ + 0.62, Math.PI),
+    item('chair', tableX + 0.35, tableZ - 0.62),
+  ];
+}
