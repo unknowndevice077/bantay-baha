@@ -21,7 +21,7 @@ import type { World } from '../world';
 import { Beacon } from './beacon';
 import type { Devices } from './devices';
 import { BEN, HISTORY_S, HOLDOUTS, LINES, LOLA, type Line, STORY_END_S, STORY_START_HOUR, TOTO, storyAt } from './script';
-import { type ReportRow, Subtitles, chapterCard, fadeThrough, renderObjectives, showReport } from './ui';
+import { type ObjectiveView, type ReportRow, Subtitles, chapterCard, fadeThrough, renderObjectives, showReport } from './ui';
 import type { Voice } from './voice';
 
 type ObjectiveId = 'forecast' | 'advisory' | 'gauge' | 'mats' | 'siren' | 'ben' | 'lola' | 'toto' | 'all' | 'return' | 'report';
@@ -31,11 +31,28 @@ interface Objective {
   /** The act it belongs to; still open after that act ends = late. */
   act: number;
   text: () => string;
+  /** What to do, in plain steps; shown under the current objective. */
+  how: () => string;
   target: () => THREE.Vector3 | null;
   label: string;
   shown: boolean;
   done: boolean;
 }
+
+/** How to do each task, for players who don't know the game yet. */
+const HOW: Record<ObjectiveId, string> = {
+  forecast: 'Walk to the laptop on your office desk (follow the marker) and press E.',
+  advisory: 'Open the dashboard: P for your phone, or E at the laptop. Press "Broadcast to PA and screens" or "Send SMS blast".',
+  mats: 'The rolled-up mats are in the corner of the hall. Walk up to them and press E.',
+  gauge: 'Follow the marker down to the creek bank and press E at the painted gauge board.',
+  siren: 'Press E at the red switch by the hall door, or "Sound siren" on the dashboard.',
+  toto: 'Follow the marker to the canal by the main road and press E to talk to him.',
+  ben: 'Cross the bridge, follow the marker to Mang Ben and press E.',
+  lola: 'Follow the marker to her house by the river and press E. She will follow you.',
+  all: 'Residents walk to the hall on their own once the siren sounds. Press E on anyone still outside.',
+  return: 'Go back inside the evacuation center.',
+  report: 'Find Kagawad Lito at the registration table inside the hall and press E.',
+};
 
 const CHAPTERS: [string, string][] = [
   ['Prologue', 'Signal No. 2'],
@@ -118,7 +135,7 @@ export class Story {
     this.forecaster.outlook = (minutes) => storyAt(this.t + minutes * 6).rain;
 
     const hallInside = ground(HALL_INSIDE.x, HALL_INSIDE.z);
-    const o = (id: ObjectiveId, act: number, text: () => string, target: () => THREE.Vector3 | null = () => null, label = ''): Objective => ({ id, act, text, target, label, shown: false, done: false });
+    const o = (id: ObjectiveId, act: number, text: () => string, target: () => THREE.Vector3 | null = () => null, label = ''): Objective => ({ id, act, text, how: () => HOW[id], target, label, shown: false, done: false });
     const deskSpot = ground(OFFICE.x, OFFICE.z - 1);
     this.objectives = [
       o('forecast', 1, () => 'Check the Bantay Baha forecast on the laptop', () => deskSpot, 'Laptop'),
@@ -137,6 +154,8 @@ export class Story {
       o('report', 3, () => 'Report the headcount to the MDRRMO with Kagawad Lito', () => this.litoPos, 'Kagawad Lito'),
     ];
 
+    this.obj('lola').how = () => (this.escorting ? 'Walk to the hall at her pace; she follows you. Wait for her if she falls behind.' : HOW.lola);
+    this.obj('toto').how = () => (this.totoSent ? 'He is on his way. Carry on with the others.' : HOW.toto);
     bus.on('status', ({ to }) => this.onStatus(to));
   }
 
@@ -347,10 +366,15 @@ export class Story {
   }
 
   /** Called when the dashboard (phone or laptop) broadcasts an advisory. */
-  onBroadcast(text: string): void {
+  onBroadcast(text: string, via: 'pa' | 'sms' = 'pa'): void {
     if (!this.running) return;
-    this.world.audio.sirenBurst(1.2);
-    this.say([['narrator', `Hall loudspeaker: "${text.length > 140 ? `${text.slice(0, 137)}...` : text}"`]]);
+    const short = text.length > 140 ? `${text.slice(0, 137)}...` : text;
+    if (via === 'sms') {
+      this.say([['narrator', `SMS blast sent to 214 registered numbers in the barangay: "${short}"`]]);
+    } else {
+      this.world.audio.sirenBurst(1.2);
+      this.say([['narrator', `Hall loudspeaker: "${short}"`]]);
+    }
     if (this.advisoryAt !== null) return;
     this.advisoryAt = this.storyTime();
     this.reveal('advisory', 'mats', 'gauge');
@@ -507,7 +531,8 @@ export class Story {
       }
     }
     const inHall = Math.abs(this.player.pos.x - HALL.x) < HALL.w / 2 - 0.3 && Math.abs(this.player.pos.z - HALL.z) < HALL.d / 2 - 0.3;
-    if (inHall && this.act >= 3) this.complete('return');
+    // Back inside once everyone else is: being in the hall earlier (before going out for someone) doesn't count.
+    if (inHall && this.act >= 3 && this.obj('all').done) this.complete('return');
 
     this.checkCurrent(dt);
     this.renderObjectives();
@@ -545,7 +570,15 @@ export class Story {
   }
 
   private renderObjectives(): void {
-    const items = this.objectives.filter((o) => o.shown).map((o) => ({ text: o.text(), done: o.done, late: !o.done && this.act > o.act }));
+    const current = this.objectives.find((o) => o.shown && !o.done);
+    // Finished tasks from earlier parts fold into one line, so the list stays short.
+    const earlier = this.objectives.filter((o) => o.shown && o.done && o.act < this.act).length;
+    const items: ObjectiveView[] = this.objectives
+      .filter((o) => o.shown && !(o.done && o.act < this.act))
+      .map((o) => ({ text: o.text(), done: o.done, late: !o.done && this.act > o.act, how: o === current ? o.how() : undefined }));
+    if (earlier) items.unshift({ text: `${earlier} earlier ${earlier === 1 ? 'task' : 'tasks'} done`, done: true, late: false, summary: true });
+    // Point at the right buttons on the phone and laptop dashboards.
+    this.devices.coach(current?.id === 'advisory' ? ['d-broadcast', 'd-copy'] : current?.id === 'siren' ? ['d-siren'] : []);
     const key = JSON.stringify(items) + this.act;
     if (key === this.lastObjectives) return;
     this.lastObjectives = key;
@@ -568,6 +601,7 @@ export class Story {
       this.beacon.update(null, '', this.player.pos, 0);
       this.player.standAt(HALL_STAIRS.x - 1.5, HALL_STAIRS.z0 - 1, Math.PI);
       this.devices.close();
+      this.devices.enabled = false;
       document.body.classList.remove('playing');
       setTimeout(() => showReport(report.verdict, report.summary, report.rows), 4500);
     }, 1500);
@@ -587,7 +621,11 @@ export class Story {
     const rows: ReportRow[] = [
       { label: 'Residents in the evacuation center', value: `${inside} of ${total}`, good: inside === total },
       { label: 'Left before the EVACUATE order', value: `${early} of ${total}`, good: early >= total - 3 },
-      { label: 'Forecast warning of WARNING', value: lead === null ? 'Not reached' : `${lead} min ahead`, good: lead !== null && lead >= 10 },
+      {
+        label: 'How far ahead the forecast saw WARNING coming',
+        value: warnAt === Infinity ? 'The creek never reached WARNING' : lead === null ? 'It did not see it coming' : `${lead} min ahead`,
+        good: lead !== null && lead >= 10,
+      },
       { label: 'Advisory sent', value: this.advisoryAt === null ? 'Not sent' : `${when(this.advisoryAt)}${this.advisoryAt < warnAt ? ', before the WARNING' : ', after the WARNING'}`, good: this.advisoryAt !== null && this.advisoryAt < warnAt },
       { label: 'Evacuation center prepared', value: this.obj('mats').done ? 'Mats laid out' : 'Families slept on the bare floor', good: this.obj('mats').done },
       { label: 'Siren sounded', value: this.sirenAt === null ? 'Never' : `${when(this.sirenAt)}${this.sirenAt < evacAt ? ', before the EVACUATE order' : ', after the EVACUATE order'}`, good: this.sirenAt !== null && this.sirenAt < evacAt },

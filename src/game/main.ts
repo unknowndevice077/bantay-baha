@@ -10,7 +10,7 @@ import { type Lang, state } from '../state';
 import { World } from '../world';
 import { Devices } from './devices';
 import { STORY_START_HOUR } from './script';
-import { Graphics } from './graphics';
+import { Graphics } from '../scene/graphics';
 import { PauseMenu } from './pause';
 import { Sfx } from './sfx';
 import { SoundSettings } from './sound';
@@ -30,7 +30,7 @@ world.scene.add(player.rig.root);
 const devices = new Devices(CHANNEL, () => state.lang);
 const voice = new Voice();
 const story = new Story(world, player, devices, voice);
-const graphics = new Graphics(world);
+const graphics = new Graphics(world, { selects: ['t-graphics', 'pm-graphics'], status: 'pm-graphics-now' });
 const sfx = new Sfx();
 const sound = new SoundSettings(world.audio, sfx, voice);
 story.onBeat = (beat) => (beat === 'done' ? sfx.chime() : sfx.chapter());
@@ -43,7 +43,7 @@ devices.onToggle = (open) => {
   sfx.phone(open);
   player.lookEnabled = !open;
   if (open) player.release();
-  else player.lock();
+  else player.lock(true);
 };
 story.stage();
 
@@ -58,7 +58,7 @@ $('t-start').addEventListener('click', () => {
   start.setHours(Math.floor(STORY_START_HOUR), Math.round((STORY_START_HOUR % 1) * 60), 0, 0);
   bridge = new SimBridge(
     world.esp32,
-    { evacStats: () => residents.evacStats(), broadcast: (text) => story.onBroadcast(text), forecast: () => story.forecastSummary() },
+    { evacStats: () => residents.evacStats(), broadcast: (text, via) => story.onBroadcast(text, via), forecast: () => story.forecastSummary() },
     CHANNEL,
     start.getTime() - state.simTime * 1000,
   );
@@ -70,10 +70,11 @@ $('t-start').addEventListener('click', () => {
   devices.enabled = true;
   story.begin(afternoon);
   // This click is the gesture the browser needs: capture the mouse straight away.
-  player.lock();
+  player.lock(true);
 });
 $('rp-again').addEventListener('click', () => location.reload());
-// Characters and world are built; the night can start.
+// Characters and world are built; compile the shaders, then the night can start.
+await world.warmUp();
 $<HTMLButtonElement>('t-start').disabled = false;
 $('t-start').textContent = 'Begin';
 
@@ -91,10 +92,14 @@ const menu = new PauseMenu(
   () => {
     player.lookEnabled = false;
     player.release();
+    for (const a of [world.audio, sfx, voice]) a.setPaused(true);
+    devices.enabled = interactions.enabled = false;
   },
   () => {
+    for (const a of [world.audio, sfx, voice]) a.setPaused(false);
+    devices.enabled = interactions.enabled = true;
     player.lookEnabled = true;
-    player.lock();
+    player.lock(true);
   },
 );
 
@@ -109,6 +114,8 @@ world.start((dt, t) => {
   }
   interactions.update();
   graphics.update();
+  // Only once the night is under way and nothing (menu, phone) has the mouse.
+  $('look-hint').hidden = !(player.needsCapture && story.running && !menu.paused && !devices.open);
   if (!player.active) orbitCamera(dt);
   if (player.active && !menu.paused) sfx.update(dt, player, world.levelY, world.indoors);
   world.audio.setMuffled(player.active && world.indoors);

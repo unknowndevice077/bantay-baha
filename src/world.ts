@@ -119,6 +119,21 @@ export class World {
     return levelToY(state.level);
   }
 
+  /**
+   * Compile every shader before the first frame, in the background where the
+   * browser can (KHR_parallel_shader_compile), then draw one frame to upload the
+   * geometry and textures. Without this the first frame freezes the page for a
+   * couple of seconds while the GPU driver compiles ~40 programs one by one.
+   */
+  async warmUp(): Promise<void> {
+    try {
+      await this.renderer.compileAsync(this.scene, this.camera);
+    } catch {
+      // older browsers: the first frame compiles them instead
+    }
+    this.renderer.render(this.scene, this.camera);
+  }
+
   /** Runs the frame loop; `frame` is called after the world has advanced and before rendering. */
   start(frame: (dt: number, t: number) => void): void {
     this.renderer.setAnimationLoop(() => {

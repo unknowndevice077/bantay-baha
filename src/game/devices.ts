@@ -51,10 +51,28 @@ export class Devices {
     });
   }
 
+  /** Element ids in the dashboards to point out (the buttons the current task needs). */
+  private coached: string[] = [];
+
+  coach(ids: string[]): void {
+    if (ids.join() === this.coached.join()) return;
+    this.coached = ids;
+    for (const f of Object.values(this.frames)) if (f) this.applyCoach(f);
+  }
+
+  private applyCoach(f: HTMLIFrameElement): void {
+    const doc = f.contentDocument;
+    if (!doc) return;
+    doc.querySelectorAll('.coach').forEach((el) => el.classList.remove('coach'));
+    for (const id of this.coached) doc.getElementById(id)?.classList.add('coach');
+  }
+
   private frame(d: Device): HTMLIFrameElement {
     let f = this.frames[d];
     if (!f) {
       f = document.createElement('iframe');
+      const frame = f;
+      f.addEventListener('load', () => this.applyCoach(frame));
       f.title = d === 'phone' ? 'Bantay Baha app on your phone' : 'Bantay Baha operations dashboard';
       f.src = `dashboard.html?embed=${d}&channel=${encodeURIComponent(this.channel)}&lang=${this.lang()}`;
       $(d === 'phone' ? 'ph-screen' : 'lt-screen').append(f);

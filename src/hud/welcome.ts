@@ -68,6 +68,4 @@ export function initWelcome(rig: CameraRig): void {
     openDashboard();
   });
   box.hidden = seen();
-  // The world is built: lift the loading screen.
-  document.getElementById('loading')?.remove();
 }

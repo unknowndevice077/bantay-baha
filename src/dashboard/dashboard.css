@@ -738,3 +738,16 @@ label.inline input {
     margin-left: 0;
   }
 }
+
+/* The story game points at the button the current task needs. */
+.coach {
+  outline: 2px solid #f0b429;
+  outline-offset: 2px;
+  animation: coach 1.4s ease-in-out infinite;
+}
+
+@keyframes coach {
+  50% {
+    outline-color: rgba(240, 180, 41, 0.25);
+  }
+}

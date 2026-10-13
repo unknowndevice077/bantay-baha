@@ -84,7 +84,8 @@ export class Forecaster {
 
   /** Start with history already in hand (the story's afternoon), so the first forecast needn't wait. */
   prime(samples: Sample[]): void {
-    this.history.push(...samples);
+    // Replace, not append: anything recorded before (e.g. behind a title screen) would sit out of order.
+    this.history.splice(0, this.history.length, ...samples);
     this.nextAt = 0;
   }
 

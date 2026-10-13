@@ -65,6 +65,10 @@ export interface ObjectiveView {
   text: string;
   done: boolean;
   late: boolean;
+  /** The current task's how-to line. */
+  how?: string;
+  /** "N earlier tasks done". */
+  summary?: boolean;
 }
 
 export function renderObjectives(chapter: string, title: string, items: ObjectiveView[]): void {
@@ -74,8 +78,15 @@ export function renderObjectives(chapter: string, title: string, items: Objectiv
     ...items.map((o) => {
       const li = document.createElement('li');
       li.textContent = o.text;
-      if (o.done) li.className = 'done';
+      if (o.summary) li.className = 'done summary';
+      else if (o.done) li.className = 'done';
       else if (o.late) li.className = 'late';
+      if (o.how) {
+        li.classList.add('current');
+        const how = document.createElement('small');
+        how.textContent = o.how;
+        li.append(how);
+      }
       return li;
     }),
   );

@@ -1,5 +1,5 @@
 /**
- * Graphics quality for the story game. Most of the cost is on the GPU: the
+ * Graphics quality for the simulator and the story game. Most of the cost is on the GPU: the
  * resolution, the shadow pass (the whole scene drawn a second time) and the
  * high-quality effects (ambient occlusion and bloom). Four presets, plus Auto:
  * it starts in the middle and steps down whenever the game runs below about
@@ -7,6 +7,12 @@
  */
 import { state } from '../state';
 import type { World } from '../world';
+
+/** Where the page shows the setting: one or more <select>s, and an element for "Running at …". */
+export interface GraphicsUi {
+  selects: string[];
+  status: string;
+}
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 const KEY = 'bantay-baha-graphics';
@@ -49,7 +55,10 @@ export class Graphics {
   /** Skip the first window after a change: shaders recompile and the first frames stutter. */
   private settle = true;
 
-  constructor(private readonly world: World) {
+  constructor(
+    private readonly world: World,
+    private readonly ui: GraphicsUi,
+  ) {
     let saved: string | null = null;
     try {
       saved = localStorage.getItem(KEY);
@@ -58,7 +67,7 @@ export class Graphics {
     }
     this.mode = saved && (saved === 'auto' || saved in PRESET) ? (saved as GraphicsMode) : 'auto';
     world.renderer.shadowMap.autoUpdate = false;
-    for (const id of ['t-graphics', 'pm-graphics']) {
+    for (const id of ui.selects) {
       const select = $<HTMLSelectElement>(id);
       select.value = this.mode;
       select.addEventListener('change', () => this.setMode(select.value as GraphicsMode));
@@ -73,7 +82,7 @@ export class Graphics {
     } catch {
       // storage blocked: lasts for this visit
     }
-    for (const id of ['t-graphics', 'pm-graphics']) $<HTMLSelectElement>(id).value = mode;
+    for (const id of this.ui.selects) $<HTMLSelectElement>(id).value = mode;
     this.apply(mode === 'auto' ? AUTO_START : PRESET[mode]);
   }
 
@@ -95,7 +104,7 @@ export class Graphics {
     this.settle = true;
     this.sum = this.count = 0;
     this.windowStart = performance.now();
-    $('pm-graphics-now').textContent = this.mode === 'auto' ? `Running at ${l.name}` : '';
+    $(this.ui.status).textContent = this.mode === 'auto' ? `Running at ${l.name}` : '';
   }
 
   /** Every frame, before rendering. */

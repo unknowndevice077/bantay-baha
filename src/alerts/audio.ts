@@ -13,13 +13,22 @@ export class AudioEngine {
   private volume = 1;
   private rainTone!: BiquadFilterNode;
   private muffled = false;
+  private paused = false;
 
   setEnabled(on: boolean): void {
     this.enabled = on;
     if (on && !this.ctx) this.init();
     if (!this.ctx) return;
-    if (on) void this.ctx.resume();
+    if (on && !this.paused) void this.ctx.resume();
     this.master.gain.setTargetAtTime(on ? 0.8 * this.volume : 0, this.ctx.currentTime, 0.1);
+  }
+
+  /** Freeze every sound where it is (the pause menu), and carry on from there. */
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    if (!this.ctx) return;
+    if (paused) void this.ctx.suspend();
+    else void this.ctx.resume();
   }
 
   /** Overall loudness, 0..1 (the story game's volume slider). */

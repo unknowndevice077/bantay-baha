@@ -25,6 +25,8 @@ export interface Interactable {
 const LOOK_CONE = Math.cos(THREE.MathUtils.degToRad(30));
 /** Card offset from the anchor, in px (up and to the right, like a callout). */
 const OFFSET = { x: 70, y: -64 };
+/** Within this (m), a thing just above or below the view still gets its prompt. */
+const NEAR = 2.2;
 
 export class Interactions {
   private current: Interactable | null = null;
@@ -34,6 +36,8 @@ export class Interactions {
   private readonly to = new THREE.Vector3();
   private readonly screen = new THREE.Vector3();
 
+  /** Off while the game is paused: no prompt, and E does nothing. */
+  enabled = true;
   /** Something was used (for the click sound). */
   onUse: (() => void) | null = null;
 
@@ -51,24 +55,26 @@ export class Interactions {
   }
 
   private use(): void {
-    if (!this.current) return;
+    if (!this.current || !this.enabled) return;
     this.onUse?.();
     this.current.act();
   }
 
-  private onScreen(at: THREE.Vector3): boolean {
+  /** In view; or, for something within arm's reach, just above or below it (mats at your feet, Lola Cora up on her porch). */
+  private onScreen(at: THREE.Vector3, near: boolean): boolean {
     this.screen.copy(at).project(this.camera);
-    return this.screen.z < 1 && Math.abs(this.screen.x) < 0.95 && Math.abs(this.screen.y) < 0.95;
+    const { x, y, z } = this.screen;
+    return z < 1 && Math.abs(x) < 0.95 && (Math.abs(y) < 0.95 || near);
   }
 
   private pick(): Interactable | null {
-    if (!this.player.active) return null;
+    if (!this.player.active || !this.enabled) return null;
     this.camera.getWorldDirection(this.forward);
     let best: Interactable | null = null;
     let bestScore = Infinity;
     for (const it of this.items) {
       const d = it.distance(this.player.pos);
-      if (d >= it.range || it.label() === null || !this.onScreen(it.anchor())) continue;
+      if (d >= it.range || it.label() === null || !this.onScreen(it.anchor(), d < NEAR)) continue;
       const facing = this.to.copy(it.anchor()).sub(this.camera.position).normalize().dot(this.forward);
       // Looked-at things score by distance alone; others pay a penalty of a few metres.
       const score = d + (facing > LOOK_CONE ? 0 : 4 * (1 - facing));
@@ -94,7 +100,8 @@ export class Interactions {
     const h = window.innerHeight;
     this.screen.copy(it.anchor()).project(this.camera);
     const ax = ((this.screen.x + 1) / 2) * w;
-    const ay = ((1 - this.screen.y) / 2) * h;
+    // Something at your feet or overhead: the line runs to that edge.
+    const ay = Math.min(Math.max(((1 - this.screen.y) / 2) * h, 10), h - 10);
     const cw = this.card.offsetWidth;
     // Callout to the right of the object, or to the left when it would run off screen.
     const right = ax + OFFSET.x + cw < w - 8;

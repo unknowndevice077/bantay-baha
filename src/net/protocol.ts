@@ -42,4 +42,4 @@ export type SimMessage =
     }
   | { type: 'history'; points: Point[] };
 
-export type DashboardMessage = { type: 'hello' } | { type: 'siren'; on: boolean } | { type: 'broadcast'; text: string };
+export type DashboardMessage = { type: 'hello' } | { type: 'siren'; on: boolean } | { type: 'broadcast'; text: string; via?: 'pa' | 'sms' };

@@ -260,7 +260,8 @@ export class Residents {
     const approach: THREE.Vector2[] = [];
     if (p.north) {
       // Across the bridge, then down the main road to the evacuation lane.
-      const nz = BRIDGE.zc - BRIDGE.half - 2;
+      // Behind the north-bank houses: their bamboo steps come down to about 3.5 m past the bridge end.
+      const nz = BRIDGE.zc - BRIDGE.half - 6.5;
       approach.push(v2(p.pos.x, nz + jitter(0.5)), v2(BRIDGE.x + jitter(0.8), nz), v2(BRIDGE.x + jitter(0.8), ROAD_Z), v2(EVAC_LANE_X + jitter(0.8), ROAD_Z + jitter(0.5)));
     } else {
       const lane = LANES_Z.reduce((best, z) => (Math.abs(z - p.pos.y) < Math.abs(best - p.pos.y) ? z : best));
@@ -282,7 +283,8 @@ export class Residents {
         p.bubbleFor -= dt;
         p.bubble.visible = p.bubbleFor > 0;
       }
-      if ((p.mode === 'evac' || p.mode === 'shelter') && this.calm > ALL_CLEAR_S) {
+      // All clear (the simulator only: in the story nobody goes home until morning).
+      if (this.auto && (p.mode === 'evac' || p.mode === 'shelter') && this.calm > ALL_CLEAR_S) {
         // Leave through the door, retrace the route, then home.
         p.route = [...p.evacRoute.slice(0, -1).reverse(), p.home.clone()];
         p.mode = 'return';

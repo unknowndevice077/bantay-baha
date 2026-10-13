@@ -8,6 +8,7 @@ import { Forecaster } from '../forecast/forecaster';
 import { ForecastView } from '../forecast/view';
 import { FusionView } from '../fusion/view';
 import type { Hud } from '../hud/hud';
+import type { ForecastSummary } from '../net/protocol';
 import type { World } from '../world';
 import { type PlusFlag, plus, setPlus } from './flags';
 
@@ -16,8 +17,15 @@ export interface PlusHooks {
   world: World;
 }
 
-/** Wire the panel switches and start the add-ons; returns the per-frame update. */
-export function installPlus({ hud, world }: PlusHooks): (dt: number) => void {
+export interface Plus {
+  /** Per frame. */
+  update(dt: number): void;
+  /** The latest forecast for the dashboard, or null (forecast off, failed, or still warming up). */
+  forecast(): ForecastSummary | null;
+}
+
+/** Wire the panel switches and start the add-ons. */
+export function installPlus({ hud, world }: PlusHooks): Plus {
   document.querySelectorAll<HTMLInputElement>('[data-plus]').forEach((box) => {
     const flag = box.dataset.plus as PlusFlag;
     box.checked = plus[flag];
@@ -32,9 +40,16 @@ export function installPlus({ hud, world }: PlusHooks): (dt: number) => void {
       console.warn(`[plus] ${name} failed to start`, e);
     }
   };
-  start('forecast', () => new ForecastView(new Forecaster(), hud));
+  let forecaster: Forecaster | null = null;
+  start('forecast', () => new ForecastView((forecaster = new Forecaster()), hud));
   start('fusion', () => new FusionView(world, world.monitor));
-  return (dt) => {
-    for (const p of parts) p.update(dt);
+  return {
+    update: (dt) => {
+      for (const p of parts) p.update(dt);
+    },
+    forecast: () => {
+      const f = plus.forecast ? forecaster?.latest : null;
+      return f ? { text: f.text, at30: f.path[1].level, at60: f.path[2].level } : null;
+    },
   };
 }

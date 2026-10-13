@@ -70,7 +70,7 @@ Then open http://localhost:8080.
 - **Smart pole:** an ultrasonic transducer on an arm over the water with a visible translucent beam cone. It also carries the ESP32 enclosure, a solar panel, an antenna, a status LED and a warning beacon.
 - **Sky:** day/night cycle (5 min, or set and lock any time of day from the panel), storm sky and fog, GPU rain, and lightning with thunder.
 - **Street lights:** lamps on the utility poles over the main road and on posts along the lanes, the evacuation route, the bridge and the hall. Photocells switch them on at dusk and under heavy storm cloud; each lamp casts a pool of light on the ground.
-- **Look:** physically based materials lit by a sky environment map. Procedural textures (no image files) give plaster walls, corrugated-iron and thatch roofs, bark, concrete and soil detail. Palm and banana leaves are alpha-cut cards, and 16k instanced grass clumps sway in the wind. The water has fine ripples, raindrop rings and sky reflections. **High quality** mode adds ambient occlusion and bloom.
+- **Look:** physically based materials lit by a sky environment map. Procedural textures (no image files) give plaster walls, corrugated-iron and thatch roofs, bark, concrete and soil detail. Palm and banana leaves are alpha-cut cards, and 16k instanced grass clumps sway in the wind. The water has fine ripples, raindrop rings and sky reflections. The **Ultra** graphics setting adds ambient occlusion and bloom.
 - **Water:** a custom shader with waves, foam where it meets banks and walls, and a colour shift from clear to muddy brown as it rises. The flood spreads over the banks, road and house floors as the level crosses terrain heights.
 - **Debris:** logs, bottles, coconut fronds, tires, sacks, a monobloc chair and an occasional drifting bangka. They ride the waves, drift with the current, strand in shallows, and snag and pile up at the bridge until the water overtops the deck. More rain means more debris.
 - **Residents:** they mill around their homes. As soon as WARNING is raised they **run** along the road and lanes (north-bank households cross the bridge) to the barangay hall, climb the entrance stairs and go inside (preemptive evacuation). They walk home after a calm period.
@@ -88,7 +88,8 @@ Then open http://localhost:8080.
 | Auto-storm | Plays a 90-minute typhoon rain band (rainfall rises, peaks and fades) |
 | Speed | 1x–10x simulation speed (1x = 10 simulated seconds per real second) |
 | Reset | Back to a calm creek |
-| Debris / Rain / X-ray / Lola mode / Sound / High quality | Toggles (High quality = ambient occlusion + bloom, off by default on phones) |
+| Debris / Rain / X-ray / Lola mode / Sound | Toggles |
+| Graphics | Auto (default: steps down from High while the frame rate is low), Fast, Balanced, High, or Ultra (ambient occlusion and bloom) |
 | Language | English, Tagalog, Cebuano, Waray |
 | Live ESP32 input | WebSocket or MQTT-over-WebSocket feed (see below) |
 | Ollama | Use a local LLM to write advisories |
@@ -135,6 +136,8 @@ Movement speeds up with altitude, and the camera is kept above the ground and ov
 
 The phone and the laptop run the real `dashboard.html` inside the game, fed by the game's sensor, so its siren and broadcast buttons work on the game world. Residents don't leave until the siren sounds (or, late, on their own); three holdouts only leave if you go to them.
 
+The objectives panel highlights the current task with a line on how to do it ("Press E at the red switch by the hall door…"), and the dashboard buttons that task needs pulse on the phone and laptop. In the game, the dashboard's SMS button sends the SMS blast itself, and either it or Broadcast counts as the advisory.
+
 When something usable is in reach, a Roblox-style prompt pops up beside it: the key, what the thing is and what E will do ("Laptop · Open dashboard", "Kagawad Lito · Talk"), joined to it by a leader line. Only things on screen get a prompt, and what you are looking at wins over what is merely closer.
 
 **Voices.** NPC lines (Kagawad Lito, Tanod Jun and the bulletin over the radio, Lola Cora, Mang Ben, Toto, Aling Nena, and residents you talk to in English) are recordings made with [Chatterbox](https://github.com/resemble-ai/chatterbox) (Resemble AI, MIT), each delivered with the emotion the script marks: urgent, scared, stubborn, relieved. Radio calls play through a handheld-radio filter. Lines without a recording (other languages) fall back to the browser's speech. To re-record after editing the script: `node tools/voices/export_lines.mjs`, then `tools/voices/.venv/Scripts/python tools/voices/render.py` (see `tools/voices/render.py` for setup). Untick *Sound and voices* on the title screen to play silently, or press M in game.
@@ -149,7 +152,7 @@ Every house can be walked into: open doorway, floor, ceiling, curtains, a bed, c
 
 | Input | Action |
 | --- | --- |
-| Move the mouse | Look around (captured when you press Begin; if the browser won't capture it, moving still looks, and resting near an edge keeps turning) |
+| Move the mouse | Look around (captured when you press Begin. If the mouse is ever free, "Click to look around" appears: click the view to capture it again) |
 | W / A / S / D | Walk |
 | Shift | Run |
 | Space | Jump |
@@ -247,7 +250,8 @@ Performance notes:
 - Rain is fully GPU-instanced (up to 14k streaks, zero per-frame CPU).
 - Grass is one instanced mesh with wind sway in the vertex shader.
 - Street lights use a fixed pool of 8 real point lights that follow the lamps nearest the camera; the others are emissive heads and light pools.
-- High quality mode (GTAO + bloom) costs extra GPU time; turn it off on weaker laptops.
+- The Graphics setting trades resolution, shadow updates and the Ultra effects (GTAO + bloom) for frame rate; Auto picks for you.
+- The gauge camera reads its picture back from the GPU at most four times a second, however fast the simulation runs.
 - Terrain depth for the water comes from a half-float height texture.
 - Pixel ratio and shadow-map size drop on small screens.
 

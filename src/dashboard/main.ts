@@ -473,8 +473,19 @@ $('d-broadcast').addEventListener('click', () => {
   send({ type: 'broadcast', text });
   logEvent(`Broadcast sent: "${text}"`);
 });
+// In the story game there is no clipboard to paste from: the button sends the SMS blast itself.
+if (embed) $('d-copy').textContent = 'Send SMS blast';
 $('d-copy').addEventListener('click', async () => {
   const btn = $('d-copy');
+  if (embed) {
+    const text = msg.value.trim();
+    if (!text) return;
+    send({ type: 'broadcast', text, via: 'sms' });
+    logEvent(`SMS blast sent: "${text}"`);
+    btn.textContent = 'Sent';
+    setTimeout(() => (btn.textContent = 'Send SMS blast'), 2000);
+    return;
+  }
   try {
     await navigator.clipboard.writeText(`[Barangay advisory] ${msg.value.trim()}`);
     btn.textContent = 'Copied';

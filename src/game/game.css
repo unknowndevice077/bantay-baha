@@ -958,3 +958,46 @@ body:not(.playing) #b-sound {
   font-size: 12px;
   color: var(--ink-muted, #8a96a3);
 }
+
+/* ---- "Click to capture the mouse" ------------------------------------------------ */
+#look-hint {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: rgba(8, 12, 17, 0.75);
+  border: 1px solid var(--ink-line);
+  border-radius: 3px;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+#look-hint[hidden] {
+  display: none;
+}
+
+/* ---- The current task and how to do it ------------------------------------------- */
+#obj-list li.current {
+  color: #fff;
+  font-weight: 500;
+}
+
+#obj-list li.current::before {
+  border-color: var(--signal);
+  box-shadow: 0 0 0 2px rgba(240, 180, 41, 0.25);
+}
+
+#obj-list li.current small {
+  display: block;
+  margin-top: 3px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--signal);
+}
+
+#obj-list li.summary {
+  text-decoration: none;
+  font-size: 12px;
+}

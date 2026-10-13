@@ -25,6 +25,7 @@ export class Sfx {
   private creekTone!: BiquadFilterNode;
   private volume = 1;
   private on = true;
+  private paused = false;
 
   // Footstep tracking.
   private readonly last = { x: 0, z: 0, set: false };
@@ -39,8 +40,16 @@ export class Sfx {
   /** Call from a click: audio can only start after a user gesture. */
   enable(): void {
     if (!this.ctx) this.init();
-    void this.ctx!.resume();
+    if (!this.paused) void this.ctx!.resume();
     this.apply();
+  }
+
+  /** Freeze the effects and ambience where they are (the pause menu), and carry on from there. */
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    if (!this.ctx) return;
+    if (paused) void this.ctx.suspend();
+    else void this.ctx.resume();
   }
 
   /** Effects and ambience on or off, and their share of the master volume (0..1). */

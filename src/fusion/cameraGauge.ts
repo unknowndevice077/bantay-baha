@@ -24,6 +24,8 @@ const WHITE_LUMA = 0.45;
 const BOARD_TOP_M = 6;
 /** Waves slap the board, so report the median of this many frames (as real gauge cameras do). */
 const MEDIAN_OF = 3;
+/** Shortest real time between frames (ms). */
+const CAPTURE_MS = 250;
 /** Water shallower than this at the gauge's foot can't be read (m). Measured in this scene. */
 const MIN_DEPTH = 0.35;
 
@@ -46,6 +48,7 @@ export class CameraGauge {
   /** Small prop on the bank so the camera exists in the world. */
   readonly prop = new THREE.Group();
   latest: CameraReading = { level: null, low: false, confidence: 0, row: null };
+  private lastCapture = 0;
   /** Set by the fault injector: something covers the lens. */
   blocked = false;
   private readonly target = new THREE.WebGLRenderTarget(W, H);
@@ -112,6 +115,11 @@ export class CameraGauge {
       this.latest = { level: null, low: false, confidence: 0, row: null };
       return this.latest;
     }
+    // Reading pixels back makes the CPU wait for the GPU. At 10x the sensor reads 20 times a
+    // real second; a few frames a second is plenty for a waterline that moves centimetres.
+    const now = performance.now();
+    if (now - this.lastCapture < CAPTURE_MS) return this.latest;
+    this.lastCapture = now;
     const { renderer } = this;
     const prevTarget = renderer.getRenderTarget();
     const prevShadows = renderer.shadowMap.autoUpdate;

@@ -40,6 +40,7 @@ export class Voice {
   private playing: AudioBufferSourceNode | null = null;
   private out: GainNode | null = null;
   private volume = 1;
+  private paused = false;
 
   constructor() {
     fetch('voices/manifest.json')
@@ -63,7 +64,19 @@ export class Voice {
       this.out.gain.value = this.volume;
       this.out.connect(this.ctx.destination);
     }
-    void this.ctx.resume();
+    if (!this.paused) void this.ctx.resume();
+  }
+
+  /** Freeze a line mid-word (the pause menu), and carry on from there. */
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    if (paused) {
+      void this.ctx?.suspend();
+      this.synth?.pause();
+    } else {
+      void this.ctx?.resume();
+      this.synth?.resume();
+    }
   }
 
   /** Voices off: lines show as subtitles for reading time instead. */

@@ -89,6 +89,8 @@ The source selector at the top switches between the simulator feed and a **live 
 
 **Graphics.** The title screen and the Esc menu have a Graphics setting: Auto (the default) starts at High and steps down through Balanced to Fast if the game runs below about 45 frames a second; Fast, Balanced, High and Ultra fix it. Ultra adds ambient occlusion and bloom. On a slow laptop, Fast drops the shadows and renders at a lower resolution.
 
+The current task is highlighted in the objectives panel with a line telling you exactly how to do it, and on the phone and laptop the button you need pulses. The SMS button on the in-game dashboard sends the SMS blast itself.
+
 If you finish everything before the water reaches the next alert level, the night runs faster until it does, so you are never left standing around. The objectives panel tells you when that is happening.
 
 Your phone (P) runs the real dashboard, fed by the game's sensor, and new forecast warnings arrive as notifications. If you wade into fast water for too long, the tanods pull you out, and that goes in the report.

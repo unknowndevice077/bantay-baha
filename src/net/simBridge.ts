@@ -12,7 +12,8 @@ const MAX_POINTS = 17280;
 
 export interface BridgeHooks {
   evacStats(): { inside: number; total: number };
-  broadcast(text: string): void;
+  /** An advisory went out: over the PA (and screens), or as an SMS blast. */
+  broadcast(text: string, via: 'pa' | 'sms'): void;
   /** Optional: the current forecast, passed through to the dashboard. */
   forecast?(): ForecastSummary | null;
 }
@@ -40,7 +41,7 @@ export class SimBridge {
       const m = e.data;
       if (m.type === 'hello') this.post({ type: 'history', points: this.points });
       else if (m.type === 'siren') state.sirenManual = m.on;
-      else if (m.type === 'broadcast') hooks.broadcast(m.text);
+      else if (m.type === 'broadcast') hooks.broadcast(m.text, m.via ?? 'pa');
     };
   }
 

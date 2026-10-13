@@ -40,6 +40,12 @@ We played through the simulator, the dashboard and the story game in a browser o
 - The "check the forecast" task could be marked late before the player had a fair chance to do it.
 - The ending faded out while Lito was still mid-sentence.
 - Pressing Esc to close the phone also opened the pause menu.
+- The forecast wasn't ready when you first opened the laptop. Readings taken behind the title screen got mixed in ahead of the afternoon's history, so it thought it only had three minutes of data.
+- The fast-rise rule could raise the alert two steps instead of one: a WARNING that was itself caused by a fast rise got raised again to EVACUATE at 275 cm. Found by reading the dashboard's event log during a 10x storm.
+- Residents walked home from the evacuation center mid-story, because the simulator's all-clear timer also ran in the game.
+- The north-bank evacuation lane ran through the bamboo steps of three houses, and through Mang Ben's house itself.
+- E prompts vanished for things at your feet or overhead (the sleeping mats, Lola Cora on her porch) unless you looked straight at them.
+- P opened the phone over the pause menu, and "Return to the evacuation center" ticked itself off if you happened to be inside the hall when Part three began.
 - Without the weather outlook, the forecast saw the flood too late to matter to the story. This was the most useful bug of the lot, because it's the real limitation of a forecast that only knows past rain.
 
 We also checked:

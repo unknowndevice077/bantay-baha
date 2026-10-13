@@ -56,7 +56,7 @@ These don't affect a real deployment, but they matter on demo day:
 | --- | --- |
 | Dashboard opened without the simulator | It says it's waiting for the simulator, with a button to open it |
 | A recorded voice line is missing | The game falls back to the browser's own speech. Subtitles always show |
-| The browser refuses to capture the mouse | The game falls back to looking by moving the mouse. Resting near the screen edge keeps turning |
+| The browser refuses to capture the mouse (it does for a moment after Esc) | Moving the mouse over the view still looks around, "Click to look around" appears, and the next click captures it |
 | No WebGL (very old machine, or blocked by policy) | The 3D pages don't load. The dashboard doesn't use WebGL and works fine. We haven't added a friendly message for this yet |
 | A Bantay Baha+ add-on throws while starting | It's caught and logged. The other add-on and the core simulator carry on |
 | Browser storage blocked (private mode) | Switches and headcounts aren't remembered between visits. Everything else works |

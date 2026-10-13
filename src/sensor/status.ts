@@ -17,8 +17,11 @@ export function classifyStatus(level: number, rate: number, current: Status): St
   limits.forEach((lim, i) => {
     if (level >= lim - (cur > i ? HYSTERESIS : 0)) idx = i + 1;
   });
-  const fast = rate >= RATE_ESCALATE_CM || (cur > idx && rate >= RATE_ESCALATE_CM * 0.6);
-  if (fast && level >= THRESHOLDS.advisory - 0.5) idx = Math.min(3, idx + 1);
+  // A fast rise counts one step above what the level alone says, never more: measured from the
+  // plain level (no hysteresis), so a status that was itself raised by a fast rise isn't raised again.
+  const byLevel = limits.filter((lim) => level >= lim).length;
+  const fast = rate >= RATE_ESCALATE_CM || (cur > byLevel && rate >= RATE_ESCALATE_CM * 0.6);
+  if (fast && level >= THRESHOLDS.advisory - 0.5) idx = Math.max(idx, Math.min(3, byLevel + 1));
   return STATUSES[idx];
 }
 

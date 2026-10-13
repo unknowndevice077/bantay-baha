@@ -2,8 +2,9 @@
  * The playable character in the story game: the barangay captain, seen in
  * first person. The mouse is captured as soon as play starts (and again after
  * the phone or laptop is put away, or on the first movement key), so moving it
- * simply looks around. Where the browser won't capture the mouse, moving it
- * over the view still looks around, and holding it near an edge keeps turning.
+ * simply looks around. When the browser refuses (it does for a moment after Esc),
+ * moving the mouse over the view still looks around, and the next click on the
+ * view tries to capture it again.
  * WASD walk, Shift run, Space jump, C crouch (duck low; in deep water, sink to the surface). Gravity, stairs/bridge/pad
  * heights, swimming in deep floodwater, and collisions with houses (the hall
  * has a doorway). The body is only drawn when a cutscene takes the camera.
@@ -34,11 +35,10 @@ const SWIM_DEPTH = 1.3;
 /** Radians per pixel: captured mouse, and click-drag while the mouse is free. */
 const MOUSE_SPEED = 0.0022;
 const DRAG_SPEED = 0.004;
-/** Without capture: radians per pixel of free mouse movement, and turn rate at the screen edge (rad/s). */
+/** Without capture: radians per pixel of free mouse movement. */
 const HOVER_SPEED = 0.003;
-const EDGE_TURN = 1.6;
-/** Outer share of the view where the free cursor keeps turning. */
-const EDGE = 0.08;
+/** Don't ask for capture again within this long after a refusal (ms): browsers make you wait after Esc. */
+const RETRY_MS = 1200;
 const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright']);
 /** Eye height above the feet (m). */
 const EYE = 1.62;
@@ -86,10 +86,9 @@ export class Player {
   private readonly keys = new Set<string>();
   private drag: { x: number; y: number } | null = null;
   private readonly rects = obstacles();
-  /** The browser refused to capture the mouse: look by moving it freely instead. */
+  /** The browser refused to capture the mouse: look by moving it freely until a click captures it. */
   private hover = false;
-  /** Free cursor position over the view, 0..1 (for edge turning). */
-  private cursor: { x: number; y: number } | null = null;
+  private refusedAt = -Infinity;
   /** Off while something (phone, laptop) is on top of the view. */
   lookEnabled = true;
 
@@ -116,16 +115,17 @@ export class Player {
       if (!e.shiftKey) this.keys.delete('shift');
     });
     window.addEventListener('blur', () => this.keys.clear());
-    dom.addEventListener('click', () => this.lock());
-    document.addEventListener('pointerlockerror', () => (this.hover = true));
+    dom.addEventListener('click', () => this.lock(true));
+    document.addEventListener('pointerlockerror', () => this.refused());
+    document.addEventListener('pointerlockchange', () => {
+      if (this.locked) this.hover = false;
+    });
     document.addEventListener('mousemove', (e) => {
       if (!this.active || !this.lookEnabled) return;
       if (this.locked) return this.look(e.movementX * MOUSE_SPEED, e.movementY * MOUSE_SPEED);
       if (!this.hover || this.drag || e.target !== dom) return;
       this.look(e.movementX * HOVER_SPEED, e.movementY * HOVER_SPEED);
-      this.cursor = { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight };
     });
-    dom.addEventListener('mouseleave', () => (this.cursor = null));
     dom.addEventListener('pointerdown', (e) => {
       if (this.active && !this.locked && !this.hover && e.button === 0) this.drag = { x: e.clientX, y: e.clientY };
     });
@@ -141,15 +141,29 @@ export class Player {
     return document.pointerLockElement === this.dom;
   }
 
-  /** Capture the mouse for looking around (needs a click or key press to have just happened). */
-  lock(): void {
-    if (!this.active || !this.lookEnabled || this.locked || this.hover) return;
+  /** The mouse is free while the player should be looking around: the page shows "click to capture". */
+  get needsCapture(): boolean {
+    return this.active && this.lookEnabled && !this.locked;
+  }
+
+  /**
+   * Capture the mouse for looking around (needs a click or key press to have just happened).
+   * @param clicked a click on the view: always worth trying, even right after a refusal
+   */
+  lock(clicked = false): void {
+    if (!this.active || !this.lookEnabled || this.locked) return;
+    if (!clicked && performance.now() - this.refusedAt < RETRY_MS) return;
     try {
       const pending = this.dom.requestPointerLock?.() as Promise<void> | undefined;
-      pending?.catch?.(() => (this.hover = true));
+      pending?.catch?.(() => this.refused());
     } catch {
-      this.hover = true;
+      this.refused();
     }
+  }
+
+  private refused(): void {
+    this.hover = true;
+    this.refusedAt = performance.now();
   }
 
   /** Give the mouse back (when the phone or laptop comes up). */
@@ -228,17 +242,6 @@ export class Player {
         this.vy = 0;
         this.grounded = true;
       }
-    }
-
-    // Without mouse capture, hide the cursor over the 3D view anyway so it feels the same; it reappears over the HUD.
-    this.dom.style.cursor = this.hover && this.lookEnabled ? 'none' : '';
-
-    // Free cursor resting near an edge keeps the view turning, as in many browser games.
-    if (this.hover && this.cursor && this.lookEnabled) {
-      const { x, y } = this.cursor;
-      const turn = x < EDGE ? -(EDGE - x) / EDGE : x > 1 - EDGE ? (x - (1 - EDGE)) / EDGE : 0;
-      const tilt = y < EDGE ? -(EDGE - y) / EDGE : y > 1 - EDGE ? (y - (1 - EDGE)) / EDGE : 0;
-      if (turn || tilt) this.look(turn * EDGE_TURN * dt, tilt * EDGE_TURN * 0.5 * dt);
     }
 
     // Eyes, with a slight step bob while walking.

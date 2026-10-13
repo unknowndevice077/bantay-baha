@@ -12,6 +12,7 @@ import { listenKonami } from './konami';
 import { SimBridge } from './net/simBridge';
 import { installPlus } from './plus';
 import { CameraRig } from './scene/cameraRig';
+import { Graphics } from './scene/graphics';
 import { BRIDGE } from './scene/infrastructure';
 import { loadPeople } from './scene/person';
 import { baseHeight } from './scene/terrain';
@@ -50,9 +51,10 @@ const bridge = new SimBridge(esp32, {
     hud.broadcast(text);
     audio.sirenBurst(1.5);
   },
+  forecast: () => plusApi.forecast(),
 });
 world.onPacket = (r) => bridge.publish(r);
-const plusUpdate = installPlus({ hud, world });
+const plusApi = installPlus({ hud, world });
 
 initWelcome(rig);
 listenKonami(() => {
@@ -61,11 +63,17 @@ listenKonami(() => {
   toast('Rubber duck armada deployed.');
 });
 
+const graphics = new Graphics(world, { selects: ['i-graphics'], status: 'i-graphics-now' });
+// Compile the shaders before the first frame, then lift the loading screen.
+await world.warmUp();
+document.getElementById('loading')?.remove();
+
 world.start((dt) => {
+  graphics.update();
   telemetry.update(dt);
   inspector.update(dt);
   hud.update(dt);
   panel.update();
   rig.update(dt);
-  plusUpdate(dt);
+  plusApi.update(dt);
 });
