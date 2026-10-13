@@ -36,7 +36,7 @@
       <svg id="prompt-line" aria-hidden="true"><polyline fill="none" /><circle r="4" /></svg>
       <div id="prompt" hidden><kbd class="key">E</kbd><div><small></small><b></b></div></div>
       <div id="crosshair"></div>
-      <div id="keys">Move the mouse to look · WASD walk · Shift run · Space jump · <kbd>E</kbd> use · <kbd>P</kbd> phone · <kbd>M</kbd> mute · Enter skips dialogue</div>
+      <div id="keys">Move the mouse to look · WASD walk · Shift run · Space jump · <kbd>C</kbd> crouch · <kbd>E</kbd> use · <kbd>P</kbd> phone · <kbd>M</kbd> mute · Enter skips dialogue</div>
 
       <div id="phone" class="device" hidden>
         <div class="handset">
@@ -82,6 +82,15 @@
               </select>
             </label>
             <label class="check"><input id="t-sound" type="checkbox" checked /> Sound and voices</label>
+            <label>Graphics
+              <select id="t-graphics">
+                <option value="auto">Auto (adjusts to this computer)</option>
+                <option value="fast">Fast</option>
+                <option value="balanced">Balanced</option>
+                <option value="high">High</option>
+                <option value="ultra">Ultra (ambient occlusion, bloom)</option>
+              </select>
+            </label>
           </div>
           <div class="title-actions">
             <button id="t-start" class="btn primary" disabled>Loading the barangay</button>
@@ -107,6 +116,19 @@
             <label class="check"><input id="pm-mute" type="checkbox" /> Mute everything <kbd>M</kbd></label>
             <label class="check"><input id="pm-voices" type="checkbox" checked /> Voices (subtitles stay on)</label>
             <label class="check"><input id="pm-effects" type="checkbox" checked /> Effects and ambience: rain, siren, footsteps, the creek</label>
+          </fieldset>
+          <fieldset class="pause-sound">
+            <legend>Graphics</legend>
+            <label class="select-row">Quality
+              <select id="pm-graphics">
+                <option value="auto">Auto (adjusts to this computer)</option>
+                <option value="fast">Fast</option>
+                <option value="balanced">Balanced</option>
+                <option value="high">High</option>
+                <option value="ultra">Ultra (ambient occlusion, bloom)</option>
+              </select>
+            </label>
+            <small id="pm-graphics-now" class="graphics-now"></small>
           </fieldset>
           <p class="fine">The flood, the clock and the residents wait while this is open. Leaving or restarting ends this night.</p>
         </div>

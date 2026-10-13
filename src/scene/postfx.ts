@@ -49,6 +49,10 @@ export class PostFX {
     this.composer.addPass(new OutputPass());
   }
 
+  setPixelRatio(pr: number): void {
+    this.composer.setPixelRatio(pr);
+  }
+
   setSize(w: number, h: number): void {
     this.composer.setSize(w, h);
   }

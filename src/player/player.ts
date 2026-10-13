@@ -4,7 +4,7 @@
  * the phone or laptop is put away, or on the first movement key), so moving it
  * simply looks around. Where the browser won't capture the mouse, moving it
  * over the view still looks around, and holding it near an edge keeps turning.
- * WASD walk, Shift run, Space jump. Gravity, stairs/bridge/pad
+ * WASD walk, Shift run, Space jump, C crouch (duck low; in deep water, sink to the surface). Gravity, stairs/bridge/pad
  * heights, swimming in deep floodwater, and collisions with houses (the hall
  * has a doorway). The body is only drawn when a cutscene takes the camera.
  */
@@ -42,6 +42,9 @@ const EDGE = 0.08;
 const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright']);
 /** Eye height above the feet (m). */
 const EYE = 1.62;
+/** Eye height while crouching, and the walking speed then (m, share of walking). */
+const CROUCH_EYE = 0.95;
+const CROUCH_SPEED = 0.45;
 const MAP_LIMIT = 97;
 /** Tallest ledge you can walk up without jumping (m). */
 const MAX_STEP = 0.5;
@@ -76,6 +79,8 @@ export class Player {
   private yaw = 0;
   private pitch = 0;
   private bob = 0;
+  /** 0 standing … 1 fully crouched (eased, so ducking isn't a jump cut). */
+  private crouch = 0;
   /** Facing of the body shown in cutscenes. */
   private standHeading = 0;
   private readonly keys = new Set<string>();
@@ -199,7 +204,7 @@ export class Player {
       // Forward is (−sin yaw, −cos yaw); right is (cos yaw, −sin yaw).
       const dx = (-sy * fwd + cy * side) / len;
       const dz = (-cy * fwd - sy * side) / len;
-      speed = swimming ? SWIM : k.has('shift') ? RUN : WALK;
+      speed = swimming ? SWIM : k.has('c') ? WALK * CROUCH_SPEED : k.has('shift') ? RUN : WALK;
       if (!swimming && waterY - floor > 0.3) speed *= 0.6; // wading
       this.move(dx * speed * dt, dz * speed * dt);
     }
@@ -239,7 +244,10 @@ export class Player {
     // Eyes, with a slight step bob while walking.
     this.bob = speed > 0 && this.grounded ? this.bob + dt * speed * 3.2 : 0;
     const bob = Math.sin(this.bob) * (speed > 3 ? 0.05 : 0.03);
-    this.camera.position.set(this.pos.x, this.pos.y + EYE + bob, this.pos.z);
+    // Crouch: duck low on land; in deep water, sink until the water is at your chin.
+    this.crouch += ((k.has('c') ? 1 : 0) - this.crouch) * Math.min(1, dt * 10);
+    const duck = swimming ? 0.14 : EYE - CROUCH_EYE;
+    this.camera.position.set(this.pos.x, this.pos.y + EYE - duck * this.crouch + bob, this.pos.z);
     this.camera.rotation.set(this.pitch, this.yaw, 0, 'YXZ');
   }
 

@@ -99,7 +99,8 @@ Then open http://localhost:8080.
 | --- | --- |
 | Left-drag | Look around (turns your view, not the map) |
 | W / A / S / D | Move forward / left / back / right |
-| Q / E (or Space) | Down / up |
+| Q or C | Down |
+| E or Space | Up |
 | Shift | Move 3× faster |
 | Wheel | Move forward / back along the view |
 | Right-drag | Pan |
@@ -140,6 +141,8 @@ When something usable is in reach, a Roblox-style prompt pops up beside it: the 
 
 **Sound effects.** Like the rest of the project's sound, they are synthesized in the browser (`src/game/sfx.ts`): footsteps that change between road, house floors and floodwater, splashes when swimming, landing, phone buzzes and notification pings, a chime when a task is done, the siren switch, and the creek, which gets louder as it rises and as you get closer. Frogs and crickets fill quiet stretches of the night and fall silent in a downpour; indoors, the rain on the roof is muffled.
 
+**Graphics.** The title screen and the Esc menu have a Graphics setting: Auto (the default) starts at High and steps down through Balanced to Fast if the game runs below about 45 frames a second; Fast, Balanced, High and Ultra fix it. Ultra adds ambient occlusion and bloom. On a slow laptop, Fast drops the shadows and renders at a lower resolution.
+
 **Waiting for the water.** When every task so far is done and the next part of the night depends on the creek reaching the next alert level, the night runs six times faster until it does (the objectives panel says so), then drops back to normal.
 
 Every house can be walked into: open doorway, floor, ceiling, curtains, a bed, cabinet, TV and a table with monobloc chairs; nipa houses have bamboo steps up to a raised porch. A lamp lights whichever room you are in. Swim too long in fast water and the tanods pull you out, which counts against you in the report.
@@ -150,6 +153,7 @@ Every house can be walked into: open doorway, floor, ceiling, curtains, a bed, c
 | W / A / S / D | Walk |
 | Shift | Run |
 | Space | Jump |
+| C (hold) | Crouch; in deep water, sink to chin height |
 | E (or click the prompt) | Use what the prompt shows: laptop, mats, staff gauge, siren switch, people |
 | P | Phone |
 | M | Mute or unmute (volume, voices and effects are in the Esc menu) |

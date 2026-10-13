@@ -10,6 +10,7 @@ import { type Lang, state } from '../state';
 import { World } from '../world';
 import { Devices } from './devices';
 import { STORY_START_HOUR } from './script';
+import { Graphics } from './graphics';
 import { PauseMenu } from './pause';
 import { Sfx } from './sfx';
 import { SoundSettings } from './sound';
@@ -29,6 +30,7 @@ world.scene.add(player.rig.root);
 const devices = new Devices(CHANNEL, () => state.lang);
 const voice = new Voice();
 const story = new Story(world, player, devices, voice);
+const graphics = new Graphics(world);
 const sfx = new Sfx();
 const sound = new SoundSettings(world.audio, sfx, voice);
 story.onBeat = (beat) => (beat === 'done' ? sfx.chime() : sfx.chapter());
@@ -106,6 +108,7 @@ world.start((dt, t) => {
     player.update(dt, world.levelY);
   }
   interactions.update();
+  graphics.update();
   if (!player.active) orbitCamera(dt);
   if (player.active && !menu.paused) sfx.update(dt, player, world.levelY, world.indoors);
   world.audio.setMuffled(player.active && world.indoors);

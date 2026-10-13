@@ -102,6 +102,11 @@ export class Sky {
   private boltLife = 0;
   private strikeIn = 4;
 
+  /** Turn the sun/moon shadows on or off (graphics settings). */
+  setShadows(on: boolean): void {
+    this.sun.castShadow = on;
+  }
+
   constructor(
     private readonly scene: THREE.Scene,
     renderer: THREE.WebGLRenderer,

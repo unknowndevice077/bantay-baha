@@ -22,7 +22,7 @@ On your first visit a short guide offers three ways in. **Start the storm** is t
 4. At WARNING the beacons flash and the residents run to the barangay hall. North-bank families cross the bridge.
 5. At EVACUATE the siren wails and the main road goes under. Debris piles up against the bridge until the water tops the deck.
 
-The **Overview**, **Sensor**, **Street**, **Bridge** and **Fly-through** buttons jump the camera to useful spots. To move around yourself: drag with the left mouse button to look, use WASD to move, and Q/E or Space to go down and up.
+The **Overview**, **Sensor**, **Street**, **Bridge** and **Fly-through** buttons jump the camera to useful spots. To move around yourself: drag with the left mouse button to look, use WASD to move, Q or C to go down, and E or Space to go up.
 
 ### Looking inside the sensor
 
@@ -72,6 +72,7 @@ The source selector at the top switches between the simulator feed and a **live 
 | Mouse | Look around (it's captured when you press Begin) |
 | W A S D | Walk; hold Shift to run |
 | Space | Jump |
+| C (hold) | Crouch; in deep water, sink to chin height |
 | E | Use what the on-screen prompt points at: the laptop, the mats, the gauge, the siren switch, people |
 | P | Phone |
 | M | Mute or unmute |
@@ -85,6 +86,8 @@ The source selector at the top switches between the simulator feed and a **live 
 3. **Part two: Over the bank.** Sound the siren, from the switch by the hall door or from the dashboard. Then three people need you in person. A boy is watching the canal by the main road. Mang Ben won't leave his house across the creek. Lola Cora is in her riverside house and walks slowly.
 4. **Part three: Evacuate.** Get everyone into the hall, then report the headcount to the MDRRMO with Lito.
 5. **Epilogue.** The after-action report: who was safe, how much warning the forecast gave, when each warning went out, and how high the water got.
+
+**Graphics.** The title screen and the Esc menu have a Graphics setting: Auto (the default) starts at High and steps down through Balanced to Fast if the game runs below about 45 frames a second; Fast, Balanced, High and Ultra fix it. Ultra adds ambient occlusion and bloom. On a slow laptop, Fast drops the shadows and renders at a lower resolution.
 
 If you finish everything before the water reaches the next alert level, the night runs faster until it does, so you are never left standing around. The objectives panel tells you when that is happening.
 

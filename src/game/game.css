@@ -947,3 +947,14 @@ body:not(.playing) #b-sound {
 .pause-sound input[type='checkbox'] {
   accent-color: var(--signal);
 }
+
+.pause-sound .select-row {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.graphics-now {
+  font-size: 12px;
+  color: var(--ink-muted, #8a96a3);
+}

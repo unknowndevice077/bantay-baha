@@ -4,7 +4,7 @@
  * Presets ease the camera to a viewpoint and the cinematic preset flies a path;
  * any manual input cancels the automation.
  *
- * Keys: W/S forward/back, A/D strafe, Q/E or Space down/up, Shift = fast.
+ * Keys: W/S forward/back, A/D strafe, Q or C down, E or Space up, Shift = fast.
  */
 import * as THREE from 'three';
 import { clamp } from '../util';
@@ -17,7 +17,7 @@ export interface View {
 }
 
 const FLY_SECONDS = 32;
-const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'q', 'e', ' ']);
+const MOVE_KEYS = new Set(['w', 'a', 's', 'd', 'q', 'e', 'c', ' ']);
 const LOOK_SPEED = 0.0035; // radians per pixel
 const MAX_PITCH = 1.48;
 /** Free-camera limits (m): a little beyond the 200 m map, up to 120 m altitude. */
@@ -211,7 +211,7 @@ export class CameraRig {
       .copy(this.fwd)
       .multiplyScalar(axis('w', 's'))
       .addScaledVector(this.right, axis('d', 'a'))
-      .addScaledVector(this.camera.up, (k.has('e') || k.has(' ') ? 1 : 0) - (k.has('q') ? 1 : 0));
+      .addScaledVector(this.camera.up, (k.has('e') || k.has(' ') ? 1 : 0) - (k.has('q') || k.has('c') ? 1 : 0));
     if (this.move.lengthSq() === 0) return;
     this.move.normalize().multiplyScalar(6 * this.speedScale() * (this.fast ? 3 : 1) * dt);
     this.translate(this.move);
