@@ -25,6 +25,8 @@ export class Devices {
   onOpen: (() => void) | null = null;
   /** A device came up (true) or was put away (false): first-person look pauses meanwhile. */
   onToggle: ((open: boolean) => void) | null = null;
+  /** A notification arrived (for the buzz). */
+  onNotify: (() => void) | null = null;
   private readonly frames: Partial<Record<Device, HTMLIFrameElement>> = {};
   private readonly unread: Note[] = [];
   private bannerTimer: ReturnType<typeof setTimeout> | undefined;
@@ -113,6 +115,7 @@ export class Devices {
   /** A push notification from the Bantay Baha app. */
   notify(status: Status, title: string, body: string): void {
     const note = { status, title, body, time: this.clock };
+    this.onNotify?.();
     this.unread.unshift(note);
     this.renderLock();
     if (this.open === 'phone') return;

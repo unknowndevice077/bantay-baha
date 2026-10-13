@@ -38,6 +38,8 @@ export class Voice {
   private ctx: AudioContext | null = null;
   private readonly buffers = new Map<string, Promise<AudioBuffer | null>>();
   private playing: AudioBufferSourceNode | null = null;
+  private out: GainNode | null = null;
+  private volume = 1;
 
   constructor() {
     fetch('voices/manifest.json')
@@ -56,7 +58,24 @@ export class Voice {
   enable(): void {
     this.enabled = true;
     this.ctx ??= new AudioContext();
+    if (!this.out) {
+      this.out = this.ctx.createGain();
+      this.out.gain.value = this.volume;
+      this.out.connect(this.ctx.destination);
+    }
     void this.ctx.resume();
+  }
+
+  /** Voices off: lines show as subtitles for reading time instead. */
+  disable(): void {
+    this.enabled = false;
+    this.stop();
+  }
+
+  /** 0..1, for recordings and browser speech alike. */
+  setVolume(volume: number): void {
+    this.volume = volume;
+    if (this.out && this.ctx) this.out.gain.setTargetAtTime(volume, this.ctx.currentTime, 0.05);
   }
 
   /** Is there a recording for this line? */
@@ -123,7 +142,7 @@ export class Voice {
     }
     const gain = ctx.createGain();
     gain.gain.value = radio ? 0.8 : 1;
-    out.connect(gain).connect(ctx.destination);
+    out.connect(gain).connect(this.out ?? ctx.destination);
     src.onended = () => {
       if (this.playing === src) this.playing = null;
       done();
@@ -156,6 +175,7 @@ export class Voice {
     const genderFallback = voice && (style.gender === 'female' ? FEMALE : MALE).test(voice.name) ? 0 : style.gender === 'female' ? 0.25 : -0.2;
     u.pitch = Math.min(2, Math.max(0, style.pitch + genderFallback));
     u.rate = style.rate;
+    u.volume = this.volume;
     u.onend = () => done();
     u.onerror = () => done();
     this.synth.speak(u);

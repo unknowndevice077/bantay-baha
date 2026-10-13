@@ -54,6 +54,8 @@ const TOTO_SPOT = { x: -20.1, z: 25.6 };
 
 /** Swimming this long in fast water and the current takes you (s). */
 const SWEPT_AFTER = 6;
+/** How much faster the night runs while the captain has nothing left to do but wait for the water. */
+const FAST_FORWARD = 6;
 
 const ground = (x: number, z: number) => new THREE.Vector3(x, walkHeight(x, z), z);
 const flat = (a: THREE.Vector3, b: THREE.Vector3) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -64,6 +66,10 @@ export class Story {
   running = false;
   ended = false;
   private act = 0;
+  /** Story speed: 1, or up to FAST_FORWARD while every task so far is done and the water is what we are waiting for. */
+  private pace = 1;
+  /** Story beats worth a sound: an objective done, a new part of the night. */
+  onBeat: ((beat: 'done' | 'chapter') => void) | null = null;
   private simStart = 0;
   private readonly subs: Subtitles;
   private readonly beacon = new Beacon();
@@ -292,6 +298,7 @@ export class Story {
 
   private complete(id: ObjectiveId): void {
     const o = this.obj(id);
+    if (!o.done) this.onBeat?.('done');
     o.shown = true;
     o.done = true;
   }
@@ -301,6 +308,7 @@ export class Story {
     this.act = n;
     const [kicker, title] = CHAPTERS[n];
     chapterCard(kicker, title);
+    this.onBeat?.('chapter');
     this.reveal('forecast');
     if (n >= 1) this.reveal('advisory', 'mats', 'gauge');
     if (n >= 2) this.reveal('siren', 'toto', 'ben', 'lola');
@@ -432,7 +440,14 @@ export class Story {
   update(dt: number, time: number): void {
     this.subs.update(dt);
     if (!this.running) return;
-    this.t += dt;
+    // Caught up before the next alert level? Let the night run faster instead of making the player wait.
+    const waiting = this.act < 3 && !this.reporting && !this.subs.busy && this.timers.length === 0 && this.objectives.every((o) => !o.shown || o.done);
+    // Ease in over a couple of seconds; drop back quickly once there is something to do again.
+    this.pace += ((waiting ? FAST_FORWARD : 1) - this.pace) * Math.min(1, dt * (waiting ? 1.5 : 6));
+    if (!waiting && this.pace < 1.05) this.pace = 1;
+    state.speed = this.pace;
+    document.getElementById('obj-wait')!.hidden = !waiting;
+    this.t += dt * this.pace;
     const { residents } = this.world;
     const { level, rain } = storyAt(this.t);
     state.targetLevel = level;

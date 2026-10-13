@@ -34,6 +34,9 @@ export class Interactions {
   private readonly to = new THREE.Vector3();
   private readonly screen = new THREE.Vector3();
 
+  /** Something was used (for the click sound). */
+  onUse: (() => void) | null = null;
+
   constructor(
     private readonly player: Player,
     private readonly items: Interactable[],
@@ -41,10 +44,16 @@ export class Interactions {
   ) {
     window.addEventListener('keydown', (e) => {
       if (this.player.active && e.key.toLowerCase() === 'e' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
-        this.current?.act();
+        this.use();
       }
     });
-    this.card.addEventListener('click', () => this.current?.act());
+    this.card.addEventListener('click', () => this.use());
+  }
+
+  private use(): void {
+    if (!this.current) return;
+    this.onUse?.();
+    this.current.act();
   }
 
   private onScreen(at: THREE.Vector3): boolean {

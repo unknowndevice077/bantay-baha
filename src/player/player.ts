@@ -70,7 +70,8 @@ export class Player {
   /** Feet position. */
   readonly pos = new THREE.Vector3();
   private vy = 0;
-  private grounded = true;
+  /** Standing on something (not mid-jump or falling). */
+  grounded = true;
   /** Look direction: yaw 0 faces −z. */
   private yaw = 0;
   private pitch = 0;

@@ -16,11 +16,13 @@
         <small id="obj-chapter"></small>
         <h2 id="obj-title"></h2>
         <ol id="obj-list"></ol>
+        <p id="obj-wait" hidden>All done for now. The night moves faster until the next alert.</p>
       </section>
 
       <div id="corner">
         <span id="clock-label">Phone</span>
         <button id="b-phone" class="btn" title="Phone (P)"><span class="phone-glyph" aria-hidden="true"></span>Phone <kbd>P</kbd></button>
+        <button id="b-sound" class="btn" title="Sound on or off (M)">Sound <kbd>M</kbd></button>
         <button id="b-menu" class="btn" title="Menu (Esc)">Menu <kbd>Esc</kbd></button>
       </div>
 
@@ -34,7 +36,7 @@
       <svg id="prompt-line" aria-hidden="true"><polyline fill="none" /><circle r="4" /></svg>
       <div id="prompt" hidden><kbd class="key">E</kbd><div><small></small><b></b></div></div>
       <div id="crosshair"></div>
-      <div id="keys">Move the mouse to look · WASD walk · Shift run · Space jump · <kbd>E</kbd> use · <kbd>P</kbd> phone · Enter skips dialogue</div>
+      <div id="keys">Move the mouse to look · WASD walk · Shift run · Space jump · <kbd>E</kbd> use · <kbd>P</kbd> phone · <kbd>M</kbd> mute · Enter skips dialogue</div>
 
       <div id="phone" class="device" hidden>
         <div class="handset">
@@ -99,6 +101,13 @@
             <button id="pm-restart" class="btn">Restart the night</button>
             <a class="btn" href="./">Back to the simulator</a>
           </div>
+          <fieldset class="pause-sound">
+            <legend>Sound</legend>
+            <label class="slider">Volume <output id="pm-volume-out">80%</output><input id="pm-volume" type="range" min="0" max="100" step="5" value="80" /></label>
+            <label class="check"><input id="pm-mute" type="checkbox" /> Mute everything <kbd>M</kbd></label>
+            <label class="check"><input id="pm-voices" type="checkbox" checked /> Voices (subtitles stay on)</label>
+            <label class="check"><input id="pm-effects" type="checkbox" checked /> Effects and ambience: rain, siren, footsteps, the creek</label>
+          </fieldset>
           <p class="fine">The flood, the clock and the residents wait while this is open. Leaving or restarting ends this night.</p>
         </div>
       </section>

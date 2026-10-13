@@ -10,13 +10,29 @@ export class AudioEngine {
   private noise!: AudioBuffer;
   private burstUntil = 0;
   private enabled = false;
+  private volume = 1;
+  private rainTone!: BiquadFilterNode;
+  private muffled = false;
 
   setEnabled(on: boolean): void {
     this.enabled = on;
     if (on && !this.ctx) this.init();
     if (!this.ctx) return;
     if (on) void this.ctx.resume();
-    this.master.gain.setTargetAtTime(on ? 0.8 : 0, this.ctx.currentTime, 0.1);
+    this.master.gain.setTargetAtTime(on ? 0.8 * this.volume : 0, this.ctx.currentTime, 0.1);
+  }
+
+  /** Overall loudness, 0..1 (the story game's volume slider). */
+  setVolume(volume: number): void {
+    this.volume = volume;
+    this.setEnabled(this.enabled);
+  }
+
+  /** Under a roof: the rain becomes a duller drumming. */
+  setMuffled(on: boolean): void {
+    if (!this.ctx || on === this.muffled) return;
+    this.muffled = on;
+    this.rainTone.frequency.setTargetAtTime(on ? 900 : 3500, this.ctx.currentTime, 0.2);
   }
 
   private init(): void {
@@ -42,6 +58,7 @@ export class AudioEngine {
     lp.frequency.value = 3500;
     this.rainGain = ctx.createGain();
     this.rainGain.gain.value = 0;
+    this.rainTone = lp;
     rain.connect(hp).connect(lp).connect(this.rainGain).connect(this.master);
     rain.start();
 

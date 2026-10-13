@@ -11,6 +11,8 @@ import { World } from '../world';
 import { Devices } from './devices';
 import { STORY_START_HOUR } from './script';
 import { PauseMenu } from './pause';
+import { Sfx } from './sfx';
+import { SoundSettings } from './sound';
 import { Story } from './story';
 import { Voice } from './voice';
 
@@ -27,10 +29,16 @@ world.scene.add(player.rig.root);
 const devices = new Devices(CHANNEL, () => state.lang);
 const voice = new Voice();
 const story = new Story(world, player, devices, voice);
+const sfx = new Sfx();
+const sound = new SoundSettings(world.audio, sfx, voice);
+story.onBeat = (beat) => (beat === 'done' ? sfx.chime() : sfx.chapter());
+devices.onNotify = () => sfx.notify();
 const interactions = new Interactions(player, story.interactables(), camera);
+interactions.onUse = () => sfx.use();
 devices.onOpen = () => story.onDeviceOpen();
 // The mouse belongs to the phone or laptop while one is up, and to looking around again after.
 devices.onToggle = (open) => {
+  sfx.phone(open);
   player.lookEnabled = !open;
   if (open) player.release();
   else player.lock();
@@ -42,10 +50,7 @@ world.onPacket = (r) => bridge?.publish(r);
 
 $('t-start').addEventListener('click', () => {
   state.lang = $<HTMLSelectElement>('t-lang').value as Lang;
-  if ($<HTMLInputElement>('t-sound').checked) {
-    world.audio.setEnabled(true);
-    voice.enable();
-  }
+  sound.start();
   // Dashboard timestamps follow the story clock: 18:20 today at the moment the night begins.
   const start = new Date();
   start.setHours(Math.floor(STORY_START_HOUR), Math.round((STORY_START_HOUR % 1) * 60), 0, 0);
@@ -91,6 +96,9 @@ const menu = new PauseMenu(
   },
 );
 
+/** For the click of the siren switch, whoever flips it (the hall switch or a dashboard). */
+let sirenWas = state.sirenManual;
+
 world.start((dt, t) => {
   // Paused: the water and the clock stand still (speed 0) and so do the story and the captain.
   if (!menu.paused) {
@@ -99,5 +107,11 @@ world.start((dt, t) => {
   }
   interactions.update();
   if (!player.active) orbitCamera(dt);
+  if (player.active && !menu.paused) sfx.update(dt, player, world.levelY, world.indoors);
+  world.audio.setMuffled(player.active && world.indoors);
+  if (state.sirenManual !== sirenWas) {
+    sirenWas = state.sirenManual;
+    sfx.clunk();
+  }
   $('clock-label').textContent = story.clock();
 });

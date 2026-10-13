@@ -2,6 +2,8 @@
 
 **Bantay Baha** ("flood watch") is an interactive 3D flood-monitoring simulator of a Philippine barangay beside a creek. A solar-powered smart pole with an ESP32 and a waterproof ultrasonic sensor measures the distance to the water. That reading drives the flood you see, the HUD, multilingual advisories, sirens and evacuation.
 
+**Live demo:** [embeddedbantaybaha.vercel.app](https://embeddedbantaybaha.vercel.app)
+
 It comes as three pages:
 
 | Page | What it is |
@@ -11,6 +13,29 @@ It comes as three pages:
 | `dashboard.html` | The operations dashboard a barangay would actually use, on a phone or laptop |
 
 Built with **Vite + TypeScript + Three.js**. The terrain, buildings, water, textures and sound are procedural. The people are rigged, animated CC0 characters by [Quaternius](https://quaternius.com), slimmed down to about 0.5 MB each (see `public/models/CREDITS.md`), with skin and hair tinted per resident. Nothing is paid or proprietary. The IBM Plex fonts are bundled from npm, so the dashboard works offline.
+
+## Documentation
+
+The [docs folder](docs/README.md) explains the project properly:
+
+- [Problem and approach](docs/problem-and-approach.md): who it's for and why it's built this way
+- [System architecture](docs/architecture.md)
+- [Sensor node](docs/sensor-node.md): hardware, wiring, rough costs
+- [Water-level forecast](docs/forecasting.md) and its [results](docs/forecast-results.md)
+- [Sensor fusion and fault detection](docs/sensor-fusion.md)
+- [User guide](docs/user-guide.md)
+- [Failure modes](docs/failure-modes.md)
+- [Testing](docs/testing.md)
+- [Limitations and next steps](docs/limitations-and-next-steps.md)
+
+## Bantay Baha+
+
+Two add-ons sit on top of the core warning system. Each has its own switch in the simulator's panel (*Bantay Baha+* section). With a switch off, or if an add-on fails to load, the core runs exactly as before.
+
+| Add-on | What it does | More |
+| --- | --- | --- |
+| Forecast | Predicts the level 30 and 60 minutes ahead with gradient-boosted trees trained on 900 synthetic storms, running in the browser. Turns that into "WARNING level (280 cm) in ~25 min" on the HUD and the dashboard | [forecasting.md](docs/forecasting.md) |
+| Sensor fusion | A camera reads the painted staff gauge as a second sensor. Frozen, erratic or drifting readings raise a SENSOR FAULT, and disagreements are settled toward the higher (safer) reading. *Simulate sensor failure* lets you try each one | [sensor-fusion.md](docs/sensor-fusion.md) |
 
 ## Quick start
 
@@ -111,7 +136,11 @@ The phone and the laptop run the real `dashboard.html` inside the game, fed by t
 
 When something usable is in reach, a Roblox-style prompt pops up beside it: the key, what the thing is and what E will do ("Laptop · Open dashboard", "Kagawad Lito · Talk"), joined to it by a leader line. Only things on screen get a prompt, and what you are looking at wins over what is merely closer.
 
-**Voices.** NPC lines (Kagawad Lito, Tanod Jun and the bulletin over the radio, Lola Cora, Mang Ben, Toto, Aling Nena, and residents you talk to in English) are recordings made with [Chatterbox](https://github.com/resemble-ai/chatterbox) (Resemble AI, MIT), each delivered with the emotion the script marks: urgent, scared, stubborn, relieved. Radio calls play through a handheld-radio filter. Lines without a recording (other languages) fall back to the browser's speech. To re-record after editing the script: `node tools/voices/export_lines.mjs`, then `tools/voices/.venv/Scripts/python tools/voices/render.py` (see `tools/voices/render.py` for setup). Untick *Sound and voices* on the title screen to play silently.
+**Voices.** NPC lines (Kagawad Lito, Tanod Jun and the bulletin over the radio, Lola Cora, Mang Ben, Toto, Aling Nena, and residents you talk to in English) are recordings made with [Chatterbox](https://github.com/resemble-ai/chatterbox) (Resemble AI, MIT), each delivered with the emotion the script marks: urgent, scared, stubborn, relieved. Radio calls play through a handheld-radio filter. Lines without a recording (other languages) fall back to the browser's speech. To re-record after editing the script: `node tools/voices/export_lines.mjs`, then `tools/voices/.venv/Scripts/python tools/voices/render.py` (see `tools/voices/render.py` for setup). Untick *Sound and voices* on the title screen to play silently, or press M in game.
+
+**Sound effects.** Like the rest of the project's sound, they are synthesized in the browser (`src/game/sfx.ts`): footsteps that change between road, house floors and floodwater, splashes when swimming, landing, phone buzzes and notification pings, a chime when a task is done, the siren switch, and the creek, which gets louder as it rises and as you get closer. Frogs and crickets fill quiet stretches of the night and fall silent in a downpour; indoors, the rain on the roof is muffled.
+
+**Waiting for the water.** When every task so far is done and the next part of the night depends on the creek reaching the next alert level, the night runs six times faster until it does (the objectives panel says so), then drops back to normal.
 
 Every house can be walked into: open doorway, floor, ceiling, curtains, a bed, cabinet, TV and a table with monobloc chairs; nipa houses have bamboo steps up to a raised porch. A lamp lights whichever room you are in. Swim too long in fast water and the tanods pull you out, which counts against you in the report.
 
@@ -123,6 +152,8 @@ Every house can be walked into: open doorway, floor, ceiling, curtains, a bed, c
 | Space | Jump |
 | E (or click the prompt) | Use what the prompt shows: laptop, mats, staff gauge, siren switch, people |
 | P | Phone |
+| M | Mute or unmute (volume, voices and effects are in the Esc menu) |
+| Esc | Pause menu: resume, sound, open the dashboard, restart, back to the simulator |
 | Enter / click | Skip the current line of dialogue |
 
 ## Operations dashboard (for the barangay captain)
@@ -252,6 +283,7 @@ $env:OLLAMA_ORIGINS="http://localhost:5173"; ollama serve
 2. **0:08 · Sensor**, then **click the box** and click the ESP32 board. "The enclosure opens up: ESP32, ultrasonic driver, two 18650 cells and the wiring. Each part explains itself, with live readings." Flip the HUD to **Device** to show the payload log. The beam measures the distance down to the water. The blue dots are MQTT packets travelling to the gateway on the barangay hall and on to the dashboard."
 3. **0:20.** Turn X-ray off, set **Speed 10x**, press **Play storm**, click **Overview**. "A typhoon rain band arrives. Watch the rain, the rising level and the 10-minute chart."
 4. **0:30.** The fast rise escalates the status to **WARNING**. Switch **Language** to Tagalog, then Cebuano. "Advisories are generated in four languages."
+   With **Forecast** ticked in the Bantay Baha+ panel, point at the badge: "And this is how long we have. It saw WARNING coming before the alarms did."
 5. **0:38 · EVACUATE.** Click **Street level**. "The road floods, the siren sounds and the residents walk to the evacuation center." Then click **Bridge**. "Debris snags on the bridge and piles up."
 6. **0:50.** Toggle **Lola mode** with Sound on. "Aba, apo, daghan na ang tubig! Dali, lakaw na!"
 7. **0:55.** Click **Dashboard**: "And this is what the barangay captain actually uses: status, ETA, siren, broadcast, headcount." Bonus: **Play the story** to live through a flood night as the captain, or type ↑↑↓↓←→←→BA for the duck armada.

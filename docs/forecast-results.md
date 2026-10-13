@@ -39,5 +39,6 @@ On the exact storm the simulator plays (storm 0, a training storm, so optimistic
 ## Limits
 
 - Synthetic data from the same model that drives the simulator: real creeks have backwater, debris jams, upstream releases and rating changes this does not capture. Retrain on recorded sensor data before relying on it.
-- No rainfall forecast is used. Feeding PAGASA nowcasts would reduce the +60 min error most.
+- The numbers above use no rainfall forecast: the model only knows rain that has already fallen. When an outlook is available, the forecaster projects with the catchment model instead (the story game does this with its PAGASA bulletin; see [forecasting.md](forecasting.md#using-the-weather-outlook)). That mode isn't scored here, because on synthetic storms with a perfect outlook it would look unrealistically good.
+- A 34 % false-alarm rate for "WARNING within the hour" is high. We accepted it on purpose: a warning that turns out unneeded costs far less than one that comes late. A real deployment should tune it with the barangay.
 - See [failure-modes.md](failure-modes.md) for how the app behaves when the forecast is wrong or unavailable.
