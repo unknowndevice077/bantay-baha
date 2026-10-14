@@ -186,9 +186,43 @@ export function toLocal(p: HousePlan, x: number, z: number): [number, number] {
   return [dx * c - dz * s, dx * s + dz * c];
 }
 
-/** Front steps: nipa houses have bamboo stairs up to the raised porch, concrete ones a short threshold ramp. */
-export function frontSteps(p: HousePlan): { start: number; length: number; halfW: number } {
-  return p.type === 'nipa' ? { start: p.d / 2 + 0.9, length: 2.4, halfW: 0.55 } : { start: p.d / 2, length: 0.9, halfW: doorHalf(p) + 0.1 };
+export interface FrontSteps {
+  /** Plan-local z where the steps leave the house (or porch), how far out they reach, and half their width. */
+  start: number;
+  length: number;
+  halfW: number;
+  /** Concrete homes: number of steps and the total rise from the ground to the floor. Nipa steps are a bamboo ramp (0). */
+  count: number;
+  rise: number;
+}
+
+/** Tread depth and the most a single concrete step may rise (m). */
+const TREAD = 0.28;
+const MAX_RISER = 0.18;
+const stepsCache = new WeakMap<HousePlan, FrontSteps>();
+
+/**
+ * Front steps: nipa houses have bamboo stairs up to the raised porch; concrete homes,
+ * whose floors sit 0.6–1.1 m above the ground at the door, a flight of concrete steps.
+ */
+export function frontSteps(p: HousePlan): FrontSteps {
+  let s = stepsCache.get(p);
+  if (s) return s;
+  if (p.type === 'nipa') s = { start: p.d / 2 + 0.9, length: 2.4, halfW: 0.55, count: 0, rise: 0 };
+  else {
+    const [x, z] = toWorld(p, 0, p.d / 2 + 0.3);
+    const rise = Math.max(0, roomFloor(p) - groundHeight(x, z));
+    const count = Math.max(1, Math.ceil(rise / MAX_RISER));
+    s = { start: p.d / 2, length: count * TREAD, halfW: doorHalf(p) + 0.15, count, rise };
+  }
+  stepsCache.set(p, s);
+  return s;
+}
+
+/** Top of the concrete step under plan-local z (step 0 is the landing at floor level by the door). */
+export function stepTop(p: HousePlan, s: FrontSteps, lz: number): number {
+  const k = Math.min(s.count - 1, Math.max(0, Math.floor((lz - s.start) / TREAD)));
+  return roomFloor(p) - (s.rise * k) / s.count;
 }
 
 export interface LocalBox {

@@ -34,8 +34,61 @@ const line = (x0: number, z0: number, x1: number, z1: number, step: number): THR
   return Array.from({ length: n + 1 }, (_, i) => new THREE.Vector2(x0 + ((x1 - x0) * i) / n, z0 + ((z1 - z0) * i) / n));
 };
 
+/** A straight ribbon of road or lane: its centre line, width, and the surface height at each centre point. */
+interface Paved {
+  path: THREE.Vector2[];
+  width: number;
+  ys: number[];
+}
+
+/** Flat across its width, at the highest of the ground under its centre and edges, plus `lift`. */
+function paved(path: THREE.Vector2[], width: number, height: HeightFn, lift: number): Paved {
+  const ys = path.map((p, i) => {
+    const next = path[Math.min(i + 1, path.length - 1)];
+    const prev = path[Math.max(i - 1, 0)];
+    const dir = new THREE.Vector2().subVectors(next, prev).normalize();
+    const n = new THREE.Vector2(-dir.y, dir.x).multiplyScalar(width / 2);
+    return Math.max(height(p.x + n.x, p.y + n.y), height(p.x, p.y), height(p.x - n.x, p.y - n.y)) + lift;
+  });
+  return { path, width, ys };
+}
+
+/** The main road, the road north of the bridge, the two lanes and the evacuation lane. */
+const ROADS: Paved[] = [
+  paved(line(-100, ROAD_Z, 100, ROAD_Z, 2), 6, baseHeight, 0.08),
+  paved(line(BRIDGE.x, RZ - BRIDGE.half, BRIDGE.x, -100, 2), 6, baseHeight, 0.08),
+];
+const LANES: Paved[] = [
+  paved(line(-98, 34, 98, 34, 2), 2.6, baseHeight, 0.05),
+  paved(line(-98, 50, 98, 50, 2), 2.6, baseHeight, 0.05),
+  paved(line(EVAC_LANE_X, ROAD_Z + 3, EVAC_LANE_X, ASSEMBLY.z + 0.8, 2), 2.6, baseHeight, 0.05),
+];
+
+/**
+ * Height of the road or lane surface at (x, z), or null off them. People walk on this, not on
+ * the ground under it: the ribbons sit a few centimetres proud of the terrain.
+ */
+export function pavedTop(x: number, z: number): number | null {
+  let top: number | null = null;
+  for (const r of [...ROADS, ...LANES]) {
+    const a = r.path[0];
+    const b = r.path[r.path.length - 1];
+    const ab = new THREE.Vector2(b.x - a.x, b.y - a.y);
+    const len = ab.length();
+    const t = ((x - a.x) * ab.x + (z - a.y) * ab.y) / (len * len);
+    if (t < 0 || t > 1) continue;
+    const off = Math.abs((x - a.x) * ab.y - (z - a.y) * ab.x) / len;
+    if (off > r.width / 2) continue;
+    const f = t * (r.path.length - 1);
+    const i = Math.min(Math.floor(f), r.path.length - 2);
+    const y = r.ys[i] + (r.ys[i + 1] - r.ys[i]) * (f - i);
+    top = top === null ? y : Math.max(top, y);
+  }
+  return top;
+}
+
 /** A ribbon that follows the ground (path points are (x, z)). */
-function strip(path: THREE.Vector2[], width: number, height: HeightFn, lift: number, material: THREE.Material): THREE.Mesh {
+function strip({ path, width, ys }: Paved, material: THREE.Material): THREE.Mesh {
   const pos: number[] = [];
   const uv: number[] = [];
   const idx: number[] = [];
@@ -46,7 +99,7 @@ function strip(path: THREE.Vector2[], width: number, height: HeightFn, lift: num
     const dir = new THREE.Vector2().subVectors(next, prev).normalize();
     const n = new THREE.Vector2(-dir.y, dir.x).multiplyScalar(width / 2);
     if (i > 0) dist += p.distanceTo(path[i - 1]);
-    const y = Math.max(height(p.x + n.x, p.y + n.y), height(p.x, p.y), height(p.x - n.x, p.y - n.y)) + lift;
+    const y = ys[i];
     pos.push(p.x + n.x, y, p.y + n.y, p.x - n.x, y, p.y - n.y);
     uv.push(0, dist / 8, 1, dist / 8);
     if (i > 0) {
@@ -225,12 +278,9 @@ export function createInfrastructure(): THREE.Group {
   const deckRoad: HeightFn = (_x, z) => deckTop(z);
 
   g.add(
-    strip(line(-100, ROAD_Z, 100, ROAD_Z, 2), 6, baseHeight, 0.08, asphalt),
-    strip(line(BRIDGE.x, RZ + BRIDGE.half, BRIDGE.x, RZ - BRIDGE.half, 1), 4.4, deckRoad, 0.02, asphalt),
-    strip(line(BRIDGE.x, RZ - BRIDGE.half, BRIDGE.x, -100, 2), 6, baseHeight, 0.08, asphalt),
-    strip(line(-98, 34, 98, 34, 2), 2.6, baseHeight, 0.05, dirt),
-    strip(line(-98, 50, 98, 50, 2), 2.6, baseHeight, 0.05, dirt),
-    strip(line(EVAC_LANE_X, ROAD_Z + 3, EVAC_LANE_X, ASSEMBLY.z + 0.8, 2), 2.6, baseHeight, 0.05, dirt),
+    ...ROADS.map((r) => strip(r, asphalt)),
+    strip(paved(line(BRIDGE.x, RZ + BRIDGE.half, BRIDGE.x, RZ - BRIDGE.half, 1), 4.4, deckRoad, 0.02), asphalt),
+    ...LANES.map((r) => strip(r, dirt)),
     bridge(),
     canalWalls(),
     powerLines(),

@@ -170,6 +170,27 @@ export class SmartPole {
     tag('wiring', cable);
     G.add(cable);
 
+    // Solar cable down the mast into the bottom-left gland, and the beacon cable from the
+    // bottom-centre gland back up the mast to the strobe (the enclosure faces the river, so
+    // its local left is world +x).
+    const runUp = (x: number, z: number, top: THREE.Vector3, lean: number) =>
+      new THREE.CatmullRomCurve3(
+        [
+          new THREE.Vector3(POLE_X + x, g + 1.97, baseZ - 0.2),
+          new THREE.Vector3(POLE_X + x, g + 1.75, baseZ - 0.12 + lean),
+          new THREE.Vector3(POLE_X + x * 0.5, g + 2.7, baseZ - 0.1 + lean),
+          new THREE.Vector3(POLE_X + x * 0.5, top.y - 0.25, z),
+          top,
+        ],
+        false,
+        'catmullrom',
+        0.2,
+      );
+    const solarCable = new THREE.Mesh(new THREE.TubeGeometry(runUp(0.15, baseZ + 0.12, new THREE.Vector3(POLE_X + 0.1, topY - 0.2, baseZ + 0.25), 0.02), 60, 0.014, 6), this.cableMat);
+    const beaconCable = new THREE.Mesh(new THREE.TubeGeometry(runUp(-0.02, baseZ - 0.1, new THREE.Vector3(POLE_X, topY + 0.02, baseZ - 0.08), -0.02), 60, 0.012, 6), this.cableMat);
+    tag('wiring', solarCable, beaconCable);
+    G.add(solarCable, beaconCable);
+
     G.updateMatrixWorld(true);
     this.enclosure.localToWorld(this.antennaTip.set(0.17, 0.78, -0.04));
     this.enclosureCenter.copy(this.enclosure.position);
@@ -253,9 +274,39 @@ export class SmartPole {
       obj.add(l);
       this.labels.push(l);
     };
-    add('esp32', esp, [-0.11, 0.06, 0], [-0.34, 0.2, 0.45], 'ESP32-WROOM-32 · MQTT over Wi-Fi', [0, 0.19, 0]);
-    add('driver', drv, [0.11, 0.14, 0], [0.34, 0.26, 0.45], 'JSN-SR04T driver board', [0, 0.12, 0]);
-    add('battery', bat, [0, -0.18, 0], [0, -0.42, 0.42], '2× 18650 Li-ion · solar charged', [0, -0.1, 0]);
+    // Solar charge controller (CN3791-style): panel in, battery out.
+    const chg = new THREE.Group();
+    chg.add(
+      box(0.07, 0.05, 0.01, pcb(0x1d4ed8)),
+      box(0.016, 0.016, 0.006, std(0x111111), 0.006, 0.004, 0.008),
+      box(0.02, 0.012, 0.014, std(0x16a34a), -0.024, -0.016, 0.01),
+      box(0.02, 0.012, 0.014, std(0x16a34a), 0.024, -0.016, 0.01),
+    );
+    // 5 V boost converter (MT3608-style): battery 3.7 V up to the 5 V rail.
+    const boost = new THREE.Group();
+    const coil = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.006, 10), std(0x2a2a2a));
+    coil.rotation.x = Math.PI / 2;
+    coil.position.set(-0.01, 0, 0.008);
+    boost.add(box(0.06, 0.035, 0.01, pcb(0x1e40af)), coil, box(0.008, 0.008, 0.008, std(0x3b82f6, { metalness: 0.4 }), 0.016, 0.006, 0.008));
+    // Beacon switch: a logic-level MOSFET module the ESP32 turns on to power the strobe.
+    const sw = new THREE.Group();
+    sw.add(box(0.05, 0.035, 0.01, pcb(0xb91c1c)), box(0.016, 0.02, 0.008, std(0x111111), -0.008, 0.002, 0.009), box(0.016, 0.01, 0.012, std(0x16a34a), 0.015, -0.01, 0.01));
+    // Echo-line divider: two resistors that bring the driver's 5 V ECHO down to the ESP32's 3.3 V.
+    const div = new THREE.Group();
+    for (const x of [-0.008, 0.008]) {
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.016, 8), std(0xd6c49a));
+      r.position.set(x, 0, 0.004);
+      div.add(r);
+    }
+    div.add(box(0.03, 0.022, 0.004, pcb(0x0f172a)));
+
+    add('esp32', esp, [-0.11, 0.06, 0], [-0.34, 0.2, 0.45], 'ESP32-WROOM-32 · reads the sensor, decides the status, publishes over Wi-Fi', [0, 0.19, 0]);
+    add('driver', drv, [0.11, 0.17, 0], [0.34, 0.3, 0.45], 'JSN-SR04T driver · times the echo', [0, 0.12, 0]);
+    add('battery', bat, [0, -0.2, 0], [0, -0.45, 0.42], '2× 18650 Li-ion with BMS', [0, -0.1, 0]);
+    add('charger', chg, [-0.15, -0.11, 0], [-0.36, -0.22, 0.4], 'Solar charge controller · panel → battery', [0, -0.06, 0]);
+    add('boost', boost, [0.13, 0.03, 0], [0.38, 0.06, 0.42], '5 V boost · battery → 5 V rail', [0.04, -0.04, 0]);
+    add('switch', sw, [0.14, -0.07, 0], [0.34, -0.2, 0.4], 'Beacon switch (MOSFET)', [0, -0.05, 0]);
+    add('wiring', div, [0.0, 0.05, 0], [0.02, 0.12, 0.5], 'ECHO divider 5 V → 3.3 V', [-0.06, 0.05, 0]);
 
     const wire = (a: THREE.Object3D, pa: [number, number, number], b: THREE.Object3D, pb: [number, number, number], color: number) => {
       const mesh = new THREE.Mesh(new THREE.TubeGeometry(), std(color, { roughness: 0.4 }));
@@ -263,14 +314,31 @@ export class SmartPole {
       E.add(mesh);
       this.wires.push({ a, pa: new THREE.Vector3(...pa), b, pb: new THREE.Vector3(...pb), mesh });
     };
-    wire(bat, [0.08, 0.03, 0.02], esp, [0.05, -0.12, 0.01], 0xdc2626); // VIN
-    wire(bat, [-0.08, 0.03, 0.02], esp, [-0.05, -0.12, 0.01], 0x222222); // GND
-    wire(esp, [0.06, 0.08, 0.02], drv, [-0.08, 0.0, 0.01], 0xeab308); // TRIG
-    wire(esp, [0.06, 0.04, 0.02], drv, [-0.08, -0.03, 0.01], 0x16a34a); // ECHO
-    wire(bat, [0.09, 0.0, 0.02], drv, [0.06, -0.05, 0.01], 0xdc2626); // 5V
-    wire(drv, [0.07, -0.05, 0.03], shell, [0.15, -0.3, 0.0], 0xf97316); // to transducer cable gland
+    const RED = 0xdc2626;
+    const BLACK = 0x222222;
+    // Power: solar panel → charger → battery → 5 V boost → everything that needs 5 V.
+    wire(shell, [-0.15, -0.29, 0.02], chg, [-0.024, -0.016, 0.012], RED); // panel + (cable gland, bottom left)
+    wire(shell, [-0.13, -0.29, 0.02], chg, [-0.03, -0.02, 0.012], BLACK); // panel −
+    wire(chg, [0.024, -0.016, 0.012], bat, [-0.09, 0.03, 0.02], RED); // charger → battery +
+    wire(chg, [0.03, -0.02, 0.012], bat, [-0.09, -0.03, 0.02], BLACK); // charger → battery −
+    wire(bat, [0.09, 0.03, 0.02], boost, [-0.03, -0.01, 0.01], RED); // battery → boost in
+    wire(bat, [0.09, -0.03, 0.02], boost, [-0.03, -0.017, 0.01], BLACK);
+    wire(boost, [0.03, 0.01, 0.01], esp, [0.05, -0.12, 0.01], RED); // 5 V → ESP32 VIN
+    wire(boost, [0.03, -0.01, 0.01], esp, [-0.05, -0.12, 0.01], BLACK); // GND → ESP32
+    wire(boost, [0.03, 0.015, 0.01], drv, [0.06, -0.05, 0.01], RED); // 5 V → driver VCC
+    wire(boost, [0.025, -0.017, 0.01], drv, [0.08, -0.055, 0.01], BLACK); // GND → driver
+    wire(boost, [0.02, -0.017, 0.01], sw, [0.015, -0.016, 0.012], RED); // 5 V → switch → beacon
+    // Signals.
+    wire(esp, [0.06, 0.08, 0.02], drv, [-0.08, 0.0, 0.01], 0xeab308); // GPIO5 → TRIG
+    wire(drv, [-0.08, -0.03, 0.01], div, [0.012, 0.008, 0.006], 0x16a34a); // ECHO (5 V) → divider
+    wire(div, [-0.012, 0.008, 0.006], esp, [0.06, 0.04, 0.02], 0x16a34a); // divider (3.3 V) → GPIO18
+    wire(esp, [0.06, -0.02, 0.02], sw, [-0.024, 0.0, 0.01], 0x9333ea); // GPIO25 → MOSFET gate
+    wire(esp, [0.04, 0.12, 0.02], lid, [0.18, 0.24, 0.0], 0x2563eb); // GPIO26 → status LED
+    // Out through the cable glands at the bottom: transducer cable, beacon cable.
+    wire(drv, [0.07, -0.05, 0.03], shell, [0.15, -0.29, 0.02], 0xf97316); // → transducer
+    wire(sw, [0.02, -0.012, 0.012], shell, [0.02, -0.29, 0.02], 0xf59e0b); // → beacon on the mast top
 
-    const wLabel = label('Wiring: VIN · GND · TRIG · ECHO · transducer', 'wiring');
+    const wLabel = label('Wiring: solar → charger → battery → 5 V → ESP32 · sensor · beacon', 'wiring');
     wLabel.position.set(0, -0.05, 0.35);
     E.add(wLabel);
     this.labels.push(wLabel);

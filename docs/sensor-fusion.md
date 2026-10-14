@@ -8,14 +8,16 @@ Like the forecast, it's a Bantay Baha+ add-on with its own switch. Turn it off a
 
 Many LGUs already put a painted staff gauge in their creeks, and some add a CCTV camera pointed at it. We use the same idea. In the simulator, a small camera on the village bank looks at the gauge board, lit only by its own infrared lamp, so it works the same day and night.
 
-Every time the ultrasonic takes a reading, the camera takes a tiny picture: 24 × 256 pixels, enough to see the board. `src/fusion/cameraGauge.ts` then finds the waterline *from the pixels alone*. It doesn't peek at the simulator's water level.
+Alongside the ultrasonic's readings, the camera takes a tiny picture: 24 × 256 pixels, enough to see the board, at most four times a second. `src/fusion/cameraGauge.ts` then finds the waterline *from the pixels alone*. It doesn't peek at the simulator's water level.
 
 - The board is painted white with dark bars. Above the water, a large share of each row's pixels is bright white.
 - Below the surface, the water darkens the board.
 - The first row from the top where the share of white pixels drops is the waterline. That row is projected back onto the board to give a level.
 - Waves slap the board, so the camera reports the median of its last three readings, as real gauge cameras do.
 
-The camera you see in the panel ("Bantay Baha+" section) is that actual picture, with the detected waterline drawn on it.
+The camera you see in the panel ("Bantay Baha+" section) is that actual picture, with the detected waterline drawn on it. The camera itself is the small white box on a post on the village bank; click it for its card.
+
+**What it would cost a barangay:** an ESP32-CAM with an 850 nm infrared LED in a small weatherproof box, about ₱450–800. It's optional. The system warns without it, but it's the cheapest way we found to make a broken sensor visible. See [what it costs](sensor-node.md#what-it-costs).
 
 **What the camera can't do:** at low water, the bottom of the board is above the creek, or the water at its foot is too shallow to darken the paint. Then the camera only knows "the water is *no higher than* this". It reports that as `low`, and the fusion treats it as an upper limit, not a reading.
 
@@ -52,7 +54,7 @@ When a fault is raised:
 Each of these made the fusion pick the wrong answer before we fixed it:
 
 - **We first mounted the camera too low.** In a big flood the water reached the camera's own field of view and it read nonsense. It now sits above the highest flood the model allows, a few metres back from the bank.
-- **At 10x speed the camera fell behind.** It was only taking pictures every so often, so during a fast rise it was always a step behind the ultrasonic, and that looked like a disagreement. Now it takes a picture with every reading, and uses the median of three.
+- **At 10x speed the camera fell behind.** It was only taking pictures every so often, so during a fast rise it was always a step behind the ultrasonic, and that looked like a disagreement. Now it takes pictures as often as it usefully can, and uses the median of three. That's up to four a second: each picture read back from the graphics card makes everything else wait, and at 10x speed taking one per reading made the whole simulator stutter.
 - **A frozen sensor fooled the fusion.** Early on, a stuck ultrasonic reading still looked "precise" (zero noise!), so inverse-variance weighting trusted it *more*. That's how the "8 identical readings" rule came about.
 - **Shallow water read as no water.** With only a few centimetres at the foot of the board, the camera couldn't see the line and confidently reported the bottom of the gauge. That's why it now reports `low` below about 35 cm above the foot.
 

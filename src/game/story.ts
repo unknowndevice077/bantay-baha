@@ -12,7 +12,7 @@ import type { ForecastSummary } from '../net/protocol';
 import type { Interactable } from '../player/interactions';
 import type { Player } from '../player/player';
 import { createMats, createOpsDesk } from '../player/props';
-import { HALL_INSIDE, HALL_PLAN, HALL_STAIRS } from '../scene/layout';
+import { ASSEMBLY, HALL_DOOR, HALL_INSIDE, HALL_PLAN, HALL_STAIRS } from '../scene/layout';
 import { PersonRig } from '../scene/person';
 import { walkHeight } from '../scene/walkable';
 import { classifyStatus, riseRate } from '../sensor/status';
@@ -106,6 +106,20 @@ export class Story {
   private gaugeDiff: number | null = null;
   private readonly leftAt: (number | null)[];
   private escorting = false;
+  /** Which way the captain is facing (xz), for walking hand in hand. */
+  private readonly playerFwd = new THREE.Vector3(0, 0, -1);
+  private readonly lastPlayerPos = new THREE.Vector3();
+  /** The captain's own hand and sleeve, seen at the bottom right while holding Lola's hand. */
+  private readonly handView = new THREE.Group();
+  /** Story time of the last "slow down" / "hold my hand" line, so they don't repeat every step. */
+  private handLineAt = -1e9;
+  /** Aling Nena, waiting at the hall stairs for her son. */
+  private readonly nena = new PersonRig({ model: 'woman-casual', skin: 0xa06b47, hair: 0x15110f, scale: 0.97 });
+  private readonly nenaPos = ground(ASSEMBLY.x + 2.2, ASSEMBLY.z - 0.6);
+  private nenaRoute: THREE.Vector3[] = [];
+  private nenaShown = false;
+  private reunited = false;
+  private benReadySaid = false;
   private totoSent = false;
   private selfEvac = false;
   private allInSaid = false;
@@ -130,7 +144,18 @@ export class Story {
     residents.restyle(BEN, { model: 'farmer', skin: 0x7a4b2f, hair: 0x1f1712 });
     this.litoPos = ground(OFFICE.x + 1.5, OFFICE.z - 0.9);
     this.lito.pose(0, 0, this.litoPos.x, this.litoPos.y, this.litoPos.z, Math.PI);
-    world.scene.add(this.beacon.group, this.desk.group, this.mats.group, this.lito.root);
+    world.scene.add(this.beacon.group, this.desk.group, this.mats.group, this.lito.root, this.nena.root, this.handView);
+    this.nena.root.visible = false;
+    this.buildHandView();
+    residents.onHand = (i, holding) => {
+      if (i !== LOLA || this.subs.busy || this.storyTime() - this.handLineAt < 80) return;
+      this.handLineAt = this.storyTime();
+      this.say(holding ? LINES.lolaHold : LINES.lolaSlow);
+    };
+    // Evacuees stop at the registration table; once Lito is there (part three), he logs each one.
+    residents.onCheckIn = () => {
+      if (this.act >= 3) this.lito.play('interact', 1.2);
+    };
     // PAGASA's rainfall outlook for the next hours feeds the forecast (1 story minute = 6 real seconds).
     this.forecaster.outlook = (minutes) => storyAt(this.t + minutes * 6).rain;
 
@@ -236,6 +261,17 @@ export class Story {
         act: () => this.talkToto(),
       },
       {
+        object: 'Aling Nena',
+        label: () => (this.nenaShown && !this.reunited ? 'Talk' : null),
+        anchor: () => this.nenaPos.clone().setY(this.nenaPos.y + 1.55),
+        distance: (p) => flat(p, this.nenaPos),
+        range: 2.5,
+        act: () => {
+          this.nena.play('wave', 1.6);
+          this.say(this.totoSent ? LINES.nenaFound : LINES.nenaWaiting);
+        },
+      },
+      {
         object: 'Resident',
         label: () => 'Talk',
         anchor: () => {
@@ -338,6 +374,9 @@ export class Story {
       this.say(this.sirenAt === null ? LINES.warning : LINES.warning.filter((l) => !l[1].startsWith('Sound the siren')));
       this.world.residents.placeAt(TOTO, TOTO_SPOT.x, TOTO_SPOT.z);
       this.after(14, () => this.say(LINES.totoMissing));
+      // Toto's mother waits at the foot of the hall stairs, watching the road.
+      this.nena.root.visible = true;
+      this.nenaShown = true;
     }
     if (n === 3) {
       this.say(LINES.evacuate);
@@ -377,6 +416,8 @@ export class Story {
     }
     if (this.advisoryAt !== null) return;
     this.advisoryAt = this.storyTime();
+    // People heard it: households go in and pack their go-bags (the holdouts don't listen).
+    this.world.residents.pack((i) => !HOLDOUTS.includes(i), 'home', 25);
     this.reveal('advisory', 'mats', 'gauge');
     this.complete('advisory');
     if (this.act < 2) this.say(LINES.advisorySent);
@@ -424,7 +465,8 @@ export class Story {
     if (this.obj('ben').done) return this.say(LINES.benPacking);
     this.say(LINES.ben);
     this.complete('ben');
-    this.after(10, () => residents.evacuate((i) => i === BEN));
+    // He goes back in for the family's bags, then they leave together.
+    this.after(6, () => residents.pack((i) => i === BEN, 'evac', 0));
   }
 
   private talkLola(): void {
@@ -433,15 +475,78 @@ export class Story {
     if (this.act < 2) return this.say(LINES.lolaEarly);
     this.say(LINES.lola);
     this.escorting = true;
-    residents.follow(LOLA, this.player.pos);
+    // She picks up her little bag, then takes the captain's hand.
+    residents.gesture(LOLA, 'interact', 1.8);
+    residents.carry(LOLA, true);
+    this.handLineAt = this.storyTime();
+    // Start beside the captain as they stand facing her; it turns with the way they walk.
+    this.world.camera.getWorldDirection(this.playerFwd).setY(0).normalize();
+    this.after(1.8, () => residents.follow(LOLA, this.player.pos, this.playerFwd));
   }
 
   private talkToto(): void {
     const { residents } = this.world;
     residents.face(TOTO, this.player.pos.x, this.player.pos.z);
+    residents.gesture(TOTO, 'wave', 1.5);
     this.say(LINES.toto);
     this.totoSent = true;
     this.after(7, () => residents.evacuate((i) => i === TOTO));
+  }
+
+  /**
+   * Aling Nena waits at the foot of the hall stairs, turning to look down the evacuation lane.
+   * When Toto runs up, they hug, she thanks the captain, and they go in together.
+   */
+  private updateNena(dt: number): void {
+    if (!this.nenaShown) return;
+    const { residents } = this.world;
+    const toto = residents.position(TOTO);
+    let speed = 0;
+    let heading = Math.PI; // down the lane, toward the road
+    if (!this.reunited && this.totoSent && flat(toto, this.nenaPos) < 2.4) {
+      this.reunited = true;
+      residents.pause(TOTO, 3.2);
+      residents.gesture(TOTO, 'interact', 3.2);
+      this.nena.play('interact', 3.2);
+      this.complete('toto');
+      this.say(LINES.totoSafe);
+      this.after(3.2, () => {
+        this.nenaRoute = [ground(HALL_STAIRS.x - 0.6, HALL_STAIRS.z0 + 0.2), ground(HALL_STAIRS.x - 0.6, HALL_STAIRS.z1 + 0.4), ground(HALL_DOOR.x - 0.6, HALL_DOOR.z + 0.6), ground(HALL_INSIDE.x - 3, HALL_INSIDE.z + 1)];
+      });
+    }
+    if (this.reunited && !this.nenaRoute.length && !residents.leaving(TOTO)) heading = Math.atan2(toto.x - this.nenaPos.x, toto.z - this.nenaPos.z);
+    else if (!this.reunited && flat(this.player.pos, this.nenaPos) < 6) heading = Math.atan2(this.player.pos.x - this.nenaPos.x, this.player.pos.z - this.nenaPos.z);
+    else if (this.reunited) heading = Math.atan2(toto.x - this.nenaPos.x, toto.z - this.nenaPos.z);
+    const next = this.nenaRoute[0];
+    if (next) {
+      const d = flat(next, this.nenaPos);
+      if (d < 0.3) this.nenaRoute.shift();
+      else {
+        speed = 1.4;
+        const k = Math.min(1, (speed * dt) / d);
+        this.nenaPos.x += (next.x - this.nenaPos.x) * k;
+        this.nenaPos.z += (next.z - this.nenaPos.z) * k;
+        heading = Math.atan2(next.x - this.nenaPos.x, next.z - this.nenaPos.z);
+      }
+    }
+    this.nenaPos.y = walkHeight(this.nenaPos.x, this.nenaPos.z);
+    this.nena.pose(dt, speed, this.nenaPos.x, this.nenaPos.y, this.nenaPos.z, heading);
+  }
+
+  /** A forearm in the captain's reflective-vest sleeve, reaching right to hold Lola's hand. */
+  private buildHandView(): void {
+    const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.34, 10), new THREE.MeshStandardMaterial({ color: 0xd9822b, roughness: 0.8 }));
+    sleeve.rotation.z = Math.PI / 2 - 0.35;
+    sleeve.position.set(0.12, 0, 0);
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.05, 0.1), new THREE.MeshStandardMaterial({ color: 0x93613f, roughness: 0.7 }));
+    hand.position.set(0.3, -0.07, 0);
+    const arm = new THREE.Group();
+    arm.add(sleeve, hand);
+    // Lower right of the view, a little forward of the camera.
+    arm.position.set(0.2, -0.24, -0.55);
+    arm.rotation.set(0, -0.6, -0.15);
+    this.handView.add(arm);
+    this.handView.visible = false;
   }
 
   /** Story seconds since the night began (0 on the title screen). */
@@ -492,9 +597,26 @@ export class Story {
     tag(BEN, 'Mang Ben');
     if (this.act >= 2) tag(TOTO, 'Toto');
 
-    // Kagawad Lito turns to face the captain when they come near.
-    if (flat(this.player.pos, this.litoPos) < 6) {
-      this.lito.pose(dt, 0, this.litoPos.x, this.litoPos.y, this.litoPos.z, Math.atan2(this.player.pos.x - this.litoPos.x, this.player.pos.z - this.litoPos.z));
+    // Kagawad Lito turns to face the captain when they come near (and keeps animating: he logs evacuees in part three).
+    const litoFacing = flat(this.player.pos, this.litoPos) < 6 ? Math.atan2(this.player.pos.x - this.litoPos.x, this.player.pos.z - this.litoPos.z) : this.act >= 3 ? -Math.PI / 2 : Math.PI;
+    this.lito.pose(dt, 0, this.litoPos.x, this.litoPos.y, this.litoPos.z, litoFacing);
+
+    // The way the captain is walking (not looking), so Lola stays put at their side when they turn to look at her.
+    const cam = this.world.camera;
+    const step = new THREE.Vector3(this.player.pos.x - this.lastPlayerPos.x, 0, this.player.pos.z - this.lastPlayerPos.z);
+    if (step.length() > 0.02 && step.length() < 2) this.playerFwd.lerp(step.normalize(), 0.25).normalize();
+    this.lastPlayerPos.copy(this.player.pos);
+    this.handView.visible = residents.holdingHand(LOLA);
+    if (this.handView.visible) {
+      this.handView.position.copy(cam.position);
+      this.handView.quaternion.copy(cam.quaternion);
+    }
+
+    this.updateNena(dt);
+    // Mang Ben comes back out with the family's bags.
+    if (!this.benReadySaid && this.obj('ben').done && residents.leaving(BEN) && flat(this.player.pos, residents.position(BEN)) < 25) {
+      this.benReadySaid = true;
+      this.say(LINES.benReady);
     }
 
     // The siren, from the hall switch or either dashboard, sends everyone but the holdouts.
@@ -518,9 +640,10 @@ export class Story {
       this.complete('lola');
       this.say(LINES.lolaSafe);
     }
+    // Fallback if Toto somehow reaches the hall without passing his mother.
     if (this.totoSent && !this.obj('toto').done && residents.sheltered(TOTO)) {
       this.complete('toto');
-      this.say(LINES.totoSafe);
+      if (!this.reunited) this.say(LINES.totoSafe);
     }
     const { inside, total } = residents.evacStats();
     if (inside === total) {
@@ -634,6 +757,7 @@ export class Story {
       { label: 'Lola Cora', value: lolaSafe ? 'Walked to the hall with you' : 'Spent the night in her attic; brought out by boat at dawn', good: lolaSafe },
       { label: "Mang Ben's family", value: benSafe ? 'Evacuated' : 'Waited on their roof until morning', good: benSafe },
       { label: 'Headcount reported to the MDRRMO', value: this.obj('report').done ? 'Yes' : 'No', good: this.obj('report').done },
+      { label: 'Residents who came with a go-bag', value: `${residents.bagCount()} of ${total}`, good: residents.bagCount() >= total - 3 },
       { label: 'Times pulled from the water', value: String(this.rescues), good: this.rescues === 0 },
       { label: 'Highest water at the sensor', value: `${Math.round(this.peak * 100)} cm`, good: true },
     ];

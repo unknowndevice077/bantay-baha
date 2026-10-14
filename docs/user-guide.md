@@ -83,7 +83,12 @@ The source selector at the top switches between the simulator feed and a **live 
 
 1. **Prologue.** A radio bulletin and Lito set the scene. Go to the laptop on the office desk. The forecast already sees WARNING coming in about 40 minutes, while the creek outside still looks calm.
 2. **Part one: Advisory.** Send an early advisory from the dashboard. Lay out the sleeping mats in the hall. Walk down to the creek and check the sensor against the staff gauge.
-3. **Part two: Over the bank.** Sound the siren, from the switch by the hall door or from the dashboard. Then three people need you in person. A boy is watching the canal by the main road. Mang Ben won't leave his house across the creek. Lola Cora is in her riverside house and walks slowly.
+3. **Part two: Over the bank.** Sound the siren, from the switch by the hall door or from the dashboard. Then three people need you in person:
+   - **Toto**, a boy watching the canal by the main road. His mother, Aling Nena, is waiting for him at the hall stairs. Send him running and he goes straight into her arms.
+   - **Mang Ben**, who won't leave his house across the creek. Once convinced, he goes back in for the family's bags.
+   - **Lola Cora**, in her riverside house. She takes your hand and walks beside you. Walk, don't run, or her hand slips and you have to wait for her to catch up.
+
+   Once you send the advisory, households pack go-bags and come out wearing them. Everyone who reaches the hall stops at the registration table to be counted.
 4. **Part three: Evacuate.** Get everyone into the hall, then report the headcount to the MDRRMO with Lito.
 5. **Epilogue.** The after-action report: who was safe, how much warning the forecast gave, when each warning went out, and how high the water got.
 

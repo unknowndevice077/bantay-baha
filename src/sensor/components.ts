@@ -7,6 +7,9 @@ export type ComponentId =
   | 'esp32'
   | 'driver'
   | 'battery'
+  | 'charger'
+  | 'boost'
+  | 'switch'
   | 'wiring'
   | 'transducer'
   | 'beam'
@@ -17,7 +20,8 @@ export type ComponentId =
   | 'mast'
   | 'gateway'
   | 'dashboard'
-  | 'gauge';
+  | 'gauge'
+  | 'camera';
 
 export interface ComponentInfo {
   title: string;
@@ -37,7 +41,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
     specs: [
       ['Rating', 'IP65 (dust-tight, water jets)'],
       ['Mounting', 'Stainless band clamps on the mast, ~2.3 m above ground'],
-      ['Contents', 'ESP32, ultrasonic driver, 2× 18650 pack, wiring'],
+      ['Contents', 'ESP32, ultrasonic driver, 2× 18650 pack, solar charger, 5 V boost, beacon switch, ECHO divider, wiring'],
+      ['Glands', 'Three at the bottom: solar in, transducer out, beacon out'],
     ],
     live: (t) => [['Inside temp', `${t.tempC.toFixed(1)} °C`]],
   },
@@ -49,7 +54,7 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
     specs: [
       ['CPU', 'Dual-core Xtensa LX6 @ 240 MHz'],
       ['Radio', 'Wi-Fi 802.11 b/g/n + Bluetooth'],
-      ['Pins used', 'GPIO5 → TRIG, GPIO18 ← ECHO (via divider), VIN, GND'],
+      ['Pins used', 'GPIO5 → TRIG · GPIO18 ← ECHO (via divider) · GPIO25 → beacon switch · GPIO26 → status LED · VIN 5 V · GND'],
       ['Firmware', 'Arduino/ESP-IDF, PubSubClient MQTT, OTA updates'],
       ['Publishes to', MQTT_TOPIC],
     ],
@@ -70,7 +75,7 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
       ['Rated range', '≈ 25–450 cm'],
       [
         'Note',
-        `This pole mounts the sensor ${SENSOR_HEIGHT.toFixed(0)} m above the gauge zero; a real build at that height would swap in a long-range module (e.g. MaxBotix MB7389, up to 10 m).`,
+        `This model pole is ${SENSOR_HEIGHT.toFixed(0)} m above the gauge zero. A budget build mounts the arm about 6 m up instead, so this module reads every level from 1.5 m to the top of the flood; below that the creek is low and safe anyway.`,
       ],
     ],
     live: (t) => [['Echo time', `${t.echoUs.toFixed(0)} µs`]],
@@ -95,12 +100,54 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
     title: 'Wiring harness',
     kind: 'Interconnect',
     about:
-      'Colour-coded leads: red = power (VIN/5 V), black = ground, yellow = TRIG, green = ECHO, and the orange shielded cable that runs up the mast and along the arm to the transducer.',
+      'Colour-coded leads: red = power, black = ground, yellow = TRIG, green = ECHO, purple = beacon switch, blue = status LED. Three cables leave through glands at the bottom of the box so rain cannot run inside: the solar cable from the panel, the transducer cable out along the arm, and the beacon cable up the mast.',
     specs: [
-      ['Power', 'Battery → ESP32 VIN, battery → driver 5 V'],
-      ['Signals', 'ESP32 GPIO5 → TRIG, driver ECHO → GPIO18 (5 V→3.3 V divider)'],
-      ['Transducer lead', 'Shielded 2-core, ~2.5 m, through a cable gland'],
+      ['Power', 'Solar panel → charge controller → 18650 pack → 5 V boost → ESP32 VIN, driver VCC, beacon switch'],
+      ['Ground', 'Common to every board'],
+      ['Sensor', 'ESP32 GPIO5 → TRIG; driver ECHO → 10 kΩ / 20 kΩ divider → GPIO18 (5 V down to 3.3 V)'],
+      ['Outputs', 'GPIO25 → beacon MOSFET gate; GPIO26 → status LED (through 220 Ω)'],
+      ['Cables', 'Transducer: shielded 2-core ~2.5 m · solar: 2-core ~1.5 m · beacon: 2-core ~1.5 m'],
     ],
+  },
+  charger: {
+    title: 'Solar charge controller',
+    kind: 'Power',
+    about:
+      'Takes whatever the 5 W panel gives, from bright noon to typhoon cloud, and charges the 18650 pack safely: it stops at full charge and tracks the panel so grey days still count. The pack never connects to the panel directly.',
+    specs: [
+      ['Example', 'CN3791 solar Li-ion charger module (MPPT)'],
+      ['In / out', '6 V panel in · 4.2 V charge out to the pack'],
+      ['Rough cost', '₱150–250 (a TP4056 module works too, ₱40–80, without the panel tracking)'],
+    ],
+    live: (t) => [
+      ['Panel now', `${t.solarW.toFixed(2)} W`],
+      ['Pack', `${t.batteryPct.toFixed(0)} %`],
+    ],
+  },
+  boost: {
+    title: '5 V boost converter',
+    kind: 'Power',
+    about:
+      'The pack gives 3.0–4.2 V depending on charge; the ultrasonic driver and the beacon want a steady 5 V. This little board steps it up and feeds the ESP32, the driver and the beacon switch from one 5 V rail.',
+    specs: [
+      ['Example', 'MT3608 boost module, set to 5.0 V'],
+      ['Feeds', 'ESP32 VIN · JSN-SR04T VCC · beacon switch'],
+      ['Rough cost', '₱40–80'],
+    ],
+    live: (t) => [['Pack voltage in', `${t.batteryV.toFixed(2)} V`]],
+  },
+  switch: {
+    title: 'Beacon switch (MOSFET)',
+    kind: 'Output',
+    about:
+      'The ESP32 can only give a few milliamps; the strobe on the mast top needs about 200. A logic-level MOSFET module lets one ESP32 pin turn the 5 V strobe on and off, so the pole flashes at WARNING and EVACUATE even when the gateway is down.',
+    specs: [
+      ['Example', 'IRLZ44N or AO3400 MOSFET module'],
+      ['Driven by', 'ESP32 GPIO25'],
+      ['Load', '5 V LED strobe on the mast top, about 1 W while flashing'],
+      ['Rough cost', '₱50–100'],
+    ],
+    live: (t) => [['Beacon', t.status === 'WARNING' || t.status === 'EVACUATE' ? 'ON (flashing)' : 'off']],
   },
   transducer: {
     title: 'Waterproof ultrasonic transducer',
@@ -162,7 +209,12 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
     title: 'Warning beacon',
     kind: 'Local alarm',
     about: 'Flashing light on the mast top (and a twin on the barangay hall). Amber at WARNING, fast red at EVACUATE, so people on the riverbank see the alarm even without a phone.',
-    specs: [['Triggers', 'WARNING and EVACUATE']],
+    specs: [
+      ['Triggers', 'WARNING and EVACUATE (set by the ESP32 itself, so it works without the gateway)'],
+      ['Light', '5 V LED strobe, about 1 W while flashing'],
+      ['Switched by', 'Beacon MOSFET on GPIO25, powered from the 5 V rail'],
+      ['Rough cost', '₱150–300'],
+    ],
     live: (t) => [['State', t.status === 'WARNING' || t.status === 'EVACUATE' ? 'FLASHING' : 'off']],
   },
   mast: {
@@ -194,6 +246,18 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
       ['Graduation', '"E" pattern, 5 cm bars, numbered every metre'],
     ],
     live: (t) => [['Reads', `${t.levelCm.toFixed(0)} cm`]],
+  },
+  camera: {
+    title: 'Gauge camera (optional)',
+    kind: 'Second sensor',
+    about:
+      'A small camera on the bank pointed at the staff gauge, with its own infrared lamp so it sees the board at night. It reads the waterline from the picture and checks the ultrasonic: a frozen, erratic or drifting sensor raises a SENSOR FAULT instead of quietly showing a calm creek. Optional: the system warns without it, but it is the cheapest way to catch a broken sensor. Turn on Sensor fusion in the Bantay Baha+ panel to see what it sees.',
+    specs: [
+      ['Board', 'ESP32-CAM (OV2640, no IR filter) + 850 nm IR LED'],
+      ['Rough cost', 'about ₱450–800 with the IR LED and a weatherproof box'],
+      ['Picture', 'A narrow strip of the gauge board, a few frames a second'],
+      ['Mounting', 'Above the highest flood the barangay remembers, a few metres back from the bank'],
+    ],
   },
   dashboard: {
     title: 'Barangay dashboard',

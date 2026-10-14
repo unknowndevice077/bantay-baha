@@ -29,7 +29,9 @@ const SKIN = new Set(['Skin', 'Skin_Darker']);
 const HAIR = new Set(['Hair', 'Hair_Blond', 'Hair_Brown', 'Eyebrows', 'Moustache']);
 
 type Gait = 'idle' | 'walk' | 'run';
-const CLIPS: Record<Gait, string> = { idle: 'Idle', walk: 'Walk', run: 'Run' };
+/** One-off actions played while standing: reaching / packing / hugging, and waving. */
+export type Gesture = 'interact' | 'wave';
+const CLIPS: Record<Gait | Gesture, string> = { idle: 'Idle', walk: 'Walk', run: 'Run', interact: 'Interact', wave: 'Wave' };
 
 const library = new Map<Model, { scene: THREE.Object3D; clips: THREE.AnimationClip[]; scale: number }>();
 const tinted = new Map<string, THREE.Material>();
@@ -62,11 +64,32 @@ function tint(mat: THREE.Material, look: Look): THREE.Material {
   return out;
 }
 
+/** A go-bag: canvas backpack with a darker flap, worn on the back. */
+function goBag(color: number): THREE.Group {
+  const bag = new THREE.Group();
+  const cloth = new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.38, 0.15), cloth);
+  const flap = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.12, 0.16), new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.7), roughness: 0.9 }));
+  flap.position.y = 0.14;
+  for (const m of [body, flap]) m.castShadow = true;
+  bag.add(body, flap);
+  return bag;
+}
+
+const BAG_COLORS = [0x2f4f6f, 0x6b3f2a, 0x3f5f3a, 0x7a2f2f, 0x4a4a4a];
+
 export class PersonRig {
   readonly root = new THREE.Group();
   private readonly mixer: THREE.AnimationMixer;
-  private readonly actions: Record<Gait, THREE.AnimationAction>;
-  private readonly weights: Record<Gait, number> = { idle: 1, walk: 0, run: 0 };
+  private readonly actions: Record<Gait | Gesture, THREE.AnimationAction>;
+  private readonly weights: Record<Gait | Gesture, number> = { idle: 1, walk: 0, run: 0, interact: 0, wave: 0 };
+  private gesture: Gesture | null = null;
+  private gestureLeft = 0;
+  private bag: THREE.Group | null = null;
+  private readonly arms: Record<'L' | 'R', { upper: THREE.Bone; lower: THREE.Bone } | null>;
+  private reachSide: 'L' | 'R' = 'L';
+  private reachAt: THREE.Vector3 | null = null;
+  private readonly height: number;
 
   constructor(look: Look) {
     const src = library.get(look.model);
@@ -83,7 +106,7 @@ export class PersonRig {
     });
     this.root.add(model);
     this.mixer = new THREE.AnimationMixer(model);
-    const action = (gait: Gait) => {
+    const action = (gait: Gait | Gesture) => {
       const clip = src.clips.find((c) => c.name === CLIPS[gait]) ?? src.clips[0];
       const a = this.mixer.clipAction(clip);
       a.play();
@@ -91,13 +114,55 @@ export class PersonRig {
       a.setEffectiveWeight(gait === 'idle' ? 1 : 0);
       return a;
     };
-    this.actions = { idle: action('idle'), walk: action('walk'), run: action('run') };
+    this.actions = { idle: action('idle'), walk: action('walk'), run: action('run'), interact: action('interact'), wave: action('wave') };
+    this.height = HEIGHT * (look.scale ?? 1);
+    const bone = (name: string) => model.getObjectByName(name) as THREE.Bone | undefined;
+    const arm = (side: 'L' | 'R') => {
+      const upper = bone(`UpperArm.${side}`);
+      const lower = bone(`LowerArm.${side}`);
+      return upper && lower ? { upper, lower } : null;
+    };
+    this.arms = { L: arm('L'), R: arm('R') };
+  }
+
+  /** Play a one-off action for `seconds` (only shows while standing still). */
+  play(gesture: Gesture, seconds = 2): void {
+    this.gesture = gesture;
+    this.gestureLeft = seconds;
+    this.actions[gesture].reset().play();
+  }
+
+  /** Put a go-bag on (true) or take it off. */
+  carry(on: boolean): void {
+    if (on === !!this.bag) return;
+    if (on) {
+      this.bag = goBag(BAG_COLORS[Math.floor(Math.random() * BAG_COLORS.length)]);
+      // On the back, between the shoulder blades (the models face +z).
+      this.bag.position.set(0, this.height * 0.62, -0.17 * (this.height / HEIGHT));
+      this.bag.scale.setScalar(this.height / HEIGHT);
+      this.root.add(this.bag);
+    } else {
+      this.root.remove(this.bag!);
+      this.bag = null;
+    }
+  }
+
+  get carrying(): boolean {
+    return !!this.bag;
+  }
+
+  /** Hold an arm out toward a world point (a hand to hold), or null to let go. */
+  reach(at: THREE.Vector3 | null, side: 'L' | 'R' = 'L'): void {
+    this.reachAt = at;
+    this.reachSide = side;
   }
 
   /** Blend idle / walk / run for `speed` (m/s) and place the body at (x, floorY, z) facing `heading` (0 = +z). */
   pose(dt: number, speed: number, x: number, floorY: number, z: number, heading: number): void {
-    const gait: Gait = speed < 0.15 ? 'idle' : speed < 2.6 ? 'walk' : 'run';
-    for (const g of ['idle', 'walk', 'run'] as Gait[]) {
+    this.gestureLeft -= dt;
+    if (this.gestureLeft <= 0) this.gesture = null;
+    const gait: Gait | Gesture = speed < 0.15 ? (this.gesture ?? 'idle') : speed < 2.6 ? 'walk' : 'run';
+    for (const g of ['idle', 'walk', 'run', 'interact', 'wave'] as (Gait | Gesture)[]) {
       this.weights[g] = dt > 0 ? damp(this.weights[g], g === gait ? 1 : 0, 10, dt) : g === gait ? 1 : 0;
       this.actions[g].setEffectiveWeight(this.weights[g]);
     }
@@ -106,5 +171,23 @@ export class PersonRig {
     this.mixer.update(dt);
     this.root.position.set(x, floorY, z);
     this.root.rotation.y = heading;
+    if (this.reachAt) this.aimArm(this.reachAt);
+  }
+
+  /** Swing the upper arm so the forearm points at `target` (after the animation has posed it). */
+  private aimArm(target: THREE.Vector3): void {
+    const arm = this.arms[this.reachSide];
+    if (!arm) return;
+    this.root.updateMatrixWorld(true);
+    const parent = arm.upper.parent!;
+    const shoulder = arm.upper.getWorldPosition(new THREE.Vector3());
+    // Direction to the target, in the parent's space.
+    const inv = new THREE.Matrix4().copy(parent.matrixWorld).invert();
+    const to = target.clone().applyMatrix4(inv).sub(shoulder.clone().applyMatrix4(inv)).normalize();
+    // The arm's own length axis is where its child (the forearm) sits.
+    const along = arm.lower.position.clone().normalize();
+    arm.upper.quaternion.setFromUnitVectors(along, to);
+    arm.lower.quaternion.identity();
+    arm.upper.updateMatrixWorld(true);
   }
 }

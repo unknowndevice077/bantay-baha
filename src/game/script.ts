@@ -140,6 +140,11 @@ export const LINES = {
     ['lola', 'You have a good heart, anak. Do not let go of me.', 'scared'],
   ] as Line[],
   lolaSafe: [['lola', 'Salamat, anak. God bless you. God bless you.', 'relieved']] as Line[],
+  lolaSlow: [['lola', 'Ay, anak, not so fast! My knees!', 'scared']] as Line[],
+  lolaHold: [['you', 'Here, Lola. Hold my hand.']] as Line[],
+  benReady: [['ben', 'Got the bags. Tara na, Kap. Lead the way.', 'concerned']] as Line[],
+  nenaWaiting: [['nena', 'Kap! Have you seen my Toto? He was not at home!', 'scared']] as Line[],
+  nenaFound: [['nena', 'You found him? Salamat, Kap! I will wait for him here.', 'relieved']] as Line[],
   toto: [
     ['toto', 'Kap! Look how high the water is! It is like a river now!', 'excited'],
     ['you', 'It is dangerous here, Toto. Your nanay is looking for you. Run to the hall. Now!'],

@@ -55,6 +55,8 @@ const bridge = new SimBridge(esp32, {
 });
 world.onPacket = (r) => bridge.publish(r);
 const plusApi = installPlus({ hud, world });
+const gaugeCamera = world.scene.getObjectByName('gauge-camera');
+if (gaugeCamera) inspector.addRoot(gaugeCamera);
 
 initWelcome(rig);
 listenKonami(() => {

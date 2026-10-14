@@ -10,7 +10,7 @@ import { COMPONENTS, type ComponentId } from './components';
 import type { Esp32Node } from './esp32';
 
 /** Parts that live inside the enclosure (selecting one opens it). */
-const INSIDE: ComponentId[] = ['esp32', 'driver', 'battery', 'wiring'];
+const INSIDE: ComponentId[] = ['esp32', 'driver', 'battery', 'charger', 'boost', 'switch', 'wiring'];
 /** Large or enclosing shapes lose to anything more specific under the cursor. */
 const BACKGROUND: ComponentId[] = ['enclosure', 'beam', 'mast'];
 const CLICK_SLOP_PX = 6;
@@ -44,12 +44,7 @@ export class Inspector {
     this.outline = new THREE.Box3Helper(this.box, 0x7dd3fc);
     this.outline.visible = false;
     scene.add(this.outline);
-    for (const root of roots) {
-      root.traverse((o) => {
-        const id = o.userData.component as ComponentId | undefined;
-        if (id) this.byId.set(id, [...(this.byId.get(id) ?? []), o]);
-      });
-    }
+    for (const root of roots) this.index(root);
 
     dom.addEventListener('pointerdown', (e) => (this.down = { x: e.clientX, y: e.clientY }));
     dom.addEventListener('pointerup', (e) => {
@@ -77,6 +72,19 @@ export class Inspector {
     }
   }
 
+  private index(root: THREE.Object3D): void {
+    root.traverse((o) => {
+      const id = o.userData.component as ComponentId | undefined;
+      if (id) this.byId.set(id, [...(this.byId.get(id) ?? []), o]);
+    });
+  }
+
+  /** Make more hardware clickable (the Bantay Baha+ gauge camera, which starts after the inspector). */
+  addRoot(root: THREE.Object3D): void {
+    this.roots.push(root);
+    this.index(root);
+  }
+
   private pick(e: PointerEvent): ComponentId | null {
     const r = this.dom.getBoundingClientRect();
     this.ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -96,7 +104,8 @@ export class Inspector {
     return fallback;
   }
 
-  select(id: ComponentId | null): void {
+  /** @param openBox clicking the enclosure (or a part inside it) opens it; its own Close button must not reopen it */
+  select(id: ComponentId | null, openBox = true): void {
     this.selected = id;
     const card = $('inspector');
     card.hidden = !id;
@@ -104,7 +113,7 @@ export class Inspector {
     if (!id) return;
     $('panel').classList.remove('open'); // the card takes the controls' spot; the panel button brings them back
 
-    if (!state.toggles.xray && (id === 'enclosure' || INSIDE.includes(id))) {
+    if (openBox && !state.toggles.xray && (id === 'enclosure' || INSIDE.includes(id))) {
       setToggle('xray', true);
       this.rig.goTo('sensor');
     }
@@ -124,7 +133,7 @@ export class Inspector {
       btn.textContent = state.toggles.xray ? 'Close enclosure' : 'Open enclosure';
       btn.addEventListener('click', () => {
         setToggle('xray', !state.toggles.xray);
-        this.select('enclosure');
+        this.select('enclosure', false);
       });
       actions.append(btn);
     }

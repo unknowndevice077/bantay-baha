@@ -41,6 +41,8 @@ We wanted to build something a barangay could actually own and run:
 
 **Plain words over numbers.** The dashboard leads with "WARNING level (280 cm) in ~12 min", not a chart. The chart is there, just lower down. People under stress act on sentences.
 
+**Minimum spending, maximum safety.** This is paid for from barangay funds, so every peso goes to what keeps people safe: a reading you can trust, power that lasts through a typhoon, and an alarm people can see. A node costs roughly ₱2,000–8,000. The gateway is a spare phone or old laptop the hall already has. There are no subscriptions, cloud services or paid SMS. The few optional extras are listed by what each one buys in safety, with the gauge camera first. See [what it costs](sensor-node.md#what-it-costs).
+
 **Everything runs offline.** The dashboard, fonts and alert templates are all bundled. The barangay hall's internet is usually the first thing to go in a storm. The sensor talks to a gateway on the hall's own Wi-Fi, so the system keeps working without the internet.
 
 **The warning should come early, not late.** When two sources disagree and we can't tell which is broken, we take the higher reading. A false alarm costs a cold night in the hall. A missed one costs far more.

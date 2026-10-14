@@ -12,6 +12,7 @@
 import * as THREE from 'three';
 import { BED_Y, LEVEL } from '../config';
 import { groundHeight } from '../scene/terrain';
+import { tag } from '../sensor/pole';
 
 const W = 24;
 const H = 256;
@@ -107,6 +108,8 @@ export class CameraGauge {
     housing.position.copy(at);
     housing.lookAt(look);
     this.prop.add(post, housing);
+    this.prop.name = 'gauge-camera';
+    tag('camera', post, housing);
   }
 
   /** Grab a frame and look for the waterline. */

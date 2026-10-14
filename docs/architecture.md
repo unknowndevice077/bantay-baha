@@ -12,13 +12,13 @@ We built them to share as much code as possible. The alert rules, the forecast a
 ```mermaid
 flowchart LR
   subgraph Creek["On the creek bank"]
-    US["Ultrasonic sensor<br/>JSN-SR04T or MB7389"] --> ESP["ESP32 node<br/>median of pings, level, rate"]
+    US["Ultrasonic sensor<br/>JSN-SR04T"] --> ESP["ESP32 node<br/>median of pings, level, rate"]
     SUN["5 W solar panel"] --> BAT["2x 18650 pack"] --> ESP
     ESP --> LED["Status LED and beacon"]
     CAM["Gauge camera<br/>optional"]
   end
   subgraph Hall["Barangay hall"]
-    GW["Gateway<br/>Raspberry Pi and Mosquitto"]
+    GW["Gateway<br/>spare phone, old laptop or Pi Zero<br/>running Mosquitto"]
     SCR["Outdoor screen"]
     SIREN["Siren and PA"]
   end

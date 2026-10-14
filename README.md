@@ -128,13 +128,23 @@ Movement speeds up with altitude, and the camera is kept above the ground and ov
 | --- | --- | --- |
 | Prologue | Start | A radio bulletin and Lito set the scene. On the office laptop, the Bantay Baha forecast already expects the WARNING level in about 40 minutes |
 | Part one: Advisory | Sensor reports ADVISORY | Check the forecast, send an early advisory from the dashboard, lay out the sleeping mats in the hall, check the sensor against the staff gauge at the creek |
-| Part two: Over the bank | WARNING | Sound the siren (switch by the hall door, or the dashboard); find Toto, a boy watching the canal by the main road; convince Mang Ben across the creek; walk Lola Cora from her riverside house to the hall (she follows you, slowly) |
+| Part two: Over the bank | WARNING | Sound the siren (switch by the hall door, or the dashboard); find Toto, a boy watching the canal by the main road; convince Mang Ben across the creek; walk Lola Cora from her riverside house to the hall, hand in hand (run, and her hand slips) |
 | Part three: Evacuate | EVACUATE | Get everyone into the evacuation center, go back inside, and report the headcount to the MDRRMO with Lito |
 | Epilogue | The report is in, or dawn | After-action report: who was safe, how far ahead the forecast warned, when each warning went out, how high the water got |
 
 **The forecast.** The game runs the same forecaster as the simulator (`src/forecast`), primed with the afternoon's readings. In the story it is also given PAGASA's rainfall outlook, so it projects the creek with the catchment model under the expected rain: that is how it can say "ADVISORY level in ~5 min, then WARNING in ~40 min" while the alarms are still quiet. It shows on the phone and laptop dashboards, and new forecast warnings arrive as phone notifications.
 
 The phone and the laptop run the real `dashboard.html` inside the game, fed by the game's sensor, so its siren and broadcast buttons work on the game world. Residents don't leave until the siren sounds (or, late, on their own); three holdouts only leave if you go to them.
+
+The barangay reacts to what you do, not just to the script:
+
+- **The advisory gets people moving.** Once it goes out, households go into their homes, pack a go-bag and come back out wearing it. Send it late (or never) and people evacuate empty-handed; the report counts the go-bags.
+- **Lola Cora takes your hand.** She picks up her little bag, then walks at your right side holding your hand; you can see it if you look. Walk and she keeps up. Run and her hand slips ("Ay, anak, not so fast!"); stop and she catches up and takes it again.
+- **Aling Nena waits at the hall stairs** for her missing son. Find Toto and send him running: he runs into his mother's arms, and she takes him inside.
+- **Mang Ben goes back in for the bags** once you convince him, then comes out ready to go.
+- **Everyone checks in.** Evacuees stop at the registration table inside the door; in part three Kagawad Lito logs each one.
+
+Residents you talk to wave and turn to you. The simulator uses the same behaviour: households pack at ADVISORY and leave with their bags at WARNING.
 
 The objectives panel highlights the current task with a line on how to do it ("Press E at the red switch by the hall door…"), and the dashboard buttons that task needs pulse on the phone and laptop. In the game, the dashboard's SMS button sends the SMS blast itself, and either it or Broadcast counts as the advisory.
 

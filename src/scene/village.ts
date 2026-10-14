@@ -23,6 +23,7 @@ import {
   isOpenGround,
   roomCeiling,
   roomFloor,
+  stepTop,
   wallBoxes,
 } from './layout';
 import { groundHeight } from './terrain';
@@ -250,6 +251,18 @@ function buildings(group: THREE.Group, windowMat: THREE.MeshBasicMaterial, paneM
         const g = groundHeight(p.x + wp.x, p.z + wp.z);
         const y = p.floorY + (g - p.floorY) * ((k + 0.5) / n);
         steps.push({ matrix: local(p, 0, y - 0.04, lz, 0, st.halfW * 2, 0.08, st.length / n - 0.06) });
+      }
+    }
+    // Concrete homes: a flight of steps from the ground up to the door, each a solid block.
+    if (!nipa && p.type !== 'hall') {
+      const st = frontSteps(p);
+      const tread = st.length / st.count;
+      for (let k = 0; k < st.count; k++) {
+        const lz = st.start + (k + 0.5) * tread;
+        const top = stepTop(p, st, lz);
+        const wp = new THREE.Vector3(0, 0, lz).applyAxisAngle(UP, p.rot);
+        const bottom = groundHeight(p.x + wp.x, p.z + wp.z) - 0.3;
+        plinths.push({ matrix: local(p, 0, (top + bottom) / 2, lz, 0, st.halfW * 2, top - bottom, tread) });
       }
     }
     trims.push({ matrix: local(p, 0, p.floorY + 2.08, p.d / 2 + 0.06, 0, (p.type === 'hall' ? 2.2 : 0.9) + 0.2, 0.12, 0.1), color: new THREE.Color(0x6b4a2e) });
