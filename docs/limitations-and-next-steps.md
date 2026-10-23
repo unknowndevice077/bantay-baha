@@ -19,7 +19,7 @@ Roughly in order of how much they'd matter to an actual barangay:
 3. **Replay real nights.** Record a storm's readings as JSON and play them back in the 3D simulator at 1–10x, with the forecast's predicted flood area drawn over the barangay. It's useful for training and for the after-action review. This is planned feature 4.
 4. **Retrain the forecast on recorded data** and feed it real rainfall outlooks (PAGASA forecasts, or a rain gauge upstream). Then measure the false-alarm rate with the barangay and agree what's acceptable.
 5. **Wire the dashboard's siren button to the real siren** through a command topic on the broker, with a confirmation step so it can't be triggered by accident.
-6. **Unit tests** for the status rules, fusion rules and ETA wording. They're plain functions and easy to test. We just ran out of time.
+6. **Browser tests.** The status rules, fusion, forecast loader and advisory text now have unit tests and run in CI. A Playwright smoke test that opens the simulator, the dashboard and the game and checks they load and talk to each other is next, followed by a test of the ETA wording.
 7. **Sit with a barangay during a drill.** Watch a captain and a tanod use the dashboard, and change whatever confuses them.
 8. **Translation review**, and add Hiligaynon, Ilocano and Bikol.
 

@@ -25,7 +25,9 @@ The [docs folder](docs/README.md) explains the project properly:
 - [Sensor fusion and fault detection](docs/sensor-fusion.md)
 - [User guide](docs/user-guide.md)
 - [Failure modes](docs/failure-modes.md)
+- [Specification](docs/specification.md): what it must do, and how each requirement is checked
 - [Testing](docs/testing.md)
+- [Changelog](CHANGELOG.md)
 - [Limitations and next steps](docs/limitations-and-next-steps.md)
 
 ## Bantay Baha+
@@ -50,6 +52,11 @@ Open the URL Vite prints (default http://localhost:5173).
 | `npm run dev` | Dev server with hot reload |
 | `npm run build` | Type-check + production build to `dist/` |
 | `npm run preview` | Serve the production build |
+| `npm test` | Unit tests (alert rules, fusion, forecast, advisories) |
+| `npm run lint` / `npm run format` | ESLint / Prettier |
+| `npm run check` | Lint, formatting, tests and build, the same as CI |
+
+Node 20 or newer. See [CONTRIBUTING.md](CONTRIBUTING.md) to send a change.
 
 ### Docker
 
@@ -310,6 +317,10 @@ $env:OLLAMA_ORIGINS="http://localhost:5173"; ollama serve
 
 - The Tagalog, Cebuano and Waray templates were written for this demo. Have native speakers or your LGU's DRRM office review them before any real-world use.
 - This is a visualization and training tool, not a certified early-warning system.
+
+## Contributing
+
+Issues and pull requests are welcome, from typo fixes to a better Cebuano advisory. [CONTRIBUTING.md](CONTRIBUTING.md) covers running the project, checking a change and where things live. Please read the [code of conduct](CODE_OF_CONDUCT.md). Changes are listed in the [changelog](CHANGELOG.md).
 
 ## License
 

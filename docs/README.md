@@ -18,6 +18,7 @@ If you only have five minutes, read the first two and the last one.
 | [Sensor fusion and fault detection](sensor-fusion.md) | The second sensor (a camera reading the staff gauge) and how bad readings get caught |
 | [User guide](user-guide.md) | Walkthroughs of the simulator, the dashboard and the story game |
 | [Failure modes](failure-modes.md) | What breaks, how the system notices, and what the user sees when it does |
+| [Specification](specification.md) | What the system must do, and how each requirement is checked |
 | [Testing](testing.md) | How we checked each part and what we haven't been able to test yet |
 | [Limitations and next steps](limitations-and-next-steps.md) | The plain list of what this is not, and what we would do next |
 

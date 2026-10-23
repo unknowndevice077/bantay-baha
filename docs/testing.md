@@ -2,9 +2,26 @@
 
 This page is about what we actually checked and how, and just as plainly, what we haven't been able to test.
 
-## What runs on every build
+## What runs on every change
 
-`npm run build` type-checks the whole project with TypeScript in strict mode before Vite bundles it. A type error fails the build, so nothing ships that doesn't compile. There is no automated unit-test suite yet. That's the first gap on the list at the bottom of this page.
+`npm run check` does four things, and GitHub Actions runs the same four on every push and pull request (Node 20 and 22), then builds the Docker image:
+
+1. **ESLint** over `src` and `tests`.
+2. **Prettier** in check mode.
+3. **Vitest unit tests** (`npm test`, 38 tests in `tests/`).
+4. **`npm run build`**, which type-checks the whole project with TypeScript in strict mode before Vite bundles it. A type error fails the build.
+
+The unit tests cover the plain functions that decide whether someone gets warned. They are the parts where a quiet mistake costs the most:
+
+| Test file | What it pins down |
+| --- | --- |
+| `status.test.ts` | Alert thresholds, the 8 cm hysteresis, the one-step fast-rise rule (including the two-step bug found in a 10x storm), rise rate |
+| `fusion.test.ts` | Inverse-variance fusion, frozen and erratic detection, the fail-safe "use the higher reading" rule, the camera's "too low to read" case, and the fault injector |
+| `forecast.test.ts` | Feature maths, and the model loader refusing a model that doesn't match its reference values or an HTML page served in its place |
+| `templates.test.ts` | Every status in all four languages, in both voices, with no placeholder left over |
+| `util.test.ts` | The maths helpers and the seeded random generator that keeps the barangay layout identical on every load |
+
+The 3D scene, the story game and the dashboard are checked by playing them (below). There are no browser tests yet.
 
 ## The forecast
 
@@ -62,5 +79,5 @@ We'd rather say this plainly than let anyone assume otherwise:
 - **No real flood data.** The forecast is trained and tested on synthetic storms from the same model that drives the simulator. That's the main reason its numbers look as good as they do. Retraining on recorded readings is the first thing a real deployment needs.
 - **No user testing with a barangay.** We haven't sat a captain or a tanod down in front of the dashboard during a drill. Their feedback would change things.
 - **Translations not reviewed.** The Tagalog, Cebuano and Waray advisories need native-speaker and DRRM-office review.
-- **No automated tests.** The fusion rules, the status rules and the ETA wording are good candidates for unit tests, since they're plain functions. We checked them by hand and by playing, which doesn't scale.
+- **No browser tests.** The alert rules, fusion, forecast loader and advisory text have unit tests. The 3D scene, the story game and the dashboard are still checked by hand and by playing, which doesn't scale. Playwright smoke tests for the three pages are the next step.
 - **Limited device coverage.** Mostly tested on desktop Chrome and Edge. The dashboard is built to work on phones, but the 3D pages are heavy for older ones.

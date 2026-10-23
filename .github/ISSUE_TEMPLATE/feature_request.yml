@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea for the system, the sensor node, the dashboard or the game
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve for a barangay?
+      description: Bantay Baha is built to cost very little and to keep people safe. Say who it helps and how.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you add or change?
+    validations:
+      required: true
+  - type: textarea
+    id: cost
+    attributes:
+      label: What would it cost to run?
+      description: Parts, subscriptions, a person's time. "Nothing" is a fine answer.
