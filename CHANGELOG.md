@@ -15,7 +15,7 @@ First complete release, for the hackathon submission.
 - GitHub Actions CI: lint, formatting, tests and build on Node 20 and 22, plus a Docker image build.
 - `CONTRIBUTING.md`, a code of conduct, issue forms and a pull request template.
 - [Specification](docs/specification.md): the requirements the system is built to, and how each one is checked.
-- The silent 1-minute demo video and the script it follows.
+- `tools/demo`: records the silent 1-minute demo video from the running site, so it can be remade whenever the app changes.
 
 ### Changed
 

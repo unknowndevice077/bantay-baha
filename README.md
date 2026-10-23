@@ -313,6 +313,8 @@ $env:OLLAMA_ORIGINS="http://localhost:5173"; ollama serve
 6. **0:50.** Toggle **Lola mode** with Sound on. "Aba, apo, daghan na ang tubig! Dali, lakaw na!"
 7. **0:55.** Click **Dashboard**: "And this is what the barangay captain actually uses: status, ETA, siren, broadcast, headcount." Bonus: **Play the story** to live through a flood night as the captain, or type ↑↑↓↓←→←→BA for the duck armada.
 
+A silent screen-recorded version of this script is made by [`tools/demo`](tools/demo/README.md).
+
 ## Notes
 
 - The Tagalog, Cebuano and Waray templates were written for this demo. Have native speakers or your LGU's DRRM office review them before any real-world use.

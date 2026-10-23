@@ -7,3 +7,5 @@ tools/voices/.venv/
 tools/voices/refs/*.wav
 !tools/voices/refs/david.wav
 !tools/voices/refs/zira.wav
+demo/
+demo-out/
