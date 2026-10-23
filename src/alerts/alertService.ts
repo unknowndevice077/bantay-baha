@@ -72,9 +72,7 @@ export class AlertService {
       `You are the flood early-warning announcer of a Philippine barangay beside a creek.`,
       `Write ONE short public advisory (max 45 words) in ${LANG_NAMES[lang]}.`,
       `Status: ${status}. Water level: ${levelCm.toFixed(0)} cm on the gauge. Rise rate: ${rate.toFixed(0)} cm per 10 minutes.`,
-      lola
-        ? 'Deliver it as a scolding but loving Filipino grandmother (Lola) talking to her apo.'
-        : 'Use a calm, clear, official tone.',
+      lola ? 'Deliver it as a scolding but loving Filipino grandmother (Lola) talking to her apo.' : 'Use a calm, clear, official tone.',
       'State the action residents must take for this status. The evacuation center is the Barangay Hall.',
       'Reply with the advisory text only.',
     ].join('\n');

@@ -132,7 +132,12 @@ export function chairGeo(): THREE.BufferGeometry {
   const back = colorize(new THREE.BoxGeometry(0.45, 0.45, 0.05), c);
   back.translate(0, 0.67, -0.21);
   const parts = [seat, back];
-  for (const [x, z] of [[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]]) {
+  for (const [x, z] of [
+    [-0.2, -0.2],
+    [0.2, -0.2],
+    [-0.2, 0.2],
+    [0.2, 0.2],
+  ]) {
     const leg = colorize(new THREE.BoxGeometry(0.05, 0.42, 0.05), c);
     leg.translate(x, 0.21, z);
     parts.push(leg);

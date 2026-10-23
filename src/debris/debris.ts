@@ -46,7 +46,10 @@ function current(x: number, z: number, level: number, rain: number, out: THREE.V
   const a = Math.abs(z - riverZ(x));
   const channel = 1 - smoothstep(6, 14, a) * 0.75;
   const speed = (0.5 + (rain / 100) * 1.6 + Math.max(0, level - 1) * 0.35) * channel;
-  out.set(1, 0.105 * Math.cos(x * 0.035)).normalize().multiplyScalar(speed);
+  out
+    .set(1, 0.105 * Math.cos(x * 0.035))
+    .normalize()
+    .multiplyScalar(speed);
   out.y += Math.sin(x * 0.08 + z * 0.3) * 0.08;
   return out;
 }
@@ -166,7 +169,8 @@ export class DebrisField {
 
     if (b.snagged) {
       const anchored =
-        pos.x >= BRIDGE.snagX - kind.radius - 0.4 || pile.some((o) => o !== b && o.pos.distanceTo(pos) < (o.kind.radius + kind.radius) * 0.75);
+        pos.x >= BRIDGE.snagX - kind.radius - 0.4 ||
+        pile.some((o) => o !== b && o.pos.distanceTo(pos) < (o.kind.radius + kind.radius) * 0.75);
       const overtopped = waterY > deckTop(pos.z) + 0.35;
       if (!anchored || overtopped) {
         b.snagged = false;

@@ -8,7 +8,18 @@
 /** Base level the catchment drains toward (LEVEL.base in config.ts), m. */
 const BASE_LEVEL = 0.9;
 
-export const FEATURES = ['level_m', 'excess_m', 'd5_m', 'd10_m', 'd20_m', 'd30_m', 'rain_mmhr', 'rain10_mmhr', 'rain30_mmhr', 'rain_trend_mmhr'];
+export const FEATURES = [
+  'level_m',
+  'excess_m',
+  'd5_m',
+  'd10_m',
+  'd20_m',
+  'd30_m',
+  'rain_mmhr',
+  'rain10_mmhr',
+  'rain30_mmhr',
+  'rain_trend_mmhr',
+];
 
 /** One sample of the forecaster's own history: simulated time (s), level (m), rainfall (mm/hr). */
 export interface Sample {
@@ -107,7 +118,8 @@ function predictor(file: ModelFile): (x: number[]) => number[] {
 export async function loadModel(url = 'forecast/model.json'): Promise<Model> {
   const res = await fetch(url);
   // A missing file comes back as the HTML page from some servers, so check the type too.
-  if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new Error('model file missing (run tools/forecast/train.py)');
+  if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json'))
+    throw new Error('model file missing (run tools/forecast/train.py)');
   const file = (await res.json()) as ModelFile;
   if (file.features.join() !== FEATURES.join()) throw new Error('model was trained on different features');
   const predict = predictor(file);

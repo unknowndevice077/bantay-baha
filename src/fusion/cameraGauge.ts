@@ -104,7 +104,10 @@ export class CameraGauge {
     const metal = new THREE.MeshStandardMaterial({ color: 0x4a525a, metalness: 0.5, roughness: 0.5 });
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, at.y - BED_Y, 8), metal);
     post.position.set(at.x, (at.y + BED_Y) / 2 - 0.15, at.z + 0.15);
-    const housing = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.3), new THREE.MeshStandardMaterial({ color: 0xe8ecef, roughness: 0.4 }));
+    const housing = new THREE.Mesh(
+      new THREE.BoxGeometry(0.14, 0.12, 0.3),
+      new THREE.MeshStandardMaterial({ color: 0xe8ecef, roughness: 0.4 }),
+    );
     housing.position.copy(at);
     housing.lookAt(look);
     this.prop.add(post, housing);

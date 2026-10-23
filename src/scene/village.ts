@@ -106,7 +106,10 @@ function roomShell(p: HousePlan, walls: Instance[], trims: Instance[], panes: In
   const tile = p.type === 'nipa' ? 0x9c8358 : p.type === 'hall' ? 0xa9a597 : 0xc9c2b2;
   trims.push(
     { matrix: local(p, 0, floor - 0.025, 0, 0, p.w - 0.02, 0.06, p.d - 0.02), color: new THREE.Color(tile) },
-    { matrix: local(p, 0, roomCeiling(p) + 0.05, 0, 0, p.w - 2 * t, 0.1, p.d - 2 * t), color: new THREE.Color(p.type === 'nipa' ? 0x8c7448 : 0xe8e5dc) },
+    {
+      matrix: local(p, 0, roomCeiling(p) + 0.05, 0, 0, p.w - 2 * t, 0.1, p.d - 2 * t),
+      color: new THREE.Color(p.type === 'nipa' ? 0x8c7448 : 0xe8e5dc),
+    },
   );
   // Glass on the inside faces, behind the panes drawn on the outside.
   const wy = p.floorY + 1.45;
@@ -130,7 +133,10 @@ function furnish(p: HousePlan, rooms: Rooms, rnd: () => number): void {
   const add = (f: Furniture, ox: number, y: number, oz: number, sx: number, sy: number, sz: number, color: number) => {
     const c = Math.cos(f.ry);
     const s = Math.sin(f.ry);
-    rooms.furnishings.push({ matrix: local(p, f.lx + ox * c + oz * s, floor + y, f.lz - ox * s + oz * c, f.ry, sx, sy, sz), color: new THREE.Color(color) });
+    rooms.furnishings.push({
+      matrix: local(p, f.lx + ox * c + oz * s, floor + y, f.lz - ox * s + oz * c, f.ry, sx, sy, sz),
+      color: new THREE.Color(color),
+    });
   };
   for (const f of furniture(p)) {
     if (f.kind === 'bed') {
@@ -140,11 +146,23 @@ function furnish(p: HousePlan, rooms: Rooms, rnd: () => number): void {
       add(f, -0.93, 0.5, 0, 0.06, 0.8, 1.05, WOOD);
     } else if (f.kind === 'table') {
       add(f, 0, 0.73, 0, 1.0, 0.04, 0.7, 0x8b5e3c);
-      for (const [lx, lz] of [[-0.45, -0.3], [0.45, -0.3], [-0.45, 0.3], [0.45, 0.3]]) add(f, lx, 0.36, lz, 0.05, 0.72, 0.05, 0x5e3f26);
+      for (const [lx, lz] of [
+        [-0.45, -0.3],
+        [0.45, -0.3],
+        [-0.45, 0.3],
+        [0.45, 0.3],
+      ])
+        add(f, lx, 0.36, lz, 0.05, 0.72, 0.05, 0x5e3f26);
     } else if (f.kind === 'chair') {
       add(f, 0, 0.44, 0, 0.46, 0.05, 0.44, PLASTIC);
       add(f, 0, 0.7, -0.2, 0.46, 0.48, 0.05, PLASTIC);
-      for (const [lx, lz] of [[-0.2, -0.19], [0.2, -0.19], [-0.2, 0.19], [0.2, 0.19]]) add(f, lx, 0.21, lz, 0.04, 0.42, 0.04, PLASTIC);
+      for (const [lx, lz] of [
+        [-0.2, -0.19],
+        [0.2, -0.19],
+        [-0.2, 0.19],
+        [0.2, 0.19],
+      ])
+        add(f, lx, 0.21, lz, 0.04, 0.42, 0.04, PLASTIC);
     } else if (f.kind === 'cabinet') {
       add(f, 0, 0.9, 0, 0.9, 1.8, 0.45, 0x7a5434);
       add(f, 0, 0.9, 0.226, 0.02, 1.7, 0.01, 0x3e2a1a);
@@ -166,10 +184,16 @@ function furnish(p: HousePlan, rooms: Rooms, rnd: () => number): void {
       }
     }
     const table = furniture(p).find((f) => f.kind === 'table');
-    if (table) rooms.textiles.push({ matrix: local(p, table.lx, floor + 0.01, table.lz, 0, 1.8, 0.01, 1.5), color: new THREE.Color(0xb8925a) });
-    rooms.pictures.push({ matrix: local(p, 0, floor + 1.75, -hd + 0.01, 0, 0.5, 0.4), color: new THREE.Color(FRAMES[Math.floor(rnd() * FRAMES.length)]) });
+    if (table)
+      rooms.textiles.push({ matrix: local(p, table.lx, floor + 0.01, table.lz, 0, 1.8, 0.01, 1.5), color: new THREE.Color(0xb8925a) });
+    rooms.pictures.push({
+      matrix: local(p, 0, floor + 1.75, -hd + 0.01, 0, 0.5, 0.4),
+      color: new THREE.Color(FRAMES[Math.floor(rnd() * FRAMES.length)]),
+    });
   }
-  rooms.lamps.push({ matrix: local(p, 0, roomCeiling(p) - 0.02, 0, 0, p.type === 'hall' ? 1.2 : 0.5, 0.04, p.type === 'hall' ? 0.3 : 0.5) });
+  rooms.lamps.push({
+    matrix: local(p, 0, roomCeiling(p) - 0.02, 0, 0, p.type === 'hall' ? 1.2 : 0.5, 0.04, p.type === 'hall' ? 0.3 : 0.5),
+  });
 }
 
 function buildings(group: THREE.Group, windowMat: THREE.MeshBasicMaterial, paneMat: THREE.MeshBasicMaterial): void {
@@ -240,7 +264,8 @@ function buildings(group: THREE.Group, windowMat: THREE.MeshBasicMaterial, paneM
     }
     // The hall's doorway stays open so evacuees (and the captain) can walk in.
     // Homes: the door leaf stands open against the inside wall. The hall's doorway has no door.
-    if (p.type !== 'hall') doors.push({ matrix: local(p, -doorHalf(p) + 0.03, roomFloor(p) + 1.0, p.d / 2 - WALL_T - 0.47, Math.PI / 2, 0.92, 2.0) });
+    if (p.type !== 'hall')
+      doors.push({ matrix: local(p, -doorHalf(p) + 0.03, roomFloor(p) + 1.0, p.d / 2 - WALL_T - 0.47, Math.PI / 2, 0.92, 2.0) });
     // Nipa houses: bamboo steps from the ground up to the porch.
     if (nipa) {
       const st = frontSteps(p);
@@ -265,7 +290,10 @@ function buildings(group: THREE.Group, windowMat: THREE.MeshBasicMaterial, paneM
         plinths.push({ matrix: local(p, 0, (top + bottom) / 2, lz, 0, st.halfW * 2, top - bottom, tread) });
       }
     }
-    trims.push({ matrix: local(p, 0, p.floorY + 2.08, p.d / 2 + 0.06, 0, (p.type === 'hall' ? 2.2 : 0.9) + 0.2, 0.12, 0.1), color: new THREE.Color(0x6b4a2e) });
+    trims.push({
+      matrix: local(p, 0, p.floorY + 2.08, p.d / 2 + 0.06, 0, (p.type === 'hall' ? 2.2 : 0.9) + 0.2, 0.12, 0.1),
+      color: new THREE.Color(0x6b4a2e),
+    });
 
     // Bamboo fences in front of some homes, with a gate gap at the door.
     if (p.type === 'concrete' && i % 2 === 0) {
@@ -294,8 +322,16 @@ function buildings(group: THREE.Group, windowMat: THREE.MeshBasicMaterial, paneM
   const bamboo = pbr({ color: 0xa88f55, roughness: 0.7 });
   group.add(
     instanced(box, pbr({ map: plaster.map, normalMap: plaster.normalMap, normalScale: new THREE.Vector2(0.6, 0.6) }), walls),
-    instanced(roofGeo, pbr({ map: metal.map, normalMap: metal.normalMap, roughness: 0.55, metalness: 0.45, side: THREE.DoubleSide }), metalRoofs),
-    instanced(roofGeo, pbr({ map: thatch.map, normalMap: thatch.normalMap, normalScale: new THREE.Vector2(1.5, 1.5), side: THREE.DoubleSide }), thatchRoofs),
+    instanced(
+      roofGeo,
+      pbr({ map: metal.map, normalMap: metal.normalMap, roughness: 0.55, metalness: 0.45, side: THREE.DoubleSide }),
+      metalRoofs,
+    ),
+    instanced(
+      roofGeo,
+      pbr({ map: thatch.map, normalMap: thatch.normalMap, normalScale: new THREE.Vector2(1.5, 1.5), side: THREE.DoubleSide }),
+      thatchRoofs,
+    ),
     instanced(box, pbr({ color: 0x8f8a80, map: concrete.map, normalMap: concrete.normalMap }), plinths),
     instanced(box, pbr({ roughness: 0.8 }), trims),
     instanced(new THREE.CylinderGeometry(0.09, 0.1, 1, 8), pbr({ color: 0x6b5634 }), stilts),
@@ -382,7 +418,10 @@ function court(): THREE.Group {
     ctx.beginPath();
     ctx.arc(280, 150, 36, 0, Math.PI * 2);
     ctx.stroke();
-    for (const [cx, dir] of [[4, 1], [556, -1]] as const) {
+    for (const [cx, dir] of [
+      [4, 1],
+      [556, -1],
+    ] as const) {
       ctx.strokeRect(dir > 0 ? cx : cx - 90, 105, 90, 90);
       ctx.beginPath();
       ctx.arc(cx, 150, 128, -Math.PI / 2, Math.PI / 2, dir < 0);
@@ -478,7 +517,13 @@ function trees(): THREE.Group {
 export function createVillage(): Village {
   const group = new THREE.Group();
   const windowMat = new THREE.MeshBasicMaterial({ color: DAY_GLASS.clone() });
-  group.add(pad(HALL.x, HALL.z, HALL.w + 4, HALL.d + 4, HALL_PAD.top, HALL_PAD.bottom, 0xb5b1a6), hallStairs(), hallSign(), court(), trees());
+  group.add(
+    pad(HALL.x, HALL.z, HALL.w + 4, HALL.d + 4, HALL_PAD.top, HALL_PAD.bottom, 0xb5b1a6),
+    hallStairs(),
+    hallSign(),
+    court(),
+    trees(),
+  );
   const paneMat = new THREE.MeshBasicMaterial({ color: DAY_VIEW.clone() });
   buildings(group, windowMat, paneMat);
   return {

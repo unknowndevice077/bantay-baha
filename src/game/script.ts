@@ -89,41 +89,59 @@ export const VOICES: Partial<Record<Speaker, VoiceStyle>> = {
 export const LINES = {
   intro: [
     ['narrator', 'Barangay San Roque. 6:20 in the evening. Rain has been drumming on the hall roof since lunch.'],
-    ['bulletin', 'PAGASA has raised a red rainfall warning for the province. Torrential rain, more than thirty millimetres an hour, getting heavier over the next three hours. Serious flooding is expected in low-lying areas near rivers and creeks.', 'calm'],
-    ['lito', 'Kap, you hear that? Red warning. And the creek sensor has been climbing all afternoon. Slow, but it never stops.', 'concerned'],
+    [
+      'bulletin',
+      'PAGASA has raised a red rainfall warning for the province. Torrential rain, more than thirty millimetres an hour, getting heavier over the next three hours. Serious flooding is expected in low-lying areas near rivers and creeks.',
+      'calm',
+    ],
+    [
+      'lito',
+      'Kap, you hear that? Red warning. And the creek sensor has been climbing all afternoon. Slow, but it never stops.',
+      'concerned',
+    ],
     ['lito', 'The laptop is on. Look at what the forecast is saying.', 'concerned'],
   ] as Line[],
   forecastSeen: (text: string): Line[] => [
     ['you', `Two metres and climbing. The forecast says: ${text}.`],
-    ['lito', 'That is the Bantay Baha forecast, Kap. It takes PAGASA\'s rain outlook and how fast the creek has been rising, and looks an hour ahead.', 'calm'],
+    [
+      'lito',
+      "That is the Bantay Baha forecast, Kap. It takes PAGASA's rain outlook and how fast the creek has been rising, and looks an hour ahead.",
+      'calm',
+    ],
     ['lito', 'The sirens have not even gone off yet. If we move now, we move before the water does. Send an early advisory.', 'urgent'],
   ],
-  forecastLate: [
-    ['lito', 'The forecast is still loading its history, Kap. Give it a moment and check again.', 'calm'],
-  ] as Line[],
+  forecastLate: [['lito', 'The forecast is still loading its history, Kap. Give it a moment and check again.', 'calm']] as Line[],
   forecastWarns: (minutes: number): Line[] => [
     ['lito', `Kap, the forecast now expects the WARNING level in about ${minutes} minutes.`, 'urgent'],
   ],
-  advisory: [
-    ['narrator', 'Your phone buzzes. ADVISORY from the creek sensor: the water has reached 200 centimetres.'],
-  ] as Line[],
+  advisory: [['narrator', 'Your phone buzzes. ADVISORY from the creek sensor: the water has reached 200 centimetres.']] as Line[],
   advisorySent: [
     ['lito', 'Good, that is out. People will start packing their go-bags.', 'relieved'],
-    ['lito', 'Two things, Kap. The mats for the evacuation center are still rolled up in the corner. And at the sari-sari store they say the sensor is broken.', 'concerned'],
+    [
+      'lito',
+      'Two things, Kap. The mats for the evacuation center are still rolled up in the corner. And at the sari-sari store they say the sensor is broken.',
+      'concerned',
+    ],
     ['lito', 'Can you check it against the staff gauge down at the creek? People will believe their own eyes.', 'concerned'],
   ] as Line[],
   matsDone: [
     ['you', 'Eighteen mats down. Enough for the first families.'],
     ['lito', 'Salamat, Kap. I will set up the registration table by the door.', 'warm'],
   ] as Line[],
-  gaugeOk: (eye: number, sensor: number): Line[] => [['you', `The gauge reads about ${eye} centimetres. The sensor says ${sensor}. It is working.`]],
+  gaugeOk: (eye: number, sensor: number): Line[] => [
+    ['you', `The gauge reads about ${eye} centimetres. The sensor says ${sensor}. It is working.`],
+  ],
   warning: [
     ['jun', 'Kap, this is Jun at the bridge! The creek is over the bank. Water is on the road by the bridge!', 'alarmed'],
     ['radio', 'Sound the siren, Kap! The switch is by the hall door, or use the dashboard.', 'urgent'],
     ['radio', 'And remember: Mang Ben across the creek never leaves, and Lola Cora lives alone by the river at the west end.', 'urgent'],
   ] as Line[],
   totoMissing: [
-    ['jun', 'Kap, Aling Nena is here. Her boy Toto is missing! Someone saw him by the canal near the main road, watching the water.', 'alarmed'],
+    [
+      'jun',
+      'Kap, Aling Nena is here. Her boy Toto is missing! Someone saw him by the canal near the main road, watching the water.',
+      'alarmed',
+    ],
   ] as Line[],
   sirenOn: [['radio', 'Siren is up! People are coming out with their bags.', 'relieved']] as Line[],
   benEarly: [['ben', 'Kap, there is no flood. I have lived here forty years. I will watch the water myself.', 'stubborn']] as Line[],
@@ -159,7 +177,11 @@ export const LINES = {
   allIn: [['radio', 'Kap, the list matches. Everyone is inside. Come in and we will call it in.', 'relieved']] as Line[],
   report: [
     ['lito', 'Twenty-three residents, all accounted for. Calling the MDRRMO now.', 'calm'],
-    ['lito', 'MDRRMO, this is Barangay San Roque. Everyone is in the evacuation center. Water at the sensor is over four metres and holding.', 'calm'],
+    [
+      'lito',
+      'MDRRMO, this is Barangay San Roque. Everyone is in the evacuation center. Water at the sensor is over four metres and holding.',
+      'calm',
+    ],
     ['lito', 'Rest, Kap. You did good tonight.', 'warm'],
   ] as Line[],
   rescued: [['narrator', 'The current took your feet. Two tanods pulled you out and brought you to the hall stairs.']] as Line[],

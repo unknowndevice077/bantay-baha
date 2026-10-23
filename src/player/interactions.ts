@@ -47,7 +47,12 @@ export class Interactions {
     private readonly camera: THREE.Camera,
   ) {
     window.addEventListener('keydown', (e) => {
-      if (this.player.active && e.key.toLowerCase() === 'e' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+      if (
+        this.player.active &&
+        e.key.toLowerCase() === 'e' &&
+        !(e.target instanceof HTMLInputElement) &&
+        !(e.target instanceof HTMLTextAreaElement)
+      ) {
         this.use();
       }
     });

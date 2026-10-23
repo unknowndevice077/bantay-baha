@@ -121,7 +121,12 @@ export class Inspector {
     $('insp-kind').textContent = info.kind;
     $('insp-title').textContent = info.title;
     $('insp-about').textContent = info.about;
-    $('insp-specs').replaceChildren(...info.specs.flatMap(([k, v]) => [Object.assign(document.createElement('dt'), { textContent: k }), Object.assign(document.createElement('dd'), { textContent: v })]));
+    $('insp-specs').replaceChildren(
+      ...info.specs.flatMap(([k, v]) => [
+        Object.assign(document.createElement('dt'), { textContent: k }),
+        Object.assign(document.createElement('dd'), { textContent: v }),
+      ]),
+    );
     $('insp-live-wrap').hidden = !info.live;
     document.querySelectorAll<HTMLElement>('#insp-chips .chip-btn').forEach((c) => c.classList.toggle('active', c.dataset.id === id));
 
@@ -145,7 +150,10 @@ export class Inspector {
     const live = this.selected && COMPONENTS[this.selected].live;
     if (!live) return;
     $('insp-live').replaceChildren(
-      ...live(this.node.t).flatMap(([k, v]) => [Object.assign(document.createElement('dt'), { textContent: k }), Object.assign(document.createElement('dd'), { textContent: v })]),
+      ...live(this.node.t).flatMap(([k, v]) => [
+        Object.assign(document.createElement('dt'), { textContent: k }),
+        Object.assign(document.createElement('dd'), { textContent: v }),
+      ]),
     );
   }
 

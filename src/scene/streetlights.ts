@@ -102,7 +102,10 @@ export class StreetLights {
       const q = new THREE.Quaternion().setFromUnitVectors(up, dir.normalize());
       armMesh.setMatrixAt(i, m.compose(root.clone().lerp(l.head, 0.5), q, new THREE.Vector3(1, len, 1)));
       const yaw = Math.atan2(dir.x, dir.z);
-      headMesh.setMatrixAt(i, m.compose(l.head, new THREE.Quaternion().setFromAxisAngle(up, yaw + Math.PI / 2), new THREE.Vector3(1, 1, 1)));
+      headMesh.setMatrixAt(
+        i,
+        m.compose(l.head, new THREE.Quaternion().setFromAxisAngle(up, yaw + Math.PI / 2), new THREE.Vector3(1, 1, 1)),
+      );
       poolMesh.setMatrixAt(i, m.makeTranslation(l.ground.x, l.ground.y, l.ground.z));
     });
     postMesh.castShadow = armMesh.castShadow = headMesh.castShadow = true;

@@ -11,10 +11,19 @@ export class Beacon {
   private readonly tag: CSS2DObject;
 
   constructor() {
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffd36b, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide });
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xffd36b,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
     this.column = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, HEIGHT, 16, 1, true).translate(0, HEIGHT / 2, 0), mat);
     this.column.userData.noAO = true;
-    this.ring = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.85, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffd36b, transparent: true, opacity: 0.7, depthWrite: false }));
+    this.ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.7, 0.85, 40).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: 0xffd36b, transparent: true, opacity: 0.7, depthWrite: false }),
+    );
     this.ring.position.y = 0.05;
     this.ring.userData.noAO = true;
     const el = document.createElement('div');

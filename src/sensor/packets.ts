@@ -22,7 +22,6 @@ interface Packet {
   reading: Reading | null;
 }
 
-
 export class PacketFlow {
   readonly group = new THREE.Group();
   private readonly legA: THREE.QuadraticBezierCurve3;
@@ -34,7 +33,10 @@ export class PacketFlow {
   private gwFlash = 0;
   private readonly screen: THREE.CanvasTexture;
 
-  constructor(from: THREE.Vector3, private readonly history: Reading[]) {
+  constructor(
+    from: THREE.Vector3,
+    private readonly history: Reading[],
+  ) {
     const mat = (color: number) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.2 });
 
     // Gateway on the hall roof ridge.
@@ -78,7 +80,12 @@ export class PacketFlow {
     this.group.add(gw, dash);
 
     const dashTop = new THREE.Vector3(DASHBOARD.x, gy + 4.9, DASHBOARD.z);
-    const mid = (a: THREE.Vector3, b: THREE.Vector3, lift: number) => a.clone().add(b).multiplyScalar(0.5).add(new THREE.Vector3(0, lift, 0));
+    const mid = (a: THREE.Vector3, b: THREE.Vector3, lift: number) =>
+      a
+        .clone()
+        .add(b)
+        .multiplyScalar(0.5)
+        .add(new THREE.Vector3(0, lift, 0));
     this.legA = new THREE.QuadraticBezierCurve3(from.clone(), mid(from, gateway, 14), gateway.clone().add(new THREE.Vector3(0, 0.3, 0)));
     this.legB = new THREE.QuadraticBezierCurve3(gateway.clone().add(new THREE.Vector3(0, 0.3, 0)), mid(gateway, dashTop, 5), dashTop);
 
@@ -161,7 +168,11 @@ export class PacketFlow {
       ctx.fillText(`${(r.level * 100).toFixed(0)} cm`, 16, 108);
       ctx.font = '20px system-ui, sans-serif';
       ctx.fillStyle = '#cbd5e1';
-      ctx.fillText(`Rise ${r.rate >= 0 ? '+' : ''}${r.rate.toFixed(0)} cm/10 min   ·   distance ${(r.distance * 100).toFixed(0)} cm`, 16, 142);
+      ctx.fillText(
+        `Rise ${r.rate >= 0 ? '+' : ''}${r.rate.toFixed(0)} cm/10 min   ·   distance ${(r.distance * 100).toFixed(0)} cm`,
+        16,
+        142,
+      );
 
       // Sparkline of the last 10 minutes.
       const pts = this.history.filter((h) => h.t >= r.t - 600);

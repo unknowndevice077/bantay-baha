@@ -100,7 +100,13 @@ export class Player {
     this.rig = new PersonRig(look);
     this.rig.root.visible = false;
     window.addEventListener('keydown', (e) => {
-      if (!this.active || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement) return;
+      if (
+        !this.active ||
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLSelectElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
       const k = e.key.toLowerCase();
       if (k === ' ') {
         e.preventDefault();

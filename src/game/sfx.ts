@@ -90,7 +90,16 @@ export class Sfx {
   // ---- One-shots ---------------------------------------------------------------
 
   /** A burst of filtered noise: the building block of most effects here. */
-  private burst(at: number, type: BiquadFilterType, freq: number, q: number, peak: number, attack: number, decay: number, sweepTo?: number): void {
+  private burst(
+    at: number,
+    type: BiquadFilterType,
+    freq: number,
+    q: number,
+    peak: number,
+    attack: number,
+    decay: number,
+    sweepTo?: number,
+  ): void {
     const ctx = this.ctx!;
     const src = ctx.createBufferSource();
     src.buffer = this.noise;

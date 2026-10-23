@@ -163,7 +163,14 @@ export class Water {
     };
     const geo = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 160, 160);
     geo.rotateX(-Math.PI / 2);
-    const mat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader, fragmentShader, transparent: true, depthWrite: false, fog: true });
+    const mat = new THREE.ShaderMaterial({
+      uniforms: this.u,
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      depthWrite: false,
+      fog: true,
+    });
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.frustumCulled = false;
     this.mesh.userData.noAO = true;

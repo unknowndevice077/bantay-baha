@@ -49,7 +49,8 @@ export class SoundSettings {
     box('pm-mute').addEventListener('change', () => this.change({ muted: box('pm-mute').checked }));
     $('b-sound').addEventListener('click', () => this.toggleMute());
     window.addEventListener('keydown', (e) => {
-      if (e.key.toLowerCase() === 'm' && !e.repeat && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) this.toggleMute();
+      if (e.key.toLowerCase() === 'm' && !e.repeat && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement))
+        this.toggleMute();
     });
     this.render();
   }

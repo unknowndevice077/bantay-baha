@@ -35,7 +35,9 @@ export class TelemetryView {
     $('t-uptime').textContent = uptime(t.uptimeS);
     $('t-rssi').textContent = `${t.rssi.toFixed(0)} dBm`;
     const bars = t.rssi > -55 ? 4 : t.rssi > -65 ? 3 : t.rssi > -75 ? 2 : 1;
-    $('t-bars').querySelectorAll('i').forEach((b, i) => b.classList.toggle('on', i < bars));
+    $('t-bars')
+      .querySelectorAll('i')
+      .forEach((b, i) => b.classList.toggle('on', i < bars));
     $('t-batt').textContent = `${t.batteryV.toFixed(2)} V · ${t.batteryPct.toFixed(0)}%`;
     const bar = $('t-batt-bar');
     bar.style.width = `${t.batteryPct}%`;

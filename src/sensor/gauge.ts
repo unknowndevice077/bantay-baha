@@ -39,7 +39,10 @@ export function createStaffGauge(): { group: THREE.Group; position: THREE.Vector
   ]);
   // The painted (+z) face looks toward the village bank, where people read it.
   board.position.set(x, BED_Y + HEIGHT_M / 2, z);
-  const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, HEIGHT_M + 0.6, 0.1), new THREE.MeshStandardMaterial({ color: 0x5b6168, metalness: 0.5, roughness: 0.5 }));
+  const post = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, HEIGHT_M + 0.6, 0.1),
+    new THREE.MeshStandardMaterial({ color: 0x5b6168, metalness: 0.5, roughness: 0.5 }),
+  );
   post.position.set(x, BED_Y + HEIGHT_M / 2 + 0.1, z - 0.07);
   board.castShadow = post.castShadow = true;
   tag('gauge', board, post);

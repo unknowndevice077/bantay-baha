@@ -54,7 +54,11 @@ export function drawChart(canvas: HTMLCanvasElement, history: { t: number; level
   ctx.textAlign = 'left';
 
   ctx.setLineDash([3, 3]);
-  for (const [status, m] of [['ADVISORY', THRESHOLDS.advisory], ['WARNING', THRESHOLDS.warning], ['EVACUATE', THRESHOLDS.evacuate]] as const) {
+  for (const [status, m] of [
+    ['ADVISORY', THRESHOLDS.advisory],
+    ['WARNING', THRESHOLDS.warning],
+    ['EVACUATE', THRESHOLDS.evacuate],
+  ] as const) {
     ctx.strokeStyle = statusCss(status);
     ctx.globalAlpha = 0.7;
     ctx.beginPath();
@@ -85,7 +89,14 @@ export function drawChart(canvas: HTMLCanvasElement, history: { t: number; level
 }
 
 /** "Now" marker, the error band and the dashed forecast line. */
-function drawForecast(ctx: CanvasRenderingContext2D, f: ChartForecast, x: (t: number) => number, y: (cm: number) => number, now: number, h: number): void {
+function drawForecast(
+  ctx: CanvasRenderingContext2D,
+  f: ChartForecast,
+  x: (t: number) => number,
+  y: (cm: number) => number,
+  now: number,
+  h: number,
+): void {
   ctx.strokeStyle = 'rgba(233,238,243,0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath();

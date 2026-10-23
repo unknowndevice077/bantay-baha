@@ -160,26 +160,90 @@ export class Story {
     this.forecaster.outlook = (minutes) => storyAt(this.t + minutes * 6).rain;
 
     const hallInside = ground(HALL_INSIDE.x, HALL_INSIDE.z);
-    const o = (id: ObjectiveId, act: number, text: () => string, target: () => THREE.Vector3 | null = () => null, label = ''): Objective => ({ id, act, text, how: () => HOW[id], target, label, shown: false, done: false });
+    const o = (
+      id: ObjectiveId,
+      act: number,
+      text: () => string,
+      target: () => THREE.Vector3 | null = () => null,
+      label = '',
+    ): Objective => ({ id, act, text, how: () => HOW[id], target, label, shown: false, done: false });
     const deskSpot = ground(OFFICE.x, OFFICE.z - 1);
     this.objectives = [
-      o('forecast', 1, () => 'Check the Bantay Baha forecast on the laptop', () => deskSpot, 'Laptop'),
+      o(
+        'forecast',
+        1,
+        () => 'Check the Bantay Baha forecast on the laptop',
+        () => deskSpot,
+        'Laptop',
+      ),
       o('advisory', 1, () => 'Send an early advisory from the dashboard'),
-      o('mats', 1, () => 'Lay out the sleeping mats in the evacuation center', () => ground(MAT_STACK.x, MAT_STACK.z - 1), 'Sleeping mats'),
-      o('gauge', 1, () => 'Check the sensor against the staff gauge at the creek', () => world.gauge.position, 'Staff gauge'),
-      o('siren', 2, () => 'Sound the siren', () => world.sirenButton.position.clone().setY(walkHeight(world.sirenButton.position.x, world.sirenButton.position.z - 0.6)), 'Siren switch'),
-      o('toto', 2, () => (this.totoSent ? 'Toto is running to the hall' : 'Find Toto, last seen watching the canal by the main road'), () => (this.totoSent ? null : residents.position(TOTO)), 'Toto'),
-      o('ben', 2, () => "Convince Mang Ben's family across the creek to leave", () => residents.position(BEN), 'Mang Ben'),
-      o('lola', 2, () => (this.escorting ? 'Lead Lola Cora to the hall. Stay close, she walks slowly' : 'Walk Lola Cora from her riverside house to the hall'), () => (this.escorting ? hallInside : residents.position(LOLA)), 'Lola Cora'),
+      o(
+        'mats',
+        1,
+        () => 'Lay out the sleeping mats in the evacuation center',
+        () => ground(MAT_STACK.x, MAT_STACK.z - 1),
+        'Sleeping mats',
+      ),
+      o(
+        'gauge',
+        1,
+        () => 'Check the sensor against the staff gauge at the creek',
+        () => world.gauge.position,
+        'Staff gauge',
+      ),
+      o(
+        'siren',
+        2,
+        () => 'Sound the siren',
+        () => world.sirenButton.position.clone().setY(walkHeight(world.sirenButton.position.x, world.sirenButton.position.z - 0.6)),
+        'Siren switch',
+      ),
+      o(
+        'toto',
+        2,
+        () => (this.totoSent ? 'Toto is running to the hall' : 'Find Toto, last seen watching the canal by the main road'),
+        () => (this.totoSent ? null : residents.position(TOTO)),
+        'Toto',
+      ),
+      o(
+        'ben',
+        2,
+        () => "Convince Mang Ben's family across the creek to leave",
+        () => residents.position(BEN),
+        'Mang Ben',
+      ),
+      o(
+        'lola',
+        2,
+        () =>
+          this.escorting
+            ? 'Lead Lola Cora to the hall. Stay close, she walks slowly'
+            : 'Walk Lola Cora from her riverside house to the hall',
+        () => (this.escorting ? hallInside : residents.position(LOLA)),
+        'Lola Cora',
+      ),
       o('all', 3, () => {
         const { inside, total } = residents.evacStats();
         return `Get everyone into the evacuation center (${inside}/${total})`;
       }),
-      o('return', 3, () => 'Return to the evacuation center', () => hallInside, 'Evacuation center'),
-      o('report', 3, () => 'Report the headcount to the MDRRMO with Kagawad Lito', () => this.litoPos, 'Kagawad Lito'),
+      o(
+        'return',
+        3,
+        () => 'Return to the evacuation center',
+        () => hallInside,
+        'Evacuation center',
+      ),
+      o(
+        'report',
+        3,
+        () => 'Report the headcount to the MDRRMO with Kagawad Lito',
+        () => this.litoPos,
+        'Kagawad Lito',
+      ),
     ];
 
-    this.obj('lola').how = () => (this.escorting ? 'Walk to the hall at her pace; she follows you. Wait for her if she falls behind.' : HOW.lola);
+    this.obj('lola').how = () =>
+      this.escorting ? 'Walk to the hall at her pace; she follows you. Wait for her if she falls behind.' : HOW.lola;
     this.obj('toto').how = () => (this.totoSent ? 'He is on his way. Carry on with the others.' : HOW.toto);
     bus.on('status', ({ to }) => this.onStatus(to));
   }
@@ -289,7 +353,13 @@ export class Story {
           const { gender, child } = residents.voiceOf(i);
           // Recorded in English for the three resident voices; other languages use browser speech.
           const speaker = child ? 'resident-child' : `resident-${gender}`;
-          this.voice.speak(speaker, line, { gender, pitch: child ? 1.6 : gender === 'female' ? 1.1 : 0.9, rate: 1, variant: i }, state.lang, () => undefined);
+          this.voice.speak(
+            speaker,
+            line,
+            { gender, pitch: child ? 1.6 : gender === 'female' ? 1.1 : 0.9, rate: 1, variant: i },
+            state.lang,
+            () => undefined,
+          );
         },
       },
     ];
@@ -511,11 +581,18 @@ export class Story {
       this.complete('toto');
       this.say(LINES.totoSafe);
       this.after(3.2, () => {
-        this.nenaRoute = [ground(HALL_STAIRS.x - 0.6, HALL_STAIRS.z0 + 0.2), ground(HALL_STAIRS.x - 0.6, HALL_STAIRS.z1 + 0.4), ground(HALL_DOOR.x - 0.6, HALL_DOOR.z + 0.6), ground(HALL_INSIDE.x - 3, HALL_INSIDE.z + 1)];
+        this.nenaRoute = [
+          ground(HALL_STAIRS.x - 0.6, HALL_STAIRS.z0 + 0.2),
+          ground(HALL_STAIRS.x - 0.6, HALL_STAIRS.z1 + 0.4),
+          ground(HALL_DOOR.x - 0.6, HALL_DOOR.z + 0.6),
+          ground(HALL_INSIDE.x - 3, HALL_INSIDE.z + 1),
+        ];
       });
     }
-    if (this.reunited && !this.nenaRoute.length && !residents.leaving(TOTO)) heading = Math.atan2(toto.x - this.nenaPos.x, toto.z - this.nenaPos.z);
-    else if (!this.reunited && flat(this.player.pos, this.nenaPos) < 6) heading = Math.atan2(this.player.pos.x - this.nenaPos.x, this.player.pos.z - this.nenaPos.z);
+    if (this.reunited && !this.nenaRoute.length && !residents.leaving(TOTO))
+      heading = Math.atan2(toto.x - this.nenaPos.x, toto.z - this.nenaPos.z);
+    else if (!this.reunited && flat(this.player.pos, this.nenaPos) < 6)
+      heading = Math.atan2(this.player.pos.x - this.nenaPos.x, this.player.pos.z - this.nenaPos.z);
     else if (this.reunited) heading = Math.atan2(toto.x - this.nenaPos.x, toto.z - this.nenaPos.z);
     const next = this.nenaRoute[0];
     if (next) {
@@ -535,10 +612,16 @@ export class Story {
 
   /** A forearm in the captain's reflective-vest sleeve, reaching right to hold Lola's hand. */
   private buildHandView(): void {
-    const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.34, 10), new THREE.MeshStandardMaterial({ color: 0xd9822b, roughness: 0.8 }));
+    const sleeve = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.045, 0.05, 0.34, 10),
+      new THREE.MeshStandardMaterial({ color: 0xd9822b, roughness: 0.8 }),
+    );
     sleeve.rotation.z = Math.PI / 2 - 0.35;
     sleeve.position.set(0.12, 0, 0);
-    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.05, 0.1), new THREE.MeshStandardMaterial({ color: 0x93613f, roughness: 0.7 }));
+    const hand = new THREE.Mesh(
+      new THREE.BoxGeometry(0.09, 0.05, 0.1),
+      new THREE.MeshStandardMaterial({ color: 0x93613f, roughness: 0.7 }),
+    );
     hand.position.set(0.3, -0.07, 0);
     const arm = new THREE.Group();
     arm.add(sleeve, hand);
@@ -570,7 +653,8 @@ export class Story {
     this.subs.update(dt);
     if (!this.running) return;
     // Caught up before the next alert level? Let the night run faster instead of making the player wait.
-    const waiting = this.act < 3 && !this.reporting && !this.subs.busy && this.timers.length === 0 && this.objectives.every((o) => !o.shown || o.done);
+    const waiting =
+      this.act < 3 && !this.reporting && !this.subs.busy && this.timers.length === 0 && this.objectives.every((o) => !o.shown || o.done);
     // Ease in over a couple of seconds; drop back quickly once there is something to do again.
     this.pace += ((waiting ? FAST_FORWARD : 1) - this.pace) * Math.min(1, dt * (waiting ? 1.5 : 6));
     if (!waiting && this.pace < 1.05) this.pace = 1;
@@ -598,7 +682,12 @@ export class Story {
     if (this.act >= 2) tag(TOTO, 'Toto');
 
     // Kagawad Lito turns to face the captain when they come near (and keeps animating: he logs evacuees in part three).
-    const litoFacing = flat(this.player.pos, this.litoPos) < 6 ? Math.atan2(this.player.pos.x - this.litoPos.x, this.player.pos.z - this.litoPos.z) : this.act >= 3 ? -Math.PI / 2 : Math.PI;
+    const litoFacing =
+      flat(this.player.pos, this.litoPos) < 6
+        ? Math.atan2(this.player.pos.x - this.litoPos.x, this.player.pos.z - this.litoPos.z)
+        : this.act >= 3
+          ? -Math.PI / 2
+          : Math.PI;
     this.lito.pose(dt, 0, this.litoPos.x, this.litoPos.y, this.litoPos.z, litoFacing);
 
     // The way the captain is walking (not looking), so Lola stays put at their side when they turn to look at her.
@@ -699,7 +788,8 @@ export class Story {
     const items: ObjectiveView[] = this.objectives
       .filter((o) => o.shown && !(o.done && o.act < this.act))
       .map((o) => ({ text: o.text(), done: o.done, late: !o.done && this.act > o.act, how: o === current ? o.how() : undefined }));
-    if (earlier) items.unshift({ text: `${earlier} earlier ${earlier === 1 ? 'task' : 'tasks'} done`, done: true, late: false, summary: true });
+    if (earlier)
+      items.unshift({ text: `${earlier} earlier ${earlier === 1 ? 'task' : 'tasks'} done`, done: true, late: false, summary: true });
     // Point at the right buttons on the phone and laptop dashboards.
     this.devices.coach(current?.id === 'advisory' ? ['d-broadcast', 'd-copy'] : current?.id === 'siren' ? ['d-siren'] : []);
     const key = JSON.stringify(items) + this.act;
@@ -749,12 +839,38 @@ export class Story {
         value: warnAt === Infinity ? 'The creek never reached WARNING' : lead === null ? 'It did not see it coming' : `${lead} min ahead`,
         good: lead !== null && lead >= 10,
       },
-      { label: 'Advisory sent', value: this.advisoryAt === null ? 'Not sent' : `${when(this.advisoryAt)}${this.advisoryAt < warnAt ? ', before the WARNING' : ', after the WARNING'}`, good: this.advisoryAt !== null && this.advisoryAt < warnAt },
-      { label: 'Evacuation center prepared', value: this.obj('mats').done ? 'Mats laid out' : 'Families slept on the bare floor', good: this.obj('mats').done },
-      { label: 'Siren sounded', value: this.sirenAt === null ? 'Never' : `${when(this.sirenAt)}${this.sirenAt < evacAt ? ', before the EVACUATE order' : ', after the EVACUATE order'}`, good: this.sirenAt !== null && this.sirenAt < evacAt },
-      { label: 'Sensor checked against the gauge', value: this.gaugeDiff === null ? 'No' : `Yes, ${this.gaugeDiff} cm apart`, good: this.gaugeDiff !== null },
+      {
+        label: 'Advisory sent',
+        value:
+          this.advisoryAt === null
+            ? 'Not sent'
+            : `${when(this.advisoryAt)}${this.advisoryAt < warnAt ? ', before the WARNING' : ', after the WARNING'}`,
+        good: this.advisoryAt !== null && this.advisoryAt < warnAt,
+      },
+      {
+        label: 'Evacuation center prepared',
+        value: this.obj('mats').done ? 'Mats laid out' : 'Families slept on the bare floor',
+        good: this.obj('mats').done,
+      },
+      {
+        label: 'Siren sounded',
+        value:
+          this.sirenAt === null
+            ? 'Never'
+            : `${when(this.sirenAt)}${this.sirenAt < evacAt ? ', before the EVACUATE order' : ', after the EVACUATE order'}`,
+        good: this.sirenAt !== null && this.sirenAt < evacAt,
+      },
+      {
+        label: 'Sensor checked against the gauge',
+        value: this.gaugeDiff === null ? 'No' : `Yes, ${this.gaugeDiff} cm apart`,
+        good: this.gaugeDiff !== null,
+      },
       { label: 'Toto', value: totoSafe ? 'Back with Aling Nena' : 'Found by tanods at the canal after midnight', good: totoSafe },
-      { label: 'Lola Cora', value: lolaSafe ? 'Walked to the hall with you' : 'Spent the night in her attic; brought out by boat at dawn', good: lolaSafe },
+      {
+        label: 'Lola Cora',
+        value: lolaSafe ? 'Walked to the hall with you' : 'Spent the night in her attic; brought out by boat at dawn',
+        good: lolaSafe,
+      },
       { label: "Mang Ben's family", value: benSafe ? 'Evacuated' : 'Waited on their roof until morning', good: benSafe },
       { label: 'Headcount reported to the MDRRMO', value: this.obj('report').done ? 'Yes' : 'No', good: this.obj('report').done },
       { label: 'Residents who came with a go-bag', value: `${residents.bagCount()} of ${total}`, good: residents.bagCount() >= total - 3 },
@@ -763,11 +879,23 @@ export class Story {
     ];
     const clean = rows.every((r) => r.good);
     const stranded = total - inside;
-    if (clean) return { verdict: 'Everyone slept dry', summary: 'The forecast gave you a head start and you used all of it. The municipal DRRM office has asked how your barangay did it.', rows };
-    if (stranded === 0) return { verdict: 'Everyone safe', summary: 'Nobody was left behind, though parts of the night were closer than they needed to be. The forecast gave you time; next storm, use all of it.', rows };
+    if (clean)
+      return {
+        verdict: 'Everyone slept dry',
+        summary: 'The forecast gave you a head start and you used all of it. The municipal DRRM office has asked how your barangay did it.',
+        rows,
+      };
+    if (stranded === 0)
+      return {
+        verdict: 'Everyone safe',
+        summary:
+          'Nobody was left behind, though parts of the night were closer than they needed to be. The forecast gave you time; next storm, use all of it.',
+        rows,
+      };
     return {
       verdict: `${stranded} ${stranded === 1 ? 'resident' : 'residents'} stranded`,
-      summary: 'The sensor and the forecast gave their warnings in time. Not everyone heard them in time. Rescue boats reached the last houses at first light.',
+      summary:
+        'The sensor and the forecast gave their warnings in time. Not everyone heard them in time. Rescue boats reached the last houses at first light.',
       rows,
     };
   }

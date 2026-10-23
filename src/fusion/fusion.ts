@@ -67,7 +67,10 @@ export class Fusion {
     else this.disagreeSince = null;
     const disagree = this.disagreeSince !== null && t - this.disagreeSince >= DISAGREE_S;
 
-    if (frozen) return camOk ? this.result(c, 'camera', 'Ultrasonic reading frozen', u, c) : this.result(u, 'ultrasonic', 'Ultrasonic reading frozen and camera cannot help', u, c);
+    if (frozen)
+      return camOk
+        ? this.result(c, 'camera', 'Ultrasonic reading frozen', u, c)
+        : this.result(u, 'ultrasonic', 'Ultrasonic reading frozen and camera cannot help', u, c);
     if (erratic && camOk) return this.result(c, 'camera', 'Ultrasonic giving erratic echoes', u, c);
     if (disagree) {
       // No recognisable cause: fail safe and use the higher reading.
@@ -76,7 +79,8 @@ export class Fusion {
     }
     // Creek too low for the camera, and the ultrasonic agrees: nothing to fuse with.
     if (cam.low) return this.result(u, 'ultrasonic', erratic ? 'Ultrasonic giving erratic echoes' : null, u, c);
-    if (!camOk) return this.result(u, 'ultrasonic', erratic ? 'Ultrasonic erratic and camera unavailable' : 'Gauge camera unavailable', u, c);
+    if (!camOk)
+      return this.result(u, 'ultrasonic', erratic ? 'Ultrasonic erratic and camera unavailable' : 'Gauge camera unavailable', u, c);
     const level = (u / VAR_US + c / VAR_CAM) / (1 / VAR_US + 1 / VAR_CAM);
     return this.result(level, 'fused', null, u, c);
   }

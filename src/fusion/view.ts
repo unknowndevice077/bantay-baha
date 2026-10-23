@@ -83,7 +83,8 @@ export class FusionView {
     const line = $('fu-line');
     line.hidden = !r;
     if (r) {
-      const camText = cam.level === null ? 'no picture' : cam.low ? `low (< ${Math.round(cam.level * 100)} cm)` : `${Math.round(cam.level * 100)} cm`;
+      const camText =
+        cam.level === null ? 'no picture' : cam.low ? `low (< ${Math.round(cam.level * 100)} cm)` : `${Math.round(cam.level * 100)} cm`;
       line.textContent = `Ultrasonic ${Math.round(r.ultrasonic * 100)} cm · Camera ${camText} · Using ${r.source}`;
     }
 

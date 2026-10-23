@@ -186,8 +186,14 @@ export class SmartPole {
         'catmullrom',
         0.2,
       );
-    const solarCable = new THREE.Mesh(new THREE.TubeGeometry(runUp(0.15, baseZ + 0.12, new THREE.Vector3(POLE_X + 0.1, topY - 0.2, baseZ + 0.25), 0.02), 60, 0.014, 6), this.cableMat);
-    const beaconCable = new THREE.Mesh(new THREE.TubeGeometry(runUp(-0.02, baseZ - 0.1, new THREE.Vector3(POLE_X, topY + 0.02, baseZ - 0.08), -0.02), 60, 0.012, 6), this.cableMat);
+    const solarCable = new THREE.Mesh(
+      new THREE.TubeGeometry(runUp(0.15, baseZ + 0.12, new THREE.Vector3(POLE_X + 0.1, topY - 0.2, baseZ + 0.25), 0.02), 60, 0.014, 6),
+      this.cableMat,
+    );
+    const beaconCable = new THREE.Mesh(
+      new THREE.TubeGeometry(runUp(-0.02, baseZ - 0.1, new THREE.Vector3(POLE_X, topY + 0.02, baseZ - 0.08), -0.02), 60, 0.012, 6),
+      this.cableMat,
+    );
     tag('wiring', solarCable, beaconCable);
     G.add(solarCable, beaconCable);
 
@@ -287,10 +293,18 @@ export class SmartPole {
     const coil = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.006, 10), std(0x2a2a2a));
     coil.rotation.x = Math.PI / 2;
     coil.position.set(-0.01, 0, 0.008);
-    boost.add(box(0.06, 0.035, 0.01, pcb(0x1e40af)), coil, box(0.008, 0.008, 0.008, std(0x3b82f6, { metalness: 0.4 }), 0.016, 0.006, 0.008));
+    boost.add(
+      box(0.06, 0.035, 0.01, pcb(0x1e40af)),
+      coil,
+      box(0.008, 0.008, 0.008, std(0x3b82f6, { metalness: 0.4 }), 0.016, 0.006, 0.008),
+    );
     // Beacon switch: a logic-level MOSFET module the ESP32 turns on to power the strobe.
     const sw = new THREE.Group();
-    sw.add(box(0.05, 0.035, 0.01, pcb(0xb91c1c)), box(0.016, 0.02, 0.008, std(0x111111), -0.008, 0.002, 0.009), box(0.016, 0.01, 0.012, std(0x16a34a), 0.015, -0.01, 0.01));
+    sw.add(
+      box(0.05, 0.035, 0.01, pcb(0xb91c1c)),
+      box(0.016, 0.02, 0.008, std(0x111111), -0.008, 0.002, 0.009),
+      box(0.016, 0.01, 0.012, std(0x16a34a), 0.015, -0.01, 0.01),
+    );
     // Echo-line divider: two resistors that bring the driver's 5 V ECHO down to the ESP32's 3.3 V.
     const div = new THREE.Group();
     for (const x of [-0.008, 0.008]) {
@@ -300,7 +314,14 @@ export class SmartPole {
     }
     div.add(box(0.03, 0.022, 0.004, pcb(0x0f172a)));
 
-    add('esp32', esp, [-0.11, 0.06, 0], [-0.34, 0.2, 0.45], 'ESP32-WROOM-32 · reads the sensor, decides the status, publishes over Wi-Fi', [0, 0.19, 0]);
+    add(
+      'esp32',
+      esp,
+      [-0.11, 0.06, 0],
+      [-0.34, 0.2, 0.45],
+      'ESP32-WROOM-32 · reads the sensor, decides the status, publishes over Wi-Fi',
+      [0, 0.19, 0],
+    );
     add('driver', drv, [0.11, 0.17, 0], [0.34, 0.3, 0.45], 'JSN-SR04T driver · times the echo', [0, 0.12, 0]);
     add('battery', bat, [0, -0.2, 0], [0, -0.45, 0.42], '2× 18650 Li-ion with BMS', [0, -0.1, 0]);
     add('charger', chg, [-0.15, -0.11, 0], [-0.36, -0.22, 0.4], 'Solar charge controller · panel → battery', [0, -0.06, 0]);
@@ -444,7 +465,11 @@ export class SmartPole {
       for (const w of this.wires) {
         const a = w.a.position.clone().add(w.pa);
         const b = w.b.position.clone().add(w.pb);
-        const mid = a.clone().add(b).multiplyScalar(0.5).add(new THREE.Vector3(0, 0, 0.06 + e * 0.15));
+        const mid = a
+          .clone()
+          .add(b)
+          .multiplyScalar(0.5)
+          .add(new THREE.Vector3(0, 0, 0.06 + e * 0.15));
         w.mesh.geometry.dispose();
         w.mesh.geometry = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a, mid, b), 16, 0.006, 5);
       }

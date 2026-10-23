@@ -237,8 +237,16 @@ function powerLines(): THREE.Group {
   const poleGeo = new THREE.CylinderGeometry(0.11, 0.16, 8, 12);
   poleGeo.translate(0, 4, 0);
   const c = concreteSurface();
-  const poles = new THREE.InstancedMesh(poleGeo, new THREE.MeshStandardMaterial({ color: 0x8a8378, map: c.map, normalMap: c.normalMap, roughness: 0.9 }), xs.length);
-  const arms = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, 0.12, 1.9), new THREE.MeshStandardMaterial({ color: 0x5b4632, roughness: 0.85 }), xs.length);
+  const poles = new THREE.InstancedMesh(
+    poleGeo,
+    new THREE.MeshStandardMaterial({ color: 0x8a8378, map: c.map, normalMap: c.normalMap, roughness: 0.9 }),
+    xs.length,
+  );
+  const arms = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.12, 0.12, 1.9),
+    new THREE.MeshStandardMaterial({ color: 0x5b4632, roughness: 0.85 }),
+    xs.length,
+  );
   const m = new THREE.Matrix4();
   const tops = xs.map((x, i) => {
     const y = baseHeight(x, z);

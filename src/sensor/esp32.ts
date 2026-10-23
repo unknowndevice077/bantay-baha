@@ -40,7 +40,14 @@ export interface PublishedMessage {
 }
 
 /** Fields a real ESP32 may include in its payload to override the simulation. */
-const REMOTE_FIELDS = { rssi: 'rssi', batt_v: 'batteryV', temp_c: 'tempC', heap_kb: 'heapKb', solar_w: 'solarW', uptime_s: 'uptimeS' } as const;
+const REMOTE_FIELDS = {
+  rssi: 'rssi',
+  batt_v: 'batteryV',
+  temp_c: 'tempC',
+  heap_kb: 'heapKb',
+  solar_w: 'solarW',
+  uptime_s: 'uptimeS',
+} as const;
 
 export class Esp32Node {
   readonly t: Telemetry = {

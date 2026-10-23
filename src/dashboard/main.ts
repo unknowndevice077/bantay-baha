@@ -134,7 +134,13 @@ function renderLog(): void {
     ...log.slice(0, 60).map((e) => {
       const li = document.createElement('li');
       const time = document.createElement('time');
-      time.textContent = new Date(e.at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      time.textContent = new Date(e.at).toLocaleString([], {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
       li.append(time, document.createTextNode(e.text));
       if (e.status) li.style.borderLeftColor = statusCss(e.status);
       return li;
@@ -239,7 +245,10 @@ function raiseAlarm(s: Status): void {
   beep();
   beepTimer = setInterval(beep, 1200);
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(`Bantay Baha: ${s}`, { body: `Water level ${(points[points.length - 1]?.level * 100).toFixed(0)} cm. Open the dashboard.`, tag: 'bantay-baha' });
+    new Notification(`Bantay Baha: ${s}`, {
+      body: `Water level ${(points[points.length - 1]?.level * 100).toFixed(0)} cm. Open the dashboard.`,
+      tag: 'bantay-baha',
+    });
   }
 }
 
@@ -268,11 +277,15 @@ function etaText(levelCm: number, rate: number): string {
   const fmt = (min: number) => (min < 1 ? 'under a minute' : min < 90 ? `~${Math.round(min)} min` : `~${(min / 60).toFixed(1)} h`);
   if (rate > 2) {
     const next = limits.find(([, cm]) => cm > levelCm);
-    return next ? `${next[0]} level (${next[1]} cm) in ${fmt(((next[1] - levelCm) / rate) * 10)}` : 'Above all alert levels and still rising';
+    return next
+      ? `${next[0]} level (${next[1]} cm) in ${fmt(((next[1] - levelCm) / rate) * 10)}`
+      : 'Above all alert levels and still rising';
   }
   if (rate < -2) {
     const below = [...limits].reverse().find(([, cm]) => cm <= levelCm);
-    return below ? `Back below ${below[0]} (${below[1]} cm) in ${fmt(((levelCm - below[1]) / -rate) * 10)}` : 'Receding, within normal range';
+    return below
+      ? `Back below ${below[0]} (${below[1]} cm) in ${fmt(((levelCm - below[1]) / -rate) * 10)}`
+      : 'Receding, within normal range';
   }
   return 'Level holding steady';
 }
@@ -287,8 +300,13 @@ function renderScale(levelCm: number | null): void {
     ['WARNING', THRESHOLDS.warning * 100, THRESHOLDS.evacuate * 100],
     ['EVACUATE', THRESHOLDS.evacuate * 100, SCALE_MAX],
   ];
-  const bands = edges.map(([s, lo, hi]) => `<span style="left:${pct(lo)};width:${pct(hi - lo)};background:${statusCss(s)}"></span>`).join('');
-  const ticks = edges.slice(1).map(([s, lo]) => `<small style="left:${pct(lo)}" title="${s}">${lo}</small>`).join('');
+  const bands = edges
+    .map(([s, lo, hi]) => `<span style="left:${pct(lo)};width:${pct(hi - lo)};background:${statusCss(s)}"></span>`)
+    .join('');
+  const ticks = edges
+    .slice(1)
+    .map(([s, lo]) => `<small style="left:${pct(lo)}" title="${s}">${lo}</small>`)
+    .join('');
   const marker = levelCm === null ? '' : `<i style="left:${pct(levelCm)}"></i>`;
   $('d-scale').innerHTML = `<div class="scale-track">${bands}${marker}</div><div class="scale-ticks">${ticks}</div>`;
 }
@@ -310,7 +328,21 @@ function render(): void {
   // Connection pill for the simulator feed (the device link reports its own state).
   // Which sender this tab follows: the simulator, or the story game (its own channel).
   const game = !!params.get('channel');
-  if (sim) setConn(stale ? (embed ? 'No signal from the sensor' : game ? 'Story game not running' : 'Simulator not running: open it in another tab') : embed ? 'Sensor bb-01 live' : game ? 'Story game feed live' : 'Simulator feed live', !stale);
+  if (sim)
+    setConn(
+      stale
+        ? embed
+          ? 'No signal from the sensor'
+          : game
+            ? 'Story game not running'
+            : 'Simulator not running: open it in another tab'
+        : embed
+          ? 'Sensor bb-01 live'
+          : game
+            ? 'Story game feed live'
+            : 'Simulator feed live',
+      !stale,
+    );
   if (p && stale && !offline) {
     offline = true;
     logEvent('No data from the sensor for 15 s: check node power and Wi-Fi');
@@ -322,17 +354,26 @@ function render(): void {
   if (p) hero.style.setProperty('--status', statusCss(status));
   $('d-status').textContent = p ? status : 'No data';
   $('d-level').textContent = p ? (p.level * 100).toFixed(0) : '--';
-  $('d-trend').textContent = p ? `${p.rate > 2 ? 'Rising' : p.rate < -2 ? 'Falling' : 'Steady'}, ${p.rate >= 0 ? '+' : ''}${p.rate.toFixed(0)} cm per 10 min` : '--';
+  $('d-trend').textContent = p
+    ? `${p.rate > 2 ? 'Rising' : p.rate < -2 ? 'Falling' : 'Steady'}, ${p.rate >= 0 ? '+' : ''}${p.rate.toFixed(0)} cm per 10 min`
+    : '--';
   $('d-eta').textContent = p ? etaText(p.level * 100, p.rate) : embed ? 'Waiting for the sensor.' : '--';
   $('d-updated').textContent = p ? `Updated ${Math.max(0, Math.round((performance.now() - lastMessage) / 1000))} s ago` : 'No data yet';
-  $('d-extra').textContent = [p ? `Distance to water ${(p.distance * 100).toFixed(0)} cm` : '', rainfall !== null && sim ? `Rainfall ${rainfall.toFixed(0)} mm/hr` : '', simSource && sim && !embed ? `Sim water source: ${SOURCE_NAMES[simSource]}` : '']
-    .filter(Boolean)
-    .join(' · ') || '--';
+  $('d-extra').textContent =
+    [
+      p ? `Distance to water ${(p.distance * 100).toFixed(0)} cm` : '',
+      rainfall !== null && sim ? `Rainfall ${rainfall.toFixed(0)} mm/hr` : '',
+      simSource && sim && !embed ? `Sim water source: ${SOURCE_NAMES[simSource]}` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ') || '--';
   // AI forecast line, when the feed carries one (the story game's sensor does).
   const showFc = !!forecast && sim && !stale;
   $('d-fc-label').hidden = !showFc;
   $('d-forecast').hidden = !showFc;
-  if (forecast && showFc) $('d-forecast').textContent = `${forecast.text} · +30 min ${Math.round(forecast.at30 * 100)} cm · +60 min ${Math.round(forecast.at60 * 100)} cm`;
+  if (forecast && showFc)
+    $('d-forecast').textContent =
+      `${forecast.text} · +30 min ${Math.round(forecast.at30 * 100)} cm · +60 min ${Math.round(forecast.at60 * 100)} cm`;
   // Nothing to show yet: say why, and offer the one click that fixes it.
   const empty = !p && !embed;
   $('d-empty').hidden = !empty;
@@ -358,22 +399,26 @@ function render(): void {
   $('d-siren-note').textContent = embed
     ? 'Sounds the barangay siren. Broadcast plays your advisory on the hall loudspeaker.'
     : sim
-    ? 'Controls the siren and public-address screens in the simulator.'
-    : 'Siren and PA control need a command topic on your broker; copy the advisory for SMS / Facebook instead.';
+      ? 'Controls the siren and public-address screens in the simulator.'
+      : 'Siren and PA control need a command topic on your broker; copy the advisory for SMS / Facebook instead.';
   if (p) {
     const auto = renderTemplate(settings.lang, status, false, { levelCm: p.level * 100, rateCm: p.rate });
     if (!msgEdited) $<HTMLTextAreaElement>('d-msg').value = auto;
   }
 
   // Evacuation center.
-  $('d-evac-auto').textContent = evac && sim ? `${embed ? 'Registered at the hall' : 'Simulator'}: ${evac.inside} of ${evac.total} residents inside the evacuation center` : '';
+  $('d-evac-auto').textContent =
+    evac && sim
+      ? `${embed ? 'Registered at the hall' : 'Simulator'}: ${evac.inside} of ${evac.total} residents inside the evacuation center`
+      : '';
   $('d-families').textContent = String(settings.families);
   $('d-persons').textContent = String(settings.persons);
   const pct = (settings.persons / Math.max(1, settings.capacity)) * 100;
   const bar = $('d-capbar');
   bar.style.width = `${Math.min(100, pct)}%`;
   bar.style.background = pct >= 100 ? 'var(--EVACUATE)' : pct >= 80 ? 'var(--WARNING)' : 'var(--NORMAL)';
-  $('d-captext').textContent = `${settings.persons} / ${settings.capacity} persons (${pct.toFixed(0)}% of capacity)${pct >= 100 ? ': FULL, open an overflow site' : ''}`;
+  $('d-captext').textContent =
+    `${settings.persons} / ${settings.capacity} persons (${pct.toFixed(0)}% of capacity)${pct >= 100 ? ': FULL, open an overflow site' : ''}`;
 
   // Node health.
   const t = telemetry;
@@ -381,7 +426,11 @@ function render(): void {
   const dash = '--';
   $('d-node').textContent = sim ? 'bb-01 (simulated)' : 'live node';
   $('d-health').replaceChildren(
-    tile('Battery', t.batteryV !== undefined ? `${t.batteryV.toFixed(2)} V${battPct !== undefined ? ` · ${battPct.toFixed(0)}%` : ''}` : dash, battPct !== undefined && battPct < 30),
+    tile(
+      'Battery',
+      t.batteryV !== undefined ? `${t.batteryV.toFixed(2)} V${battPct !== undefined ? ` · ${battPct.toFixed(0)}%` : ''}` : dash,
+      battPct !== undefined && battPct < 30,
+    ),
     tile('Solar input', t.solarW !== undefined ? `${t.solarW.toFixed(2)} W` : dash),
     tile('Wi-Fi signal', t.rssi !== undefined ? `${t.rssi.toFixed(0)} dBm` : dash, t.rssi !== undefined && t.rssi < -80),
     tile('Enclosure temp', t.tempC !== undefined ? `${t.tempC.toFixed(1)} °C` : dash, t.tempC !== undefined && t.tempC > 55),
@@ -396,7 +445,9 @@ function render(): void {
   if (t.rssi !== undefined && t.rssi < -80) warnings.push('Weak Wi-Fi signal: readings may drop out.');
   if (t.tempC !== undefined && t.tempC > 55) warnings.push('Enclosure overheating: add shade or ventilation.');
   $('d-warnings').replaceChildren(
-    ...(warnings.length ? warnings : ['All node checks OK']).map((w) => Object.assign(document.createElement('li'), { textContent: w, className: warnings.length ? 'bad' : 'good' })),
+    ...(warnings.length ? warnings : ['All node checks OK']).map((w) =>
+      Object.assign(document.createElement('li'), { textContent: w, className: warnings.length ? 'bad' : 'good' }),
+    ),
   );
 
   drawLevelChart($<HTMLCanvasElement>('d-chart'), points, rangeMs, p?.at ?? Date.now());
@@ -527,7 +578,13 @@ document.querySelectorAll<HTMLButtonElement>('#d-ranges button').forEach((b) =>
 );
 
 $('d-export').addEventListener('click', () => {
-  const rows = ['time_iso,level_cm,distance_cm,rate_cm_per_10min,status', ...points.map((p) => `${new Date(p.at).toISOString()},${(p.level * 100).toFixed(1)},${(p.distance * 100).toFixed(1)},${p.rate.toFixed(1)},${p.status}`)];
+  const rows = [
+    'time_iso,level_cm,distance_cm,rate_cm_per_10min,status',
+    ...points.map(
+      (p) =>
+        `${new Date(p.at).toISOString()},${(p.level * 100).toFixed(1)},${(p.distance * 100).toFixed(1)},${p.rate.toFixed(1)},${p.status}`,
+    ),
+  ];
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
   a.download = `bantay-baha-readings-${new Date().toISOString().slice(0, 10)}.csv`;

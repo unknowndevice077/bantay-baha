@@ -58,7 +58,11 @@ $('t-start').addEventListener('click', () => {
   start.setHours(Math.floor(STORY_START_HOUR), Math.round((STORY_START_HOUR % 1) * 60), 0, 0);
   bridge = new SimBridge(
     world.esp32,
-    { evacStats: () => residents.evacStats(), broadcast: (text, via) => story.onBroadcast(text, via), forecast: () => story.forecastSummary() },
+    {
+      evacStats: () => residents.evacStats(),
+      broadcast: (text, via) => story.onBroadcast(text, via),
+      forecast: () => story.forecastSummary(),
+    },
     CHANNEL,
     start.getTime() - state.simTime * 1000,
   );

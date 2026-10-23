@@ -181,7 +181,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   solar: {
     title: '5 W solar panel',
     kind: 'Power source',
-    about: 'Small monocrystalline panel tilted toward the southern sky. It recharges the 18650 pack by day; output collapses under thick storm clouds.',
+    about:
+      'Small monocrystalline panel tilted toward the southern sky. It recharges the 18650 pack by day; output collapses under thick storm clouds.',
     specs: [
       ['Rated', '6 V, 5 W peak'],
       ['Tilt', '≈ 17° (latitude of the Visayas)'],
@@ -191,7 +192,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   antenna: {
     title: '2.4 GHz antenna',
     kind: 'Radio',
-    about: 'External whip antenna on the enclosure so the Wi-Fi link reaches the gateway on the barangay hall roof. Heavy rain slightly weakens the signal.',
+    about:
+      'External whip antenna on the enclosure so the Wi-Fi link reaches the gateway on the barangay hall roof. Heavy rain slightly weakens the signal.',
     specs: [
       ['Band', '2.4 GHz Wi-Fi'],
       ['Link', 'Pole → hall gateway, line of sight'],
@@ -208,7 +210,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   beacon: {
     title: 'Warning beacon',
     kind: 'Local alarm',
-    about: 'Flashing light on the mast top (and a twin on the barangay hall). Amber at WARNING, fast red at EVACUATE, so people on the riverbank see the alarm even without a phone.',
+    about:
+      'Flashing light on the mast top (and a twin on the barangay hall). Amber at WARNING, fast red at EVACUATE, so people on the riverbank see the alarm even without a phone.',
     specs: [
       ['Triggers', 'WARNING and EVACUATE (set by the ESP32 itself, so it works without the gateway)'],
       ['Light', '5 V LED strobe, about 1 W while flashing'],
@@ -220,7 +223,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   mast: {
     title: 'Galvanized steel mast & arm',
     kind: 'Structure',
-    about: 'Concrete-footed pole on the bank with a cantilever arm so the transducer hangs over open water, clear of the bank slope and floating debris.',
+    about:
+      'Concrete-footed pole on the bank with a cantilever arm so the transducer hangs over open water, clear of the bank slope and floating debris.',
     specs: [
       ['Arm reach', '≈ 5.5 m over the creek'],
       ['Footing', 'Reinforced concrete, above normal water'],
@@ -229,7 +233,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   gateway: {
     title: 'Gateway · MQTT broker',
     kind: 'Network',
-    about: 'Wi-Fi access point plus a small computer (e.g. Raspberry Pi running Mosquitto) on the barangay hall roof. The node publishes here; dashboards and alert services subscribe.',
+    about:
+      'Wi-Fi access point plus a small computer (e.g. Raspberry Pi running Mosquitto) on the barangay hall roof. The node publishes here; dashboards and alert services subscribe.',
     specs: [
       ['Topic', MQTT_TOPIC],
       ['Protocol', 'MQTT 3.1.1, QoS 0, also exposed over WebSocket'],
@@ -262,7 +267,8 @@ export const COMPONENTS: Record<ComponentId, ComponentInfo> = {
   dashboard: {
     title: 'Barangay dashboard',
     kind: 'Display',
-    about: 'Outdoor screen at the evacuation center subscribed to the sensor topic. It shows the current level, status and the last 10 minutes so the BDRRMC can act early.',
+    about:
+      'Outdoor screen at the evacuation center subscribed to the sensor topic. It shows the current level, status and the last 10 minutes so the BDRRMC can act early.',
     specs: [['Refresh', 'On every MQTT message']],
     live: (t) => [
       ['Level', `${t.levelCm.toFixed(0)} cm`],

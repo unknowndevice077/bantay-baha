@@ -185,7 +185,8 @@ export class Voice {
       u.lang = voice.lang;
     }
     // Without a matching gendered voice, pitch alone carries the difference.
-    const genderFallback = voice && (style.gender === 'female' ? FEMALE : MALE).test(voice.name) ? 0 : style.gender === 'female' ? 0.25 : -0.2;
+    const genderFallback =
+      voice && (style.gender === 'female' ? FEMALE : MALE).test(voice.name) ? 0 : style.gender === 'female' ? 0.25 : -0.2;
     u.pitch = Math.min(2, Math.max(0, style.pitch + genderFallback));
     u.rate = style.rate;
     u.volume = this.volume;

@@ -108,7 +108,10 @@ export class Forecaster {
 
   private run(model: Model, t: number, level: number): Forecast {
     const deltas = this.outlook ? this.project(level, model.horizonsMin, this.outlook) : model.predict(featuresOf(this.history));
-    const path: ForecastPoint[] = [{ t, level, err: 0 }, ...model.horizonsMin.map((m, k) => ({ t: t + m * 60, level: Math.max(0, level + deltas[k]), err: model.maeM[k] }))];
+    const path: ForecastPoint[] = [
+      { t, level, err: 0 },
+      ...model.horizonsMin.map((m, k) => ({ t: t + m * 60, level: Math.max(0, level + deltas[k]), err: model.maeM[k] })),
+    ];
     const eta = this.eta(path, level);
     // Status from the level as displayed (whole cm), so "330 cm" never reads WARNING.
     return { path, status: path.slice(1).map((p) => statusOf(Math.round(p.level * 100) / 100)), eta, text: this.describe(eta, path) };
@@ -165,7 +168,9 @@ export class Forecaster {
       if (!eta.rising) return `Back below ${eta.status} level (${eta.cm} cm) ${when(eta.minutes)}`;
       const first = `${eta.status} level (${eta.cm} cm) ${when(eta.minutes)}`;
       // A higher line also crossed within the hour is the news that matters: name the highest one too.
-      const higher = [...LIMITS].reverse().find(([s, lim]) => STATUSES.indexOf(s) > STATUSES.indexOf(eta.status) && this.crossing(path, lim) !== null);
+      const higher = [...LIMITS]
+        .reverse()
+        .find(([s, lim]) => STATUSES.indexOf(s) > STATUSES.indexOf(eta.status) && this.crossing(path, lim) !== null);
       return higher ? `${first}, then ${higher[0]} (${Math.round(higher[1] * 100)} cm) ${when(this.crossing(path, higher[1])!)}` : first;
     }
     const end = path[path.length - 1].level - path[0].level;

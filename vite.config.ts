@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 const page = (name: string) => fileURLToPath(new URL(name, import.meta.url));
 
@@ -17,5 +17,10 @@ export default defineConfig({
     },
     // three.js alone is ~600 kB minified; that's expected for the simulator page.
     chunkSizeWarningLimit: 800,
+  },
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+    setupFiles: ['tests/setup.ts'],
   },
 });

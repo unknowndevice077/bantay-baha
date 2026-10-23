@@ -69,7 +69,10 @@ function goBag(color: number): THREE.Group {
   const bag = new THREE.Group();
   const cloth = new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.38, 0.15), cloth);
-  const flap = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.12, 0.16), new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.7), roughness: 0.9 }));
+  const flap = new THREE.Mesh(
+    new THREE.BoxGeometry(0.31, 0.12, 0.16),
+    new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.7), roughness: 0.9 }),
+  );
   flap.position.y = 0.14;
   for (const m of [body, flap]) m.castShadow = true;
   bag.add(body, flap);

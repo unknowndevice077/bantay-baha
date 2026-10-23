@@ -346,7 +346,12 @@ export class Residents {
       // Across the bridge, then down the main road to the evacuation lane.
       // Behind the north-bank houses: their bamboo steps come down to about 3.5 m past the bridge end.
       const nz = BRIDGE.zc - BRIDGE.half - 6.5;
-      approach.push(v2(p.pos.x, nz + jitter(0.5)), v2(BRIDGE.x + jitter(0.8), nz), v2(BRIDGE.x + jitter(0.8), ROAD_Z), v2(EVAC_LANE_X + jitter(0.8), ROAD_Z + jitter(0.5)));
+      approach.push(
+        v2(p.pos.x, nz + jitter(0.5)),
+        v2(BRIDGE.x + jitter(0.8), nz),
+        v2(BRIDGE.x + jitter(0.8), ROAD_Z),
+        v2(EVAC_LANE_X + jitter(0.8), ROAD_Z + jitter(0.5)),
+      );
     } else {
       const lane = LANES_Z.reduce((best, z) => (Math.abs(z - p.pos.y) < Math.abs(best - p.pos.y) ? z : best));
       approach.push(v2(p.pos.x, lane + jitter(0.6)), v2(EVAC_LANE_X + jitter(0.8), lane + jitter(0.6)));
@@ -436,7 +441,12 @@ export class Residents {
     const leader = this.leader!;
     if (Math.hypot(p.pos.x - ASSEMBLY.x, p.pos.y - ASSEMBLY.z) < HANDOFF) {
       // At the hall: up the stairs and inside on their own.
-      p.evacRoute = [v2(ASSEMBLY.x + jitter(0.6), ASSEMBLY.z), v2(HALL_STAIRS.x + jitter(0.8), HALL_STAIRS.z1 + 0.4), v2(HALL_DOOR.x, HALL_DOOR.z + 0.4), insideSpot()];
+      p.evacRoute = [
+        v2(ASSEMBLY.x + jitter(0.6), ASSEMBLY.z),
+        v2(HALL_STAIRS.x + jitter(0.8), HALL_STAIRS.z1 + 0.4),
+        v2(HALL_DOOR.x, HALL_DOOR.z + 0.4),
+        insideSpot(),
+      ];
       p.route = p.evacRoute.map((v) => v.clone());
       p.mode = 'evac';
       p.hand = false;

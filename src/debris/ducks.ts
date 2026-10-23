@@ -37,7 +37,7 @@ export class DuckArmada {
     };
     add(0, 0, 2); // flagship
     for (let i = 1; i <= 7; i++) for (const s of [-1, 1]) add(-i * 1.8, s * i * 0.8, 0.8);
-    for (let i = 0; i < 10; i++) add(-16 - (i % 5) * 1.6, ((i < 5 ? -1 : 1) * (1 + (i % 5))) * 0.9, 0.7);
+    for (let i = 0; i < 10; i++) add(-16 - (i % 5) * 1.6, (i < 5 ? -1 : 1) * (1 + (i % 5)) * 0.9, 0.7);
   }
 
   update(dt: number, levelY: number, waveT: number, chop: number): void {

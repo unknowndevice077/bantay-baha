@@ -75,9 +75,9 @@ export class Panel {
       deps.alerts.refresh();
     });
 
-    document.querySelectorAll<HTMLButtonElement>('[data-cam]').forEach((b) =>
-      b.addEventListener('click', () => deps.rig.goTo(b.dataset.cam as Preset | 'cinematic')),
-    );
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-cam]')
+      .forEach((b) => b.addEventListener('click', () => deps.rig.goTo(b.dataset.cam as Preset | 'cinematic')));
 
     this.initTime();
     this.initRemote();
@@ -89,9 +89,9 @@ export class Panel {
     this.time.addEventListener('pointerdown', () => (this.dragging = this.time));
     this.time.addEventListener('change', () => (this.dragging = null));
     this.time.addEventListener('input', () => (state.timeOfDay = Number(this.time.value)));
-    document.querySelectorAll<HTMLButtonElement>('[data-time]').forEach((b) =>
-      b.addEventListener('click', () => (state.timeOfDay = Number(b.dataset.time))),
-    );
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-time]')
+      .forEach((b) => b.addEventListener('click', () => (state.timeOfDay = Number(b.dataset.time))));
     const lock = $<HTMLInputElement>('i-time-lock');
     lock.checked = state.timeLocked;
     lock.addEventListener('change', () => (state.timeLocked = lock.checked));
@@ -102,7 +102,12 @@ export class Panel {
     const btn = $<HTMLButtonElement>('b-remote');
     btn.addEventListener('click', () => {
       if (remote.connected) remote.disconnect();
-      else remote.connect($<HTMLInputElement>('i-ws-url').value.trim(), $<HTMLSelectElement>('i-ws-mode').value as RemoteMode, $<HTMLInputElement>('i-ws-topic').value.trim());
+      else
+        remote.connect(
+          $<HTMLInputElement>('i-ws-url').value.trim(),
+          $<HTMLSelectElement>('i-ws-mode').value as RemoteMode,
+          $<HTMLInputElement>('i-ws-topic').value.trim(),
+        );
     });
   }
 
@@ -138,9 +143,14 @@ export class Panel {
     $('o-speed').textContent = `${state.speed}x`;
     if (this.dragging !== this.time) this.time.value = state.timeOfDay.toFixed(3);
     const minutes = Math.floor(state.timeOfDay * 24 * 60);
-    $('o-time').textContent = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${state.timeLocked ? ' held' : ''}`;
+    $('o-time').textContent =
+      `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${state.timeLocked ? ' held' : ''}`;
     $('src-chip').textContent = SOURCE_CHIP[state.source];
-    this.stormBtn.textContent = state.stormPlaying ? 'Pause storm' : state.stormTime > 0 && state.stormTime < STORM_DURATION ? 'Resume storm' : 'Play storm';
+    this.stormBtn.textContent = state.stormPlaying
+      ? 'Pause storm'
+      : state.stormTime > 0 && state.stormTime < STORM_DURATION
+        ? 'Resume storm'
+        : 'Play storm';
     $('storm-bar').style.width = `${(state.stormTime / STORM_DURATION) * 100}%`;
     $('storm-time').textContent = `T+${Math.floor(state.stormTime / 60)} min / ${STORM_DURATION / 60} min`;
   }

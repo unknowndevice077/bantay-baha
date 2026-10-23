@@ -101,7 +101,7 @@ export class CameraRig {
     dom.addEventListener(
       'wheel',
       (e) => {
-          e.preventDefault();
+        e.preventDefault();
         this.stopAutomation();
         this.camera.getWorldDirection(this.move).multiplyScalar(-e.deltaY * 0.02 * this.speedScale());
         this.translate(this.move);
@@ -159,7 +159,11 @@ export class CameraRig {
   private pan(dx: number, dy: number): void {
     const s = 0.02 * this.speedScale();
     this.right.set(1, 0, 0).applyQuaternion(this.camera.quaternion);
-    this.move.set(0, 1, 0).applyQuaternion(this.camera.quaternion).multiplyScalar(dy * s).addScaledVector(this.right, -dx * s);
+    this.move
+      .set(0, 1, 0)
+      .applyQuaternion(this.camera.quaternion)
+      .multiplyScalar(dy * s)
+      .addScaledVector(this.right, -dx * s);
     this.translate(this.move);
   }
 

@@ -19,7 +19,8 @@ const SINK = 0.35;
 function farHeight(x: number, z: number): number {
   const edge = Math.max(Math.abs(x), Math.abs(z));
   const ridge = smoothstep(140, 520, edge);
-  const n = Math.sin(x * 0.011 + 1.3) * Math.cos(z * 0.013) + 0.5 * Math.sin(x * 0.027 - z * 0.019) + 0.25 * Math.sin(x * 0.061 + z * 0.047);
+  const n =
+    Math.sin(x * 0.011 + 1.3) * Math.cos(z * 0.013) + 0.5 * Math.sin(x * 0.027 - z * 0.019) + 0.25 * Math.sin(x * 0.061 + z * 0.047);
   const land = Math.min(baseHeight(x, z), 45);
   return land + ridge * (40 + n * 32) - SINK;
 }
@@ -88,9 +89,15 @@ function farTrees(): THREE.InstancedMesh {
     if (rnd() > 0.35 + smoothstep(110, 260, edge) * 0.65) continue;
     const s = 0.8 + rnd() * 0.9;
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * Math.PI * 2);
-    items.push(new THREE.Matrix4().compose(new THREE.Vector3(x, farHeight(x, z) - 0.2, z), q, new THREE.Vector3(s, s * (0.8 + rnd() * 0.5), s)));
+    items.push(
+      new THREE.Matrix4().compose(new THREE.Vector3(x, farHeight(x, z) - 0.2, z), q, new THREE.Vector3(s, s * (0.8 + rnd() * 0.5), s)),
+    );
   }
-  const mesh = new THREE.InstancedMesh(treeGeometry(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, flatShading: true }), items.length);
+  const mesh = new THREE.InstancedMesh(
+    treeGeometry(),
+    new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, flatShading: true }),
+    items.length,
+  );
   const tint = new THREE.Color();
   items.forEach((m, i) => {
     mesh.setMatrixAt(i, m);
@@ -123,7 +130,10 @@ function farCreek(): THREE.Mesh {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
   geo.setIndex(idx);
   geo.computeVertexNormals();
-  return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x3a5560, roughness: 0.45, envMapIntensity: 0.35, side: THREE.DoubleSide }));
+  return new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({ color: 0x3a5560, roughness: 0.45, envMapIntensity: 0.35, side: THREE.DoubleSide }),
+  );
 }
 
 export class Surroundings {

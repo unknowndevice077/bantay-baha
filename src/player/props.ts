@@ -9,7 +9,10 @@ export function createSirenButton(): { group: THREE.Group; position: THREE.Vecto
   const group = new THREE.Group();
   // On the front wall (faces −z), to the viewer's left of the door.
   const position = new THREE.Vector3(HALL.x + 2.4, HALL_PLAN.floorY + 1.3, HALL_DOOR.z - 0.08);
-  const housing = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.55, 0.12), new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.5 }));
+  const housing = new THREE.Mesh(
+    new THREE.BoxGeometry(0.42, 0.55, 0.12),
+    new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.5 }),
+  );
   housing.position.copy(position);
   const knobMat = new THREE.MeshStandardMaterial({ color: 0xc81e1e, emissive: 0xff2020, emissiveIntensity: 0, roughness: 0.35 });
   const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.08, 20), knobMat);
@@ -47,13 +50,21 @@ export function createSirenButton(): { group: THREE.Group; position: THREE.Vecto
  * A stack of rolled sleeping mats in the hall, and the mats themselves laid out in rows
  * on the floor (hidden until the captain sets up the evacuation center).
  */
-export function createMats(stackX: number, stackZ: number, floorY: number, area: { x: number; z: number; halfW: number; halfD: number }): { group: THREE.Group; position: THREE.Vector3; layOut(): void } {
+export function createMats(
+  stackX: number,
+  stackZ: number,
+  floorY: number,
+  area: { x: number; z: number; halfW: number; halfD: number },
+): { group: THREE.Group; position: THREE.Vector3; layOut(): void } {
   const group = new THREE.Group();
   const position = new THREE.Vector3(stackX, floorY, stackZ);
   const colours = [0xc8a96e, 0x9cb6c9, 0xc98f8f, 0xa9c48f];
   const stack = new THREE.Group();
   for (let i = 0; i < 6; i++) {
-    const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.9, 12), new THREE.MeshStandardMaterial({ color: colours[i % colours.length], roughness: 0.9 }));
+    const roll = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.13, 0.13, 0.9, 12),
+      new THREE.MeshStandardMaterial({ color: colours[i % colours.length], roughness: 0.9 }),
+    );
     roll.rotation.z = Math.PI / 2;
     roll.position.set(stackX + (i % 2 ? 0.14 : -0.14), floorY + 0.13 + Math.floor(i / 2) * 0.24, stackZ);
     stack.add(roll);
@@ -109,7 +120,10 @@ export function createOpsDesk(x: number, z: number): { group: THREE.Group; posit
   lid.rotation.x = 0.3;
   const back = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.24, 0.012), shell);
   back.position.y = 0.12;
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.33, 0.2), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xc4d6e8, emissiveIntensity: 0.45 }));
+  const screen = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.33, 0.2),
+    new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xc4d6e8, emissiveIntensity: 0.45 }),
+  );
   screen.position.set(0, 0.12, -0.007);
   screen.rotation.y = Math.PI;
   lid.add(back, screen);

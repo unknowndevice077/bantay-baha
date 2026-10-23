@@ -55,7 +55,12 @@ export class Hud {
     if (performance.now() < this.broadcastUntil) return;
     this.alert.className = `alert surface s-${m.status}${m.lola ? ' lola' : ''}`;
     $('alert-title').textContent = m.lola ? `Lola says (${LANG_NAMES[m.lang]})` : `${ALERT_TITLE[m.status]} · ${LANG_NAMES[m.lang]}`;
-    const src = { template: 'template', ollama: 'via Ollama', 'ollama-pending': 'asking Ollama', 'template-fallback': 'Ollama unreachable, template used' };
+    const src = {
+      template: 'template',
+      ollama: 'via Ollama',
+      'ollama-pending': 'asking Ollama',
+      'template-fallback': 'Ollama unreachable, template used',
+    };
     $('alert-src').textContent = src[m.source];
     $('alert-text').textContent = m.text;
   }
