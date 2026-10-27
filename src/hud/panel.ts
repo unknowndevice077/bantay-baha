@@ -7,7 +7,7 @@ import { STORM_DURATION, resetSim } from '../sim';
 import { type Lang, type ToggleKey, bus, setToggle, state } from '../state';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
-const SOURCE_CHIP = { rain: 'Rain model', manual: 'Manual', remote: 'ESP32 live' } as const;
+const SOURCE_CHIP = { rain: 'Rain model', manual: 'Manual', remote: 'ESP32 live', replay: 'Replay' } as const;
 
 export interface PanelDeps {
   audio: AudioEngine;

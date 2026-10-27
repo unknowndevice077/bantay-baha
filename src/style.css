@@ -785,3 +785,23 @@ label.text {
     z-index: 2;
   }
 }
+
+/* ---- Offline fallback: the captain's phone ------------------------------ */
+#sms {
+  position: absolute;
+  left: 12px;
+  bottom: 176px;
+  width: min(420px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border-left: 3px solid var(--WARNING);
+}
+
+#sms h4 {
+  margin: 0 0 6px;
+}
+
+#sms ol {
+  margin: 0;
+  padding-left: 18px;
+  font: 12px/1.45 var(--mono);
+}

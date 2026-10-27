@@ -4,8 +4,8 @@ import { LEVEL } from './config';
 export type Status = 'NORMAL' | 'ADVISORY' | 'WARNING' | 'EVACUATE';
 export const STATUSES: Status[] = ['NORMAL', 'ADVISORY', 'WARNING', 'EVACUATE'];
 export type Lang = 'en' | 'tl' | 'ceb' | 'war';
-/** What drives the water level: the rainfall/runoff model, the manual slider, or a live ESP32. */
-export type Source = 'rain' | 'manual' | 'remote';
+/** What drives the water level: the rainfall/runoff model, the manual slider, a live ESP32, or a replayed recording. */
+export type Source = 'rain' | 'manual' | 'remote' | 'replay';
 export type ToggleKey = 'debris' | 'rain' | 'xray' | 'lola' | 'sound' | 'hq';
 
 export interface Reading {

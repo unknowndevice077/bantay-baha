@@ -1,5 +1,6 @@
 /** "ESP32 telemetry" tab of the HUD: live device vitals plus a scrolling log of published MQTT payloads. */
 import { statusCss } from '../config';
+import { link } from '../net/offline';
 import { MQTT_TOPIC, type Esp32Node } from '../sensor/esp32';
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
@@ -30,7 +31,7 @@ export class TelemetryView {
     if (this.timer > 0) return;
     this.timer = 0.25;
     const t = this.node.t;
-    $('t-mode').textContent = t.live ? 'ESP32 LIVE' : 'SIMULATED';
+    $('t-mode').textContent = t.live ? 'ESP32 LIVE' : link.down ? 'NO NETWORK · SMS' : 'SIMULATED';
     $('t-mode').classList.toggle('ok', t.live);
     $('t-uptime').textContent = uptime(t.uptimeS);
     $('t-rssi').textContent = `${t.rssi.toFixed(0)} dBm`;

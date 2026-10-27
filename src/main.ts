@@ -9,8 +9,11 @@ import { Panel } from './hud/panel';
 import { TelemetryView } from './hud/telemetry';
 import { initWelcome } from './hud/welcome';
 import { listenKonami } from './konami';
+import { link } from './net/offline';
+import { initOffline } from './net/offlineView';
 import { SimBridge } from './net/simBridge';
 import { installPlus } from './plus';
+import { ReplayView } from './replay/view';
 import { CameraRig } from './scene/cameraRig';
 import { Graphics } from './scene/graphics';
 import { BRIDGE } from './scene/infrastructure';
@@ -53,8 +56,13 @@ const bridge = new SimBridge(esp32, {
   },
   forecast: () => plusApi.forecast(),
 });
-world.onPacket = (r) => bridge.publish(r);
+// With the network down, nothing reaches the hall's gateway or the dashboard.
+world.onPacket = (r) => {
+  if (!link.down) bridge.publish(r);
+};
 const plusApi = installPlus({ hud, world });
+initOffline();
+const replay = new ReplayView();
 const gaugeCamera = world.scene.getObjectByName('gauge-camera');
 if (gaugeCamera) inspector.addRoot(gaugeCamera);
 
@@ -78,4 +86,5 @@ world.start((dt) => {
   panel.update();
   rig.update(dt);
   plusApi.update(dt);
+  replay.update();
 });

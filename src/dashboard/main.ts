@@ -25,7 +25,12 @@ import { classifyStatus, riseRate } from '../sensor/status';
 import { type Lang, STATUSES, type Source, type Status } from '../state';
 import { drawLevelChart } from './chart';
 
-const SOURCE_NAMES: Record<Source, string> = { rain: 'rainfall model', manual: 'manual slider', remote: 'live ESP32' };
+const SOURCE_NAMES: Record<Source, string> = {
+  rain: 'rainfall model',
+  manual: 'manual slider',
+  remote: 'live ESP32',
+  replay: 'replayed recording',
+};
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 

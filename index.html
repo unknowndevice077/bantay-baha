@@ -127,7 +127,17 @@
             </div>
             <label class="select">Failure to simulate <select id="fu-mode"></select></label>
             <div class="row"><button id="fu-break">Simulate sensor failure</button></div>
+            <label class="check"><input id="i-offline" type="checkbox" /> Simulate network down (Wi-Fi or gateway fails)</label>
+            <p class="hint">The pole keeps flashing and texts the captain through a GSM module. Nothing reaches the dashboard.</p>
           </section>
+          <details>
+            <summary class="label">Replay a night</summary>
+            <div class="row"><button id="rc-record">Record</button><button id="rc-save" disabled>Save JSON</button></div>
+            <div class="row"><button id="rc-sample">Play sample</button><button id="rc-play" disabled>Play recording</button><button id="rc-stop" disabled>Stop</button></div>
+            <label class="text">Load a recording <input id="rc-file" type="file" accept="application/json,.json" /></label>
+            <p id="rc-status" class="hint"></p>
+            <p class="hint">Plays at the Speed slider's rate. Touching the sliders takes control back.</p>
+          </details>
           <details>
             <summary class="label">Live ESP32 input</summary>
             <label class="select">Protocol
@@ -175,6 +185,11 @@
         <div id="insp-live-wrap"><h4 class="label"><span class="live-dot"></span>Live</h4><dl id="insp-live"></dl></div>
         <div id="insp-actions"></div>
         <div class="insp-parts"><small class="label">All parts</small><div id="insp-chips"></div></div>
+      </section>
+
+      <section id="sms" class="surface" hidden aria-live="polite">
+        <h4 class="label">Offline fallback · SMS to the captain</h4>
+        <ol id="sms-log"></ol>
       </section>
 
       <div id="toast"></div>

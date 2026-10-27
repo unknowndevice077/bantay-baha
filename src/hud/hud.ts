@@ -6,7 +6,7 @@ import { type ChartForecast, drawChart } from './chart';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 
-const SOURCE_TEXT = { rain: 'Rainfall model', manual: 'Manual slider', remote: 'Live ESP32' } as const;
+const SOURCE_TEXT = { rain: 'Rainfall model', manual: 'Manual slider', remote: 'Live ESP32', replay: 'Replayed recording' } as const;
 const ALERT_TITLE: Record<Status, string> = {
   NORMAL: 'Status update',
   ADVISORY: 'Flood advisory',
