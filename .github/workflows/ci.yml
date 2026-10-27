@@ -30,6 +30,15 @@ jobs:
           path: dist
           retention-days: 7
 
+  firmware-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The node's alert logic agrees with the simulator on every shared case
+        run: |
+          g++ -std=c++11 -Wall -I firmware/bantay-baha-node firmware/test/logic_test.cpp -o logic_test
+          ./logic_test
+
   docker:
     runs-on: ubuntu-latest
     needs: check

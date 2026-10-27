@@ -1,0 +1,2453 @@
+{
+ "note": "Generated from classifyStatus() in src/sensor/status.ts. The firmware port must agree on every case.",
+ "cases": [
+  {
+   "level": 0.5,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 0.5,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.4,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.5,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.5,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.6,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.6,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.9,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.9,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.95,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.95,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.95,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "NORMAL"
+  },
+  {
+   "level": 1.95,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 1.95,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.1,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.1,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.7,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.7,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.72,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.72,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "ADVISORY"
+  },
+  {
+   "level": 2.75,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.75,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 2.8,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 2.8,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.2,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.2,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "WARNING"
+  },
+  {
+   "level": 3.25,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.25,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.3,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": -20,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": -20,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": -20,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": -20,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 0,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 0,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 0,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 0,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 15,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 15,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 15,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 15,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 18,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 18,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 18,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 18,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 30,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 30,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 30,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 30,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 50,
+   "current": "NORMAL",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 50,
+   "current": "ADVISORY",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 50,
+   "current": "WARNING",
+   "expect": "EVACUATE"
+  },
+  {
+   "level": 3.5,
+   "rate": 50,
+   "current": "EVACUATE",
+   "expect": "EVACUATE"
+  }
+ ]
+}

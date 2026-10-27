@@ -9,3 +9,4 @@ tools/voices/refs/*.wav
 !tools/voices/refs/zira.wav
 demo/
 demo-out/
+firmware/bantay-baha-node/secrets.h
