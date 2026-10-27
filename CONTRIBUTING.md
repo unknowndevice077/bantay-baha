@@ -43,6 +43,8 @@ Then run it in the browser and look at the part you changed. The tests cover the
 | --- | --- |
 | `src/sensor`, `src/net` | The sensor model, alert rules and the message formats |
 | `src/forecast`, `src/fusion` | The Bantay Baha+ add-ons |
+| `firmware` | The ESP32 sketch for the sensor node, and its PC test |
+| `src/replay`, `src/net/offline*.ts` | Replay a night, and the offline fallback |
 | `src/alerts` | Advisory text in four languages, the siren and the PA voice |
 | `src/scene`, `src/water`, `src/debris` | The 3D barangay |
 | `src/game` | The story game |

@@ -1,6 +1,6 @@
 {
   "name": "bantay-baha",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Interactive 3D flood-monitoring simulator of a Philippine barangay with an ESP32 ultrasonic water-level sensor.",
   "private": true,
   "license": "MIT",

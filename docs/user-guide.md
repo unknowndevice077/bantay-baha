@@ -37,6 +37,13 @@ These are in the **Bantay Baha+** section of the panel, each with its own tick b
 
 Untick either one and the simulator runs without it.
 
+### Replay a night and the offline fallback
+
+Both are in the panel.
+
+- **Replay a night:** press **Record** while a storm plays, then **Stop recording** and **Save JSON** to keep the night as a file. **Play sample** plays a typhoon without recording one first, and **Load a recording** plays a saved file. Playback follows the Speed slider (1x to 10x), the source chip reads *Replay*, and touching the sliders or the storm button takes control back.
+- **Simulate network down** (in *Bantay Baha+*): cuts the link between the pole and the hall. The dashboard stops receiving and goes stale, the node's mode reads NO NETWORK · SMS, the beacon keeps flashing, and each change of alert level appears as the text the captain would get on their phone, in a box at the bottom left.
+
 ### Other things to try
 
 - **Language:** English, Tagalog, Cebuano or Waray, for every advisory.

@@ -25,6 +25,7 @@ The [docs folder](docs/README.md) explains the project properly:
 - [Sensor fusion and fault detection](docs/sensor-fusion.md)
 - [User guide](docs/user-guide.md)
 - [Failure modes](docs/failure-modes.md)
+- [Sensor node firmware](firmware/README.md): the ESP32 sketch, with a PC test of its alert logic
 - [Specification](docs/specification.md): what it must do, and how each requirement is checked
 - [Testing](docs/testing.md)
 - [Changelog](CHANGELOG.md)
@@ -99,6 +100,8 @@ Then open http://localhost:8080.
 | Graphics | Auto (default: steps down from High while the frame rate is low), Fast, Balanced, High, or Ultra (ambient occlusion and bloom) |
 | Language | English, Tagalog, Cebuano, Waray |
 | Live ESP32 input | WebSocket or MQTT-over-WebSocket feed (see below) |
+| Replay a night | Record a storm as JSON, save it, and play a recording or the built-in sample back at 1–10x |
+| Simulate network down | Cuts the pole's link to the hall. The beacon keeps flashing and the node texts the captain (shown on screen) |
 | Ollama | Use a local LLM to write advisories |
 
 **Camera (first person):**
@@ -273,6 +276,8 @@ Performance notes:
 - Pixel ratio and shadow-map size drop on small screens.
 
 ## Live ESP32 input
+
+The node firmware is in [`firmware/`](firmware/README.md).
 
 Open **Live ESP32 input** in the panel, pick a protocol, enter the URL and press Connect.
 

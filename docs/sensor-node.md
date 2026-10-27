@@ -53,7 +53,8 @@ Things the barangay most likely already has, so they cost nothing:
 | --- | --- | ---: |
 | A spare JSN-SR04T and ESP32 | The cheapest insurance there is: if the sensor dies mid-season, swap it in ten minutes | 500–900 |
 | **Gauge camera:** ESP32-CAM with an 850 nm IR LED, in its own small box | A second, independent reading of the painted gauge, so a frozen, erratic or drifting ultrasonic gets caught instead of quietly showing a calm creek. See [sensor-fusion.md](sensor-fusion.md) | 450–800 |
-| A pair of LoRa modules | The planned fallback for when the hall's Wi-Fi goes down (Bantay Baha+ feature 3, not built yet) | 800–1,500 |
+| A GSM module (SIM7600 or A7670, or a SIM800L where 2G is still on) and a prepaid SIM | The offline fallback: when the hall's Wi-Fi or the gateway fails, the node texts the captain the level and what to do. See [firmware](../firmware/README.md) | 250–450 |
+| A pair of LoRa modules | Another fallback, to a receiver at the hall, for creeks with no mobile signal. Not built | 800–1,500 |
 
 The camera is the one we'd add first. The system warns without it, but it's the cheapest way we know to make a single broken sensor visible. In the simulator it's the small white box on a post on the village bank, looking at the gauge. Turn on *Sensor fusion* in the Bantay Baha+ panel and click it.
 
@@ -97,7 +98,7 @@ Why each piece is there:
 
 ## Firmware loop
 
-The firmware isn't in this repo; this is the behaviour the simulator models (`src/sensor/monitor.ts`, `src/sensor/esp32.ts`), written out as the loop a real node would run:
+The firmware is in [`firmware/`](../firmware/README.md) (an Arduino sketch, a first draft, not yet run on a real node). This is the loop it implements, which is also the behaviour the simulator models (`src/sensor/monitor.ts`, `src/sensor/esp32.ts`):
 
 ```
 every 5 seconds (more often when the water is rising):
@@ -109,6 +110,7 @@ every 5 seconds (more often when the water is rising):
     status = classify(level, rate, previous status)   # same rules as src/sensor/status.ts
     set LED colour and beacon
     publish JSON to bantaybaha/sensor/01
+    if the network has been down for 30 s and the status is WARNING or higher: text the captain (GSM)
     if NORMAL and the battery is low: deep-sleep until the next reading
 ```
 

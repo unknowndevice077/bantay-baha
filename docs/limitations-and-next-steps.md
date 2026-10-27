@@ -15,8 +15,8 @@
 Roughly in order of how much they'd matter to an actual barangay:
 
 1. **Put a node in a real creek.** Build one, run it for a rainy season next to the painted gauge, and compare. Everything else in this list gets better with that data.
-2. **An offline alert fallback.** When the hall's Wi-Fi or the gateway fails during a flood, the pole should still get its reading out: LoRa to a receiver at the hall, or SMS through a cheap GSM module straight to the captain's phone, with the ETA in the message. This is the planned Bantay Baha+ feature 3, with a "network down" switch in the simulator to demonstrate it.
-3. **Replay real nights.** Record a storm's readings as JSON and play them back in the 3D simulator at 1–10x, with the forecast's predicted flood area drawn over the barangay. It's useful for training and for the after-action review. This is planned feature 4.
+2. **Prove the offline fallback and add LoRa.** The SMS fallback through a GSM module is written into the firmware and shown by the simulator's *Simulate network down* switch, but it hasn't been tried with a real module or SIM. Add LoRa to a receiver at the hall for creeks with no mobile signal, and put the ETA in the message.
+3. **Replay real nights.** The simulator can record a storm as JSON and play it back at 1–10x (*Replay a night* in the panel). Still to do: import a real node's log, and draw the forecast's predicted flood area over the barangay for training and the after-action review.
 4. **Retrain the forecast on recorded data** and feed it real rainfall outlooks (PAGASA forecasts, or a rain gauge upstream). Then measure the false-alarm rate with the barangay and agree what's acceptable.
 5. **Wire the dashboard's siren button to the real siren** through a command topic on the broker, with a confirmation step so it can't be triggered by accident.
 6. **Browser tests.** The status rules, fusion, forecast loader and advisory text now have unit tests and run in CI. A Playwright smoke test that opens the simulator, the dashboard and the game and checks they load and talk to each other is next, followed by a test of the ETA wording.
@@ -25,6 +25,6 @@ Roughly in order of how much they'd matter to an actual barangay:
 
 ## Things we'd do differently
 
-- **We'd write the firmware alongside the simulator, not after it.** The simulator models the node's behaviour closely, but a model of firmware isn't firmware.
+- **We'd write the firmware alongside the simulator, not after it.** We wrote it last, and it has only been checked on a PC, not on a bench. A model of firmware isn't firmware.
 - **We'd set up unit tests on day one.** Several bugs we found by playing the game, like the fusion trusting a frozen sensor, would have been caught in seconds by a ten-line test.
 - **We'd gather flood marks before setting thresholds.** We picked ours to fit the 3D creek. Doing it properly means asking the people who've lived there longest where the water came up to last time. That conversation is probably the most valuable part of any real deployment, and it can't be simulated.

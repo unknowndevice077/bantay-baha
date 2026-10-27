@@ -4,6 +4,15 @@ All notable changes to Bantay Baha. The format follows [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-27
+
+### Added
+
+- Sensor node firmware in `firmware/`: an Arduino sketch for the ESP32 with a median-of-pings reading, the alert level worked out on the node, a beacon on its own task, JSON over MQTT in the simulator's format, and deep sleep. Its alert logic runs on a PC against 408 cases generated from the simulator's rules.
+- Offline fallback: if the network is down the node texts the captain through a GSM module. The simulator has a *Simulate network down* switch and shows the texts.
+- Replay a night: record a storm as JSON, save it, load it, or play a built-in sample at 1–10x.
+- Unit tests for replay, the offline SMS and the firmware test vectors, and a C++ logic test in CI.
+
 ## [1.0.0] - 2026-10-23
 
 First complete release, for the hackathon submission.
@@ -73,5 +82,6 @@ First complete release, for the hackathon submission.
 
 - The 3D simulator: a barangay beside a creek, a solar ultrasonic sensor pole, a flood driven by one sensor reading, four alert levels, advisories in four languages, a siren and residents who evacuate.
 
-[Unreleased]: https://github.com/unknowndevice077/bantay-baha/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/unknowndevice077/bantay-baha/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/unknowndevice077/bantay-baha/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/unknowndevice077/bantay-baha/releases/tag/v1.0.0

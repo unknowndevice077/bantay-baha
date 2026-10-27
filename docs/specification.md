@@ -50,6 +50,15 @@ Out of scope: a certified warning system, several sensors along a river, and any
 | S-5 | A camera that can only say "the water is below the gauge" is not treated as disagreement | `tests/fusion.test.ts` |
 | S-6 | With no camera picture, the ultrasonic carries on and the fault is shown | `tests/fusion.test.ts` |
 
+### Offline, replay and firmware
+
+| ID | Requirement | Checked by |
+| --- | --- | --- |
+| O-1 | If the network is down, the node still flashes its beacon and texts the captain on every rise to WARNING or higher, in one plain 160-character SMS | `tests/offline.test.ts`, *Simulate network down* in the simulator |
+| O-2 | Nothing reaches the dashboard while the network is down, so it shows stale data and says so | Simulator and dashboard, by hand |
+| R-1 | A night's level and rain can be recorded as JSON, saved, loaded and replayed at 1–10x. A bad file is refused with a reason | `tests/replay.test.ts` |
+| R-2 | The node firmware makes the same alert-level decisions as the simulator, on every threshold edge | `firmware/test/logic_test.cpp`, `tests/firmware.test.ts`, 408 shared cases |
+
 ### People
 
 | ID | Requirement | Checked by |

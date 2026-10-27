@@ -8,7 +8,7 @@ This page is about what we actually checked and how, and just as plainly, what w
 
 1. **ESLint** over `src` and `tests`.
 2. **Prettier** in check mode.
-3. **Vitest unit tests** (`npm test`, 38 tests in `tests/`).
+3. **Vitest unit tests** (`npm test`, 51 tests in `tests/`).
 4. **`npm run build`**, which type-checks the whole project with TypeScript in strict mode before Vite bundles it. A type error fails the build.
 
 The unit tests cover the plain functions that decide whether someone gets warned. They are the parts where a quiet mistake costs the most:
@@ -19,7 +19,12 @@ The unit tests cover the plain functions that decide whether someone gets warned
 | `fusion.test.ts` | Inverse-variance fusion, frozen and erratic detection, the fail-safe "use the higher reading" rule, the camera's "too low to read" case, and the fault injector |
 | `forecast.test.ts` | Feature maths, and the model loader refusing a model that doesn't match its reference values or an HTML page served in its place |
 | `templates.test.ts` | Every status in all four languages, in both voices, with no placeholder left over |
+| `replay.test.ts` | Recording and playback: interpolation, the file checks, the recorder's spacing, and the sample typhoon's shape |
+| `offline.test.ts` | The offline SMS: plain ASCII, one 160-character message, the right wording |
+| `firmware.test.ts` | 408 alert-level cases that the C++ firmware logic must also pass |
 | `util.test.ts` | The maths helpers and the seeded random generator that keeps the barangay layout identical on every load |
+
+The firmware's alert logic also runs on a PC (`firmware/test/logic_test.cpp`, built with `g++` in CI) against the same 408 cases. The ESP32 sketch around it has not been compiled for the board or run on hardware.
 
 The 3D scene, the story game and the dashboard are checked by playing them (below). There are no browser tests yet.
 

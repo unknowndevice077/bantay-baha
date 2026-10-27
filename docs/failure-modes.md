@@ -28,7 +28,7 @@ Fusion is a Bantay Baha+ add-on. With it switched off, none of the faults above 
 | Internet down at the barangay hall | Not a failure for us | Nothing changes | The sensor, gateway and dashboard all run on the hall's local network. Fonts and alert templates are bundled. Only the optional Ollama advisories and the SMS copy-paste step need anything outside |
 | Gateway itself down | The dashboard stops receiving (as above) | Stale data warning | The pole's own LED and beacon keep working, because the node works out the status itself. People on the bank still see amber or red |
 
-**What's still missing:** a fallback channel for when the hall's Wi-Fi or the gateway fails completely during a flood, such as LoRa from the pole or SMS through a GSM module. It's planned as the next Bantay Baha+ feature. Today, the stale-data warning tells the person on duty to fall back on the staff gauge and the radio.
+**Offline fallback.** If the hall's Wi-Fi or the gateway fails during a flood, the node texts the captain through a GSM module: once when the status rises to WARNING or higher, then every 15 minutes while it stays there. The message is one plain SMS with the level, the rise and what to do ("BANTAY BAHA bb-01 WARNING: 285cm, +32cm/10min. Low-lying homes go to the Barangay Hall now."). The beacon keeps flashing because the node switches it itself. Turn on *Simulate network down* in the simulator's panel to see it: the dashboard goes stale, the node's mode reads NO NETWORK · SMS, and the texts appear on screen. The SMS needs a mobile signal at the pole and prepaid load, and it hasn't been tried on real hardware. LoRa to a receiver at the hall would cover creeks without a signal. It isn't built.
 
 ## The forecast
 
