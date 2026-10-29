@@ -1,0 +1,24 @@
+/* Coastal page: everything else comes from the creek simulator's style.css. */
+.c-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+.sw {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.sw.meas {
+  background: #e9eef3;
+}
+.sw.tide {
+  background: repeating-linear-gradient(90deg, #6aa9e9 0 4px, transparent 4px 7px);
+}
+.sw.fc {
+  background: var(--signal);
+}

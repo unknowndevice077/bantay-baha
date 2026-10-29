@@ -38,12 +38,16 @@ export class CameraRig {
   private readonly right = new THREE.Vector3();
   private readonly move = new THREE.Vector3();
   private readonly euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  private readonly ground: (x: number, z: number) => number;
 
   constructor(
     private readonly camera: THREE.PerspectiveCamera,
     dom: HTMLElement,
     private readonly views: Record<Preset, View>,
+    /** Another map (coastal mode) can bring its own ground and fly-through path. */
+    opts: { ground?: (x: number, z: number) => number; fly?: number[][] } = {},
   ) {
+    this.ground = opts.ground ?? groundHeight;
     camera.rotation.order = 'YXZ';
     camera.position.copy(views.overview.pos);
     camera.lookAt(views.overview.target);
@@ -53,20 +57,22 @@ export class CameraRig {
 
     // Upstream → down the creek past the sensor → over the bridge → up the village lane → hall.
     this.fly = new THREE.CatmullRomCurve3(
-      [
-        [-95, 30, -40],
-        [-60, 12, -8],
-        [-25, 4.5, -3],
-        [0, 5, -1],
-        [14, 4, -4],
-        [30, 6, 8],
-        [16, 4.5, 26],
-        [0, 3.5, 30],
-        [-2, 4, 42],
-        [0, 9, 50],
-        [-30, 22, 75],
-        [-60, 40, 20],
-      ].map(([x, y, z]) => new THREE.Vector3(x, y, z)),
+      (
+        opts.fly ?? [
+          [-95, 30, -40],
+          [-60, 12, -8],
+          [-25, 4.5, -3],
+          [0, 5, -1],
+          [14, 4, -4],
+          [30, 6, 8],
+          [16, 4.5, 26],
+          [0, 3.5, 30],
+          [-2, 4, 42],
+          [0, 9, 50],
+          [-30, 22, 75],
+          [-60, 40, 20],
+        ]
+      ).map(([x, y, z]) => new THREE.Vector3(x, y, z)),
       false,
       'catmullrom',
       0.35,
@@ -170,7 +176,7 @@ export class CameraRig {
   /** Movement scales with height above ground: slow at street level, quick from the air. */
   private speedScale(): number {
     const p = this.camera.position;
-    return clamp(1 + (p.y - groundHeight(p.x, p.z)) / 8, 1, 8);
+    return clamp(1 + (p.y - this.ground(p.x, p.z)) / 8, 1, 8);
   }
 
   private translate(delta: THREE.Vector3): void {
@@ -178,7 +184,7 @@ export class CameraRig {
     // Stay over the map and below the clouds; never tunnel into the ground.
     p.x = clamp(p.x, -BOUNDS.xz, BOUNDS.xz);
     p.z = clamp(p.z, -BOUNDS.xz, BOUNDS.xz);
-    p.y = clamp(p.y, groundHeight(p.x, p.z) + 0.6, BOUNDS.top);
+    p.y = clamp(p.y, this.ground(p.x, p.z) + 0.6, BOUNDS.top);
   }
 
   /** Adopt wherever the camera currently is pointing. */

@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 
 const page = (name: string) => fileURLToPath(new URL(name, import.meta.url));
 
-// Three pages: the 3D simulator (index.html), the story game (play.html) and the barangay operations dashboard (dashboard.html).
+// Four pages: the 3D simulator (index.html), the story game (play.html) the barangay operations dashboard (dashboard.html) and the coastal storm-surge mode (coast.html).
 export default defineConfig({
   build: {
     // Top-level await (characters load before the world is built).
@@ -13,6 +13,7 @@ export default defineConfig({
         simulator: page('./index.html'),
         game: page('./play.html'),
         dashboard: page('./dashboard.html'),
+        coast: page('./coast.html'),
       },
     },
     // three.js alone is ~600 kB minified; that's expected for the simulator page.

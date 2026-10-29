@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111214" />
+    <meta name="description" content="Bantay Baha coastal mode: storm surge early warning for a seaside barangay." />
+    <title>Bantay Baha Coastal</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="hud" class="surface" aria-live="polite">
+        <header>
+          <div class="brand">
+            <b>Bantay Baha</b>
+            <span class="label">Coastal station bb-c1 · pier</span>
+          </div>
+          <span id="badge" class="badge s-NORMAL">NORMAL</span>
+        </header>
+        <div class="metrics">
+          <div><span class="label">Sea level</span><b id="m-level" class="num">--</b><small>m above MSL</small></div>
+          <div><span class="label">Surge</span><b id="m-surge" class="num">--</b><small>m above tide</small></div>
+          <div><span class="label">High tide</span><b id="m-high" class="num">--</b><small id="m-high-h"></small></div>
+        </div>
+        <div id="fc-badge" class="fc"><b id="fc-eta"></b><span id="fc-detail"></span></div>
+        <canvas id="chart"></canvas>
+        <div class="c-legend">
+          <span><i class="sw meas"></i>Measured</span>
+          <span><i class="sw tide"></i>Tide only</span>
+          <span><i class="sw fc"></i>Forecast</span>
+        </div>
+      </section>
+
+      <section id="alert" class="alert surface s-NORMAL" aria-live="assertive">
+        <div class="alert-head label"><span id="alert-title">Status update</span><span id="alert-src">Storm-surge advisory</span></div>
+        <p id="alert-text">Waiting for the first reading.</p>
+      </section>
+
+      <aside id="panel" class="open">
+        <button id="panel-toggle" class="surface" aria-label="Toggle controls">Controls</button>
+        <div class="panel-body surface">
+          <section>
+            <h3 class="label">Typhoon</h3>
+            <div class="row"><span>Landfall</span><span id="src-chip" class="chip">--</span></div>
+            <label class="slider">Signal at landfall <output id="o-signal">Signal 4</output><input id="i-signal" type="range" min="1" max="5" step="1" value="4" /></label>
+            <label class="check"><input id="i-align" type="checkbox" checked /> Landfall at high tide (worst case)</label>
+          </section>
+          <section>
+            <h3 class="label">Auto-storm</h3>
+            <div class="row"><button id="b-storm" class="primary">Pause</button><button id="b-reset">Restart</button></div>
+            <div class="progress"><div id="storm-bar"></div></div>
+            <div class="row small"><span id="storm-time" class="num">Day 1 06:00</span></div>
+            <label class="slider">Speed <output id="o-speed">1 h / 2 s</output><input id="i-speed" type="range" min="1" max="3" step="1" value="2" /></label>
+          </section>
+          <section>
+            <h3 class="label">Display and alerts</h3>
+            <div class="toggles">
+              <label><input id="i-rain" type="checkbox" checked /> Rain</label>
+            </div>
+            <label class="select">Language
+              <select id="i-lang">
+                <option value="en">English</option>
+                <option value="tl">Tagalog</option>
+                <option value="ceb">Cebuano</option>
+                <option value="war">Waray</option>
+              </select>
+            </label>
+            <p class="hint">
+              Surge = the part of the sea level the tide can't explain. The station averages 10 minutes of readings to cancel
+              the waves, and warns hours ahead because people need time to walk up the hill.
+            </p>
+          </section>
+        </div>
+      </aside>
+
+      <nav id="cams" class="surface" aria-label="Camera presets">
+        <div class="seg">
+          <button data-cam="overview">Overview</button>
+          <button data-cam="sensor">Sensor</button>
+          <button data-cam="street">Shore</button>
+          <button data-cam="bridge">Hill</button>
+          <button data-cam="cinematic">Fly-through</button>
+        </div>
+        <a class="link" href="./">Creek simulator</a>
+        <a class="link" href="play.html">Play the story</a>
+        <span class="keys-hint">Drag to look · WASD move · Q or C down · E or Space up · Shift fast</span>
+      </nav>
+
+      <div id="loading">Loading the coast</div>
+    </div>
+    <script type="module" src="/src/coast/main.ts"></script>
+  </body>
+</html>
